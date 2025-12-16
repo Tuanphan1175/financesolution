@@ -1,0 +1,5 @@
+{
+  "name": "Ứng dụng Quản lý Tài chính Cá nhân Thông minh",
+  "description": "Một công cụ thông minh để quản lý chi tiêu cá nhân, bao gồm ghi nhật ký giao dịch, lập ngân sách, phân tích thu/chi và báo cáo tài chính bằng biểu đồ.",
+  "requestFramePermissions": []
+}
