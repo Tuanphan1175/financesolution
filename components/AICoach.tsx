@@ -118,13 +118,14 @@ export const AICoach: React.FC<AICoachProps> = ({ transactions, assets, liabilit
 
             // Xử lý để loại bỏ ký tự markdown ** và đảm bảo xuống dòng
             response = response.replace(/\*\*/g, '').trim(); // Loại bỏ **
-            // Đảm bảo mỗi ý bắt đầu bằng dấu gạch đầu dòng hoặc số thứ tự được xuống dòng
-            response = response.split('\n').map(line => {
-                if (line.startsWith('- ') || line.match(/^\d+\. /)) {
-                    return line;
-                }
-                return line.trim();
-            }).join('\n');
+
+            // Đảm bảo mỗi ý được đánh số thứ tự và xuống dòng
+            const lines = response.split('\n').filter(line => line.trim() !== '');
+            let formattedResponse = '';
+            lines.forEach((line, index) => {
+                formattedResponse += `${index + 1}. ${line.trim()}\n`;
+            });
+            response = formattedResponse.trim(); // Loại bỏ dòng trống cuối cùng nếu có
 
 
             setMessages(prev => [...prev, { id: Date.now().toString(), role: 'model', text: response }]);
