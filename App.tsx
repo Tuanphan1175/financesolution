@@ -109,7 +109,7 @@ const App: React.FC = () => {
     const filteredLiabilities = accountFilter === 'all' ? liabilities : liabilities.filter(l => l.accountType === accountFilter);
     
     return calculatePyramidStatus(filteredTransactions, filteredAssets, filteredLiabilities, goldenRules);
-  }, [transactions, assets, liabilities, goldenRules, accountFilter]);
+  }, [transactions, assets, liabilities, goldenRules, accountFilter, categories]);
 
   const handleCompleteDay = (day: number, note?: string) => {
       setJourneyProgress(prev => ({
