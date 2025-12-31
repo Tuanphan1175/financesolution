@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { GoogleGenAI } from "@google/genai";
 import { Transaction, Asset, Liability, JourneyProgress, GoldenRule } from '../types';
@@ -129,11 +128,6 @@ export const AICoach: React.FC<AICoachProps> = ({ transactions, assets, liabilit
           parts: [{ text: m.text }],
         })),
       });
-                history: messages.map(m => ({
-                    role: m.role,
-                    parts: [{ text: m.text }],
-                })),
-            });
 
             // Send message and get response
             const result = await chat.sendMessage({ message: userText });
