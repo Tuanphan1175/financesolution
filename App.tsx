@@ -18,6 +18,8 @@ import { calculatePyramidStatus } from './lib/pyramidLogic';
 import { BudgetSettings } from './components/BudgetSettings';
 import { CategorySettings } from './components/CategorySettings';
 import { UpgradePlan } from './components/UpgradePlan';
+import { PricingModal } from './components/PricingModal';
+import { UpgradeButton } from './components/UpgradeButton';
 
 // Định nghĩa các danh mục mặc định ngay tại đây
 const DEFAULT_CATEGORIES: Category[] = [
@@ -52,6 +54,7 @@ const App: React.FC = () => {
   const [currentView, setCurrentView] = useState<View>('dashboard');
   const [isSidebarOpen, setSidebarOpen] = useState(false);
   const [accountFilter, setAccountFilter] = useState<'all' | AccountType>('all');
+  const [isPricingModalOpen, setIsPricingModalOpen] = useState(false);
   
   const [assets, setAssets] = useState<Asset[]>(() => {
     const saved = localStorage.getItem('smartfinance_assets');
@@ -238,6 +241,8 @@ const App: React.FC = () => {
           </div>
         </main>
       </div>
+      <UpgradeButton onClick={() => setIsPricingModalOpen(true)} />
+      <PricingModal isOpen={isPricingModalOpen} onClose={() => setIsPricingModalOpen(false)} />
     </div>
   );
 };
