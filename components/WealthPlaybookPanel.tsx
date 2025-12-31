@@ -1,4 +1,3 @@
-
 import React, { useMemo, useState, useEffect } from "react";
 import { buildAllocation, Profile } from "../lib/financeEngine";
 import { loadPlanProgress, savePlanProgress, PlanProgress, loadPlaybookState, savePlaybookState } from "../lib/planStore";
@@ -197,13 +196,14 @@ export const WealthPlaybookPanel: React.FC<Props> = (props) => {
 
               <div className="mt-4 mb-8">
                 <input 
-                    type="range"
+                    type="number"
                     min="0"
                     max="100"
                     step="1"
                     value={j.pct}
                     onChange={(e) => handlePctChange(j.key, parseFloat(e.target.value))}
-                    className="w-full h-2 bg-slate-800 rounded-full appearance-none cursor-pointer accent-primary-500"
+                    className="w-full rounded-xl bg-slate-950 border border-slate-800 px-4 py-2.5 text-white outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500 text-sm font-black font-mono transition-all"
+                    placeholder="%"
                 />
               </div>
 
