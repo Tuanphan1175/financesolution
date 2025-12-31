@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo, useEffect } from 'react';
 import { Sidebar } from './components/Sidebar';
 import { Dashboard } from './components/Dashboard';
@@ -14,8 +13,23 @@ import { AICoach } from './components/AICoach';
 import { WealthPlaybookPanel } from './components/WealthPlaybookPanel';
 import { MenuIcon, XIcon, SparklesIcon, ArrowUpIcon } from './components/Icons';
 import { View, AccountType, GoldenRule, Transaction, JourneyProgress, Category, Budget, Asset, Liability } from './types';
-import { ASSETS as INITIAL_ASSETS, LIABILITIES as INITIAL_LIABILITIES, GOLDEN_RULES_SEED, TRANSACTIONS as INITIAL_TRANSACTIONS, CATEGORIES as INITIAL_CATEGORIES, BUDGETS as INITIAL_BUDGETS } from './constants';
+import { ASSETS as INITIAL_ASSETS, LIABILITIES as INITIAL_LIABILITIES, GOLDEN_RULES_SEED, TRANSACTIONS as INITIAL_TRANSACTIONS, BUDGETS as INITIAL_BUDGETS } from './constants';
 import { calculatePyramidStatus } from './lib/pyramidLogic';
+import { BudgetSettings } from './components/BudgetSettings';
+import { CategorySettings } from './components/CategorySettings';
+
+// Định nghĩa các danh mục mặc định ngay tại đây
+const DEFAULT_CATEGORIES: Category[] = [
+  { id: 'cat-1', name: 'Lương', type: 'income', icon: 'Briefcase', color: '#10b981', defaultClassification: 'need' },
+  { id: 'cat-2', name: 'Tạp hóa', type: 'expense', icon: 'ShoppingCart', color: '#ef4444', defaultClassification: 'need' },
+  { id: 'cat-3', name: 'Tiền thuê nhà', type: 'expense', icon: 'Home', color: '#f97316', defaultClassification: 'need' },
+  { id: 'cat-4', name: 'Đi lại', type: 'expense', icon: 'Bus', color: '#3b82f6', defaultClassification: 'need' },
+  { id: 'cat-5', name: 'Giải trí', type: 'expense', icon: 'Ticket', color: '#8b5cf6', defaultClassification: 'want' },
+  { id: 'cat-6', name: 'Làm tự do', type: 'income', icon: 'Pencil', color: '#14b8a6', defaultClassification: 'need' },
+  { id: 'cat-7', name: 'Tiện ích', type: 'expense', icon: 'LightningBolt', color: '#f59e0b', defaultClassification: 'need' },
+  { id: 'cat-8', name: 'Sức khỏe', type: 'expense', icon: 'Heart', color: '#ec4899', defaultClassification: 'need' },
+  { id: 'cat-9', name: 'Kinh doanh', type: 'income', icon: 'ChartPie', color: '#6366f1', defaultClassification: 'need' },
+];
 
 const viewTitles: Record<View, string> = {
   dashboard: 'Bảng Điều Khiển',
@@ -28,7 +42,8 @@ const viewTitles: Record<View, string> = {
   'net-worth': 'Bảng Cân Đối Tài Sản',
   '30-day-journey': 'Hành Trình Tỉnh Thức 30 Ngày',
   'ai-coach': 'AI Financial Coach',
-  'playbook': 'Chiến Lược Tài Chính Premium'
+  'playbook': 'Chiến Lược Tài Chính Premium',
+  'category-settings': 'Quản Lý Danh Mục'
 };
 
 const App: React.FC = () => {
@@ -53,7 +68,7 @@ const App: React.FC = () => {
   
   const [categories, setCategories] = useState<Category[]>(() => {
     const saved = localStorage.getItem('smartfinance_categories');
-    return saved ? JSON.parse(saved) : INITIAL_CATEGORIES;
+    return saved ? JSON.parse(saved) : DEFAULT_CATEGORIES;
   });
 
   const [budgets, setBudgets] = useState<Budget[]>(() => {
@@ -167,6 +182,8 @@ const App: React.FC = () => {
         return <AICoach transactions={transactions} assets={assets} liabilities={liabilities} journeyProgress={journeyProgress} goldenRules={goldenRules} />;
       case 'playbook':
         return <WealthPlaybookPanel />;
+      case 'category-settings':
+        return <CategorySettings categories={categories} setCategories={setCategories} />;
       default:
         return <Dashboard transactions={transactions} assets={assets} liabilities={liabilities} goldenRules={goldenRules} accountFilter={accountFilter} setAccountFilter={setAccountFilter} categories={categories} pyramidStatus={pyramidStatus} />;
     }

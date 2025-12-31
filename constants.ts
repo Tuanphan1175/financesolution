@@ -1,4 +1,3 @@
-
 import { Category, Transaction, Budget, Asset, Liability, GoldenRule, JourneyTask } from './types';
 
 export const CATEGORIES: Category[] = [
