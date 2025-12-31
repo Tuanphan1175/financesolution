@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { View } from '../types';
-import { ChartPieIcon, CollectionIcon, ClipboardListIcon, DocumentReportIcon, CurrencyDollarIcon, ShieldCheckIcon, TrendingUpIcon, ScaleIcon, CalendarIcon, SparklesIcon, BookOpenIcon, PencilIcon } from './Icons';
+import { ChartPieIcon, CollectionIcon, ClipboardListIcon, DocumentReportIcon, CurrencyDollarIcon, ShieldCheckIcon, TrendingUpIcon, ScaleIcon, CalendarIcon, SparklesIcon, BookOpenIcon, PencilIcon, RefreshIcon } from './Icons';
 
 interface SidebarProps {
   currentView: View;
   setCurrentView: (view: View) => void;
+  isPremium: boolean;
+  setIsPremium: (isPremium: boolean) => void;
 }
 
 const NavItem: React.FC<{
@@ -34,7 +36,7 @@ const NavItem: React.FC<{
   );
 };
 
-export const Sidebar: React.FC<SidebarProps> = ({ currentView, setCurrentView }) => {
+export const Sidebar: React.FC<SidebarProps> = ({ currentView, setCurrentView, isPremium, setIsPremium }) => {
   const [userName, setUserName] = useState("Người dùng");
   const [isEditing, setIsEditing] = useState(false);
 
@@ -97,6 +99,14 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, setCurrentView })
       </nav>
       
       <div className="mt-auto shrink-0 pt-10 border-t border-slate-800">
+        <button 
+            onClick={() => setIsPremium(!isPremium)}
+            className="w-full flex items-center px-8 py-3 text-[10px] font-black uppercase tracking-[0.2em] rounded-2xl transition-all duration-500 text-slate-500 hover:text-white hover:bg-slate-800/50 mb-4"
+        >
+            <RefreshIcon className="h-5 w-5 mr-4 text-slate-600" />
+            Dev: Toggle VIP ({isPremium ? 'ON' : 'OFF'})
+        </button>
+
         <div className="flex items-center p-4 rounded-[1.8rem] bg-slate-900 border border-slate-800 transition-all hover:border-luxury-gold/50 group shadow-inner">
           <div className="relative shrink-0">
             <img 

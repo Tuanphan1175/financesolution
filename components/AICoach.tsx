@@ -13,6 +13,7 @@ interface AICoachProps {
     journeyProgress: JourneyProgress;
     goldenRules: GoldenRule[];
     setIsPricingModalOpen: (isOpen: boolean) => void;
+    isPremium: boolean; // Nhận isPremium từ props
 }
 
 interface Message {
@@ -21,7 +22,7 @@ interface Message {
     text: string;
 }
 
-export const AICoach: React.FC<AICoachProps> = ({ transactions, assets, liabilities, journeyProgress, goldenRules, setIsPricingModalOpen }) => {
+export const AICoach: React.FC<AICoachProps> = ({ transactions, assets, liabilities, journeyProgress, goldenRules, setIsPricingModalOpen, isPremium }) => {
     const [messages, setMessages] = useState<Message[]>([]);
     const [input, setInput] = useState('');
     const [isLoading, setIsLoading] = useState(false);
@@ -29,7 +30,7 @@ export const AICoach: React.FC<AICoachProps> = ({ transactions, assets, liabilit
     const hasInitialized = useRef(false);
 
     // --- LOGIC PREMIUM VÀ DEV TOOL ---
-    const [isPremium, setIsPremium] = useState(false); // Giả lập trạng thái Premium
+    // const [isPremium, setIsPremium] = useState(false); // Xóa dòng này
     const [showDevTool, setShowDevTool] = useState(false); // State để hiển thị/ẩn Dev Tool
 
     // --- 1. TÍNH TOÁN DỮ LIỆU TÀI CHÍNH ---
@@ -175,6 +176,8 @@ export const AICoach: React.FC<AICoachProps> = ({ transactions, assets, liabilit
     return (
         <div className="flex flex-col h-[calc(100vh-140px)] bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden border border-gray-200 dark:border-gray-700 relative">
             {/* Dev Tool Button */}
+            {/* Nút Dev Tool này sẽ được chuyển sang Sidebar */}
+            {/* 
             <button 
                 onClick={() => setShowDevTool(!showDevTool)}
                 className="fixed top-4 left-4 z-50 p-2 bg-gray-700 text-white rounded-full text-xs"
@@ -194,6 +197,7 @@ export const AICoach: React.FC<AICoachProps> = ({ transactions, assets, liabilit
                     </label>
                 </div>
             )}
+            */}
 
             {/* Header */}
             <div className="bg-gradient-to-r from-primary-600 to-teal-500 p-4 flex items-center shadow-sm shrink-0">

@@ -55,6 +55,7 @@ const App: React.FC = () => {
   const [isSidebarOpen, setSidebarOpen] = useState(false);
   const [accountFilter, setAccountFilter] = useState<'all' | AccountType>('all');
   const [isPricingModalOpen, setIsPricingModalOpen] = useState(false);
+  const [isPremium, setIsPremium] = useState(false);
   
   const [assets, setAssets] = useState<Asset[]>(() => {
     const saved = localStorage.getItem('smartfinance_assets');
@@ -191,6 +192,7 @@ const App: React.FC = () => {
             journeyProgress={journeyProgress} 
             goldenRules={goldenRules} 
             setIsPricingModalOpen={setIsPricingModalOpen}
+            isPremium={isPremium}
         />;
       case 'playbook':
         return <WealthPlaybookPanel />;
@@ -206,10 +208,15 @@ const App: React.FC = () => {
   return (
     <div className="flex h-screen bg-luxury-obsidian text-slate-100 font-sans selection:bg-luxury-gold selection:text-black">
       <div className={`fixed inset-y-0 left-0 z-40 w-96 bg-luxury-obsidian shadow-premium transform ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} transition-transform duration-500 md:relative md:translate-x-0 md:flex md:flex-shrink-0 border-r border-slate-800`}>
-        <Sidebar currentView={currentView} setCurrentView={(view) => {
-            setCurrentView(view)
-            setSidebarOpen(false);
-        }} />
+        <Sidebar 
+            currentView={currentView} 
+            setCurrentView={(view) => {
+                setCurrentView(view)
+                setSidebarOpen(false);
+            }}
+            isPremium={isPremium}
+            setIsPremium={setIsPremium}
+        />
       </div>
       <div className="flex-1 flex flex-col overflow-hidden">
         <header className="flex items-center justify-between p-6 bg-luxury-obsidian/80 backdrop-blur-md border-b border-slate-800 md:hidden sticky top-0 z-30">
