@@ -74,6 +74,8 @@ export const BookOpenIcon: React.FC<IconProps> = (props) => <svg {...props} xmln
 
 export const TrashIcon: React.FC<IconProps> = (props) => <svg {...props} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1H9a1 1 0 00-1 1v3m-4 0h16" /></svg>;
 
+export const ArrowRightIcon: React.FC<IconProps> = (props) => <svg {...props} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>;
+
 export const IconMap: { [key: string]: React.FC<IconProps> } = {
     Briefcase: BriefcaseIcon,
     ShoppingCart: ShoppingCartIcon,
