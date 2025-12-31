@@ -5,6 +5,7 @@ import { ArrowUpIcon, ArrowDownIcon, CashIcon, ScaleIcon, RefreshIcon } from './
 import { IconMap } from './Icons';
 import { WealthPlaybookPanel } from './WealthPlaybookPanel';
 import { PyramidStatus } from '../lib/pyramidLogic';
+import { BudgetSettings } from './BudgetSettings';
 
 const StatCard: React.FC<{ title: string; amount: string | number; icon: React.ReactNode; color?: string; subText?: string; isGold?: boolean }> = ({ title, amount, icon, color = 'primary', subText, isGold }) => (
     <div className={`
