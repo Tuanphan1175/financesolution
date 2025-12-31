@@ -184,7 +184,14 @@ const App: React.FC = () => {
             onSetTarget={setTargetLevelId}
         />;
       case 'ai-coach':
-        return <AICoach transactions={transactions} assets={assets} liabilities={liabilities} journeyProgress={journeyProgress} goldenRules={goldenRules} />;
+        return <AICoach 
+            transactions={transactions} 
+            assets={assets} 
+            liabilities={liabilities} 
+            journeyProgress={journeyProgress} 
+            goldenRules={goldenRules} 
+            setIsPricingModalOpen={setIsPricingModalOpen}
+        />;
       case 'playbook':
         return <WealthPlaybookPanel />;
       case 'category-settings':
