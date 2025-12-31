@@ -88,7 +88,7 @@ export const AICoach: React.FC<AICoachProps> = ({ transactions, assets, liabilit
 
         try {
             // --- QUAN TRỌNG: DÁN CHÌA KHÓA MỚI VÀO DƯỚI ĐÂY ---
-            const API_KEY_DIRECT = "DÁN_MÃ_KEAIzaSyD2QvJkU4PYY-G-muQLic4DbhMu349-hyIY_MỚI_CỦA_ANH_VÀO_CHỖ_NÀY"; 
+            const API_KEY_DIRECT = "AIzaSyD2QvJkU4PYY-G-muQLic4DbhMu349-hyI"; 
             
             if (API_KEY_DIRECT.includes("AIzaSyD2QvJkU4PYY-G-muQLic4DbhMu349-hyI")) {
                 throw new Error("Anh chưa dán API Key mới vào code!");
