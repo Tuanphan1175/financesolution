@@ -111,23 +111,35 @@ export const AICoach: React.FC<AICoachProps> = ({ transactions, assets, liabilit
         setInput('');
         setIsLoading(true);
 
-        try {
-            // Fix: Initializing GoogleGenAI inside handleSendMessage to ensure use of latest environment API Key
-            // Sửa lỗi 1: Gọi đúng tên chìa khóa (VITE_GEMINI_API_KEY) và dùng đúng lệnh (import.meta.env)
-      // SỬA: Lấy chìa khóa đúng chuẩn Vite và dùng Model Flash cho nhanh
+       try {
+      // 1. Lấy API Key chuẩn từ cấu hình Dyad
       const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
-      if (!apiKey) throw new Error("Chưa có API Key");
       
-      const ai = new GoogleGenAI(apiKey);
-      const model = ai.getGenerativeModel({ 
-        model: "gemini-1.5-flash", 
-        systemInstruction: SYSTEM_PROMPT 
+      // Kiểm tra ngay nếu thiếu Key
+      if (!apiKey) {
+        throw new Error("Chưa tìm thấy API Key. Hãy kiểm tra lại Settings!");
+      }
+
+      // 2. Khởi tạo Google AI đúng chuẩn
+      const genAI = new GoogleGenAI(apiKey);
+
+      // 3. Sử dụng Model Flash 1.5 (Nhanh và Ổn định nhất)
+      const model = genAI.getGenerativeModel({
+        model: "gemini-1.5-flash",
+        systemInstruction: SYSTEM_PROMPT,
       });
 
+      // 4. Bắt đầu cuộc hội thoại
       const chat = model.startChat({
         history: messages.map(m => ({
-          role: m.role,
+          role: m.role === 'user' ? 'user' : 'model', // Chuẩn hóa role
           parts: [{ text: m.text }],
+        })),
+      });
+
+      // Gửi tin nhắn và nhận kết quả
+      const result = await chat.sendMessage(userText);
+      const response = result.response.text();
         })),
       });
 
