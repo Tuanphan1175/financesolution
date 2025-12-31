@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { CheckIcon, SparklesIcon, ArrowRightIcon } from './Icons'; // Giả định các icon này đã có
+import { XIcon } from './Icons'; // Thêm dòng này
 
 export const UpgradePlan: React.FC = () => {
   const [isAnnual, setIsAnnual] = useState(false);
