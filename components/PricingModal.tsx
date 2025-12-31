@@ -49,10 +49,11 @@ export const PricingModal: React.FC<PricingModalProps> = ({ isOpen, onClose }) =
         </div>
 
         {showPaymentInfo ? (
-          <div className="bg-gray-100 dark:bg-gray-700 p-6 rounded-xl text-center">
-            <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4">Thông tin chuyển khoản</h3>
-            <p className="text-gray-700 dark:text-gray-300 mb-2">Ngân hàng: <span className="font-bold">MB Bank</span></p>
-            <p className="text-gray-700 dark:text-gray-300 mb-2">Số tài khoản: <span className="font-bold">1234567890</span> (Ví dụ)</p>
+          <div className="bg-gray-100 dark:bg-gray-700 p-8 rounded-xl text-center flex flex-col items-center justify-center">
+            <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">Thông tin thanh toán</h3>
+            <img src={qrCodeUrl} alt="QR Code Thanh Toán" className="w-64 h-64 md:w-80 md:h-80 object-contain mx-auto mb-6 border border-gray-300 dark:border-gray-600 rounded-lg p-2" />
+            <p className="text-gray-700 dark:text-gray-300 mb-2 text-lg">Ngân hàng: <span className="font-bold">Vietcombank</span></p>
+            <p className="text-gray-700 dark:text-gray-300 mb-2 text-lg">Số tài khoản: <span className="font-bold">{accountNumber}</span></p>
             <p className="text-gray-700 dark:text-gray-300 mb-4">Nội dung: <span className="font-bold">SDT + VIP</span></p>
             <p className="text-sm text-gray-500 dark:text-gray-400 italic">
               (Sau này sẽ chèn ảnh QR Code vào đây)
