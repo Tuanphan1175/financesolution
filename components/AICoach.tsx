@@ -151,45 +151,6 @@ export const AICoach: React.FC<AICoachProps> = ({ transactions, assets, liabilit
     } finally {
       setIsLoading(false);
     }
-      }
-
-      // 2. Khởi tạo Google AI đúng chuẩn
-      const genAI = new GoogleGenAI(apiKey);
-
-      // 3. Sử dụng Model Flash 1.5 (Nhanh và Ổn định nhất)
-      const model = genAI.getGenerativeModel({
-        model: "gemini-1.5-flash",
-        systemInstruction: SYSTEM_PROMPT,
-      });
-
-      // 4. Bắt đầu cuộc hội thoại
-      const chat = model.startChat({
-        history: messages.map(m => ({
-          role: m.role === 'user' ? 'user' : 'model', // Chuẩn hóa role
-          parts: [{ text: m.text }],
-        })),
-      });
-
-      // Gửi tin nhắn và nhận kết quả
-      const result = await chat.sendMessage(userText);
-      const text = result.response.text(); // Lấy text từ result.response.text()
-
-            if (text) {
-                const newAiMsg: Message = { id: (Date.now() + 1).toString(), role: 'model', text: text };
-                setMessages(prev => [...prev, newAiMsg]);
-            }
-
-        } catch (error) {
-            console.error("AI Error:", error);
-            const errorMsg: Message = { 
-                id: (Date.now() + 1).toString(), 
-                role: 'model', 
-                text: "Xin lỗi, tôi đang gặp chút sự cố kết nối. Hãy kiểm tra lại API Key hoặc thử lại sau nhé! (Lưu ý: Bạn cần có API Key hợp lệ trong biến môi trường)" 
-            };
-            setMessages(prev => [...prev, errorMsg]);
-        } finally {
-            setIsLoading(false);
-        }
     };
 
     return (
