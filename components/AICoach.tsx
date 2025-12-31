@@ -139,13 +139,7 @@ export const AICoach: React.FC<AICoachProps> = ({ transactions, assets, liabilit
 
       // Gửi tin nhắn và nhận kết quả
       const result = await chat.sendMessage(userText);
-      const response = result.response.text();
-        })),
-      });
-
-            // Send message and get response
-            const result = await chat.sendMessage({ message: userText });
-            const text = result.text; // Access text property directly as per @google/genai guidelines
+      const text = result.response.text(); // Lấy text từ result.response.text()
 
             if (text) {
                 const newAiMsg: Message = { id: (Date.now() + 1).toString(), role: 'model', text: text };
