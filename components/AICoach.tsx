@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { GoogleGenAI } from "@google/genai";
+// SỬA 1: Dùng đúng thư viện chuẩn của Google
+import { GoogleGenerativeAI } from "@google/generative-ai";
 import { Transaction, Asset, Liability, JourneyProgress, GoldenRule } from '../types';
 import { SparklesIcon, ArrowUpIcon } from './Icons';
 import { JOURNEY_30_DAYS } from '../constants';
@@ -28,17 +29,13 @@ export const AICoach: React.FC<AICoachProps> = ({ transactions, assets, liabilit
 
     // --- 1. CALCULATE CONTEXT LOGIC ---
     const calculateFinancialContext = () => {
-        // Fix: Added goldenRules as the 4th argument to satisfy the calculatePyramidStatus signature
         const pyramidStatus = calculatePyramidStatus(transactions, assets, liabilities, goldenRules);
         const { currentLevel, metrics } = pyramidStatus;
 
-        // Fix: Calculate totalAssets and totalLiabilities locally because they do not exist on the metrics object
         const totalAssets = assets.reduce((sum, a) => sum + a.value, 0);
         const totalLiabilities = liabilities.reduce((sum, l) => sum + l.amount, 0);
 
-        // Journey Progress
         const completedDays = Object.keys(journeyProgress).length;
-        // Find next incomplete task
         let nextTask = JOURNEY_30_DAYS[0];
         for(let i=1; i<=30; i++) {
              if(!journeyProgress[i]?.completed) {
@@ -65,25 +62,12 @@ export const AICoach: React.FC<AICoachProps> = ({ transactions, assets, liabilit
     // --- 2. SYSTEM PROMPT ---
     const SYSTEM_PROMPT = `
     VAI TRÒ: Bạn là AI Financial Coach - Người đồng hành tài chính cá nhân.
-    NHIỆM VỤ: Giúp người dùng hiểu, kiểm soát và cải thiện tài chính mỗi ngày (5-10 phút). Dẫn dắt họ lên tầng tiếp theo của Tháp Tài Chính. Tập trung vào thay đổi hành vi, KHÔNG dạy lý thuyết suông.
+    NHIỆM VỤ: Giúp người dùng hiểu, kiểm soát và cải thiện tài chính mỗi ngày (5-10 phút).
     
-    TRIẾT LÝ:
-    - Không phán xét, không gây áp lực, không khuyến nghị đầu tư rủi ro.
-    - Ưu tiên: Thu > Chi, Quỹ dự phòng, Kỷ luật.
-    - KHUYẾN KHÍCH CỤ THỂ: Hãy nhắc người dùng mục tiêu "Tự động chuyển 15% thu nhập vào quỹ dự phòng" nếu họ chưa có quỹ dự phòng đủ 3 tháng.
-    - Tinh thần: Ấm áp, ngắn gọn, đời thường.
-    
-    CẤU TRÚC TRẢ LỜI BẮT BUỘC (Mỗi câu trả lời PHẢI có đủ 6 phần này, ngắn gọn dưới 200 từ):
-    A. CHECK-IN: Hỏi cảm xúc/tình trạng hôm nay (1-2 câu).
-    B. PHẢN CHIẾU: Nhắc lại tình trạng tài chính hiện tại dựa trên Context (1-2 câu).
-    C. 1 VIỆC NHỎ: Giao 1 việc cụ thể làm trong 5-10 phút (ưu tiên nhiệm vụ trong Hành trình 30 ngày nếu chưa làm).
-    D. 1 CÂU HỎI COACHING: Giúp người dùng tự nhận ra vấn đề.
-    E. CAM KẾT: 1 câu ngắn để người dùng đọc theo/tự hứa.
-    F. KHÍCH LỆ: 1 câu động viên chân thành.
-
-    ${financialContext}
-    
-    LƯU Ý: Nếu người dùng hỏi về đầu tư phức tạp, hãy lái về nền tảng tài chính vững chắc trước. Luôn kết thúc bằng việc nhắc nhở họ hoàn thành nhiệm vụ ngày.
+    CẤU TRÚC TRẢ LỜI NGẮN GỌN (Dưới 200 từ):
+    A. CHECK-IN: Hỏi thăm.
+    B. PHÂN TÍCH: Dựa trên dữ liệu: ${financialContext}
+    C. HÀNH ĐỘNG: Giao 1 việc nhỏ cụ thể.
     `;
 
     const scrollToBottom = () => {
@@ -94,7 +78,6 @@ export const AICoach: React.FC<AICoachProps> = ({ transactions, assets, liabilit
         scrollToBottom();
     }, [messages]);
 
-    // Initial Greeting
     useEffect(() => {
         if (!hasInitialized.current) {
             hasInitialized.current = true;
@@ -105,52 +88,46 @@ export const AICoach: React.FC<AICoachProps> = ({ transactions, assets, liabilit
     const handleSendMessage = async (userText: string) => {
         if (!userText.trim()) return;
 
-        // Optimistic Update
         const newUserMsg: Message = { id: Date.now().toString(), role: 'user', text: userText };
         setMessages(prev => [...prev, newUserMsg]);
         setInput('');
         setIsLoading(true);
 
-      try {
-      // --- BẮT ĐẦU ĐOẠN CODE SỬA ---
-      
-      // 1. Điền TRỰC TIẾP chìa khóa vào đây (Bỏ qua Settings)
-      const API_KEY_DIRECT = "AIzaSyD2QvJkU4PYY-G-muQlíc4DbhMu349-hyl"; 
+        try {
+            // SỬA 2: Sửa lỗi chính tả trong Key (chữ í -> i) và dùng class đúng
+            const API_KEY_DIRECT = "AIzaSyD2QvJkU4PYY-G-muQlic4DbhMu349-hyl"; 
+            
+            // SỬA 3: Khởi tạo bằng GoogleGenerativeAI (thư viện chuẩn)
+            const genAI = new GoogleGenerativeAI(API_KEY_DIRECT);
+            const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
-      // 2. Khởi tạo AI với chìa khóa cứng
-      const genAI = new GoogleGenAI(API_KEY_DIRECT);
+            const chat = model.startChat({
+                history: [
+                    {
+                        role: "user",
+                        parts: [{ text: SYSTEM_PROMPT }],
+                    },
+                    ...messages.map(m => ({
+                        role: m.role === 'user' ? 'user' : 'model',
+                        parts: [{ text: m.text }],
+                    }))
+                ],
+            });
 
-      // 3. Dùng Model Flash 1.5 chuẩn
-      const model = genAI.getGenerativeModel({
-        model: "gemini-1.5-flash",
-        systemInstruction: SYSTEM_PROMPT,
-      });
+            const result = await chat.sendMessage(userText);
+            const response = result.response.text();
 
-      // 4. Tạo đoạn chat
-      const chat = model.startChat({
-        history: messages.map(m => ({
-          role: m.role === 'user' ? 'user' : 'model',
-          parts: [{ text: m.text }],
-        })),
-      });
-
-      // 5. Gửi tin nhắn
-      const result = await chat.sendMessage(userText);
-      const response = result.response.text();
-      
-      // --- KẾT THÚC ĐOẠN CODE SỬA ---
-
-      setMessages(prev => [...prev, { id: Date.now().toString(), role: 'model', text: response }]);
-    } catch (error) {
-      console.error("AI Error:", error);
-      setMessages(prev => [...prev, { 
-        id: Date.now().toString(), 
-        role: 'model', 
-        text: "Xin lỗi, có lỗi kết nối. Anh hãy F5 lại trang nhé! (Chi tiết: " + error.message + ")" 
-      }]);
-    } finally {
-      setIsLoading(false);
-    }
+            setMessages(prev => [...prev, { id: Date.now().toString(), role: 'model', text: response }]);
+        } catch (error: any) {
+            console.error("AI Error:", error);
+            setMessages(prev => [...prev, { 
+                id: Date.now().toString(), 
+                role: 'model', 
+                text: `Lỗi kết nối: ${error.message || "Vui lòng kiểm tra lại API Key."}`
+            }]);
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     return (
@@ -169,17 +146,8 @@ export const AICoach: React.FC<AICoachProps> = ({ transactions, assets, liabilit
             {/* Chat Area */}
             <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50 dark:bg-gray-900/50">
                 {messages.map((msg) => (
-                    <div 
-                        key={msg.id} 
-                        className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
-                    >
-                        <div className={`
-                            max-w-[85%] md:max-w-[70%] rounded-2xl p-4 text-sm md:text-base shadow-sm whitespace-pre-wrap leading-relaxed
-                            ${msg.role === 'user' 
-                                ? 'bg-primary-600 text-white rounded-tr-none' 
-                                : 'bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 border border-gray-200 dark:border-gray-700 rounded-tl-none'
-                            }
-                        `}>
+                    <div key={msg.id} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                        <div className={`max-w-[85%] md:max-w-[70%] rounded-2xl p-4 text-sm md:text-base shadow-sm whitespace-pre-wrap leading-relaxed ${msg.role === 'user' ? 'bg-primary-600 text-white rounded-tr-none' : 'bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 border border-gray-200 dark:border-gray-700 rounded-tl-none'}`}>
                             {msg.text}
                         </div>
                     </div>
@@ -218,9 +186,6 @@ export const AICoach: React.FC<AICoachProps> = ({ transactions, assets, liabilit
                         <ArrowUpIcon className="h-6 w-6 transform rotate-90" />
                     </button>
                 </div>
-                <p className="text-center text-xs text-gray-400 mt-2">
-                    AI Coach có thể đưa ra thông tin không chính xác. Hãy cân nhắc trước khi áp dụng.
-                </p>
             </div>
         </div>
     );
