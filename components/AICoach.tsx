@@ -111,13 +111,46 @@ export const AICoach: React.FC<AICoachProps> = ({ transactions, assets, liabilit
         setInput('');
         setIsLoading(true);
 
-       try {
-      // 1. Lấy API Key chuẩn từ cấu hình Dyad
-      const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+      try {
+      // --- BẮT ĐẦU ĐOẠN CODE SỬA ---
       
-      // Kiểm tra ngay nếu thiếu Key
-      if (!apiKey) {
-        throw new Error("Chưa tìm thấy API Key. Hãy kiểm tra lại Settings!");
+      // 1. Điền TRỰC TIẾP chìa khóa vào đây (Bỏ qua Settings)
+      const API_KEY_DIRECT = "AIzaSyD2QvJkU4PYY-G-muQlíc4DbhMu349-hyl"; 
+
+      // 2. Khởi tạo AI với chìa khóa cứng
+      const genAI = new GoogleGenAI(API_KEY_DIRECT);
+
+      // 3. Dùng Model Flash 1.5 chuẩn
+      const model = genAI.getGenerativeModel({
+        model: "gemini-1.5-flash",
+        systemInstruction: SYSTEM_PROMPT,
+      });
+
+      // 4. Tạo đoạn chat
+      const chat = model.startChat({
+        history: messages.map(m => ({
+          role: m.role === 'user' ? 'user' : 'model',
+          parts: [{ text: m.text }],
+        })),
+      });
+
+      // 5. Gửi tin nhắn
+      const result = await chat.sendMessage(userText);
+      const response = result.response.text();
+      
+      // --- KẾT THÚC ĐOẠN CODE SỬA ---
+
+      setMessages(prev => [...prev, { id: Date.now().toString(), role: 'model', text: response }]);
+    } catch (error) {
+      console.error("AI Error:", error);
+      setMessages(prev => [...prev, { 
+        id: Date.now().toString(), 
+        role: 'model', 
+        text: "Xin lỗi, có lỗi kết nối. Anh hãy F5 lại trang nhé! (Chi tiết: " + error.message + ")" 
+      }]);
+    } finally {
+      setIsLoading(false);
+    }
       }
 
       // 2. Khởi tạo Google AI đúng chuẩn
