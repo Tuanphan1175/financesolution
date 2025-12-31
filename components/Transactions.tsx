@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo } from 'react';
 import { Transaction, Category, TransactionType, SpendingClassification } from '../types';
 import { IconMap, PlusIcon, FilterIcon, CashIcon, SparklesIcon, CogIcon, SaveDiskIcon, DownloadIcon } from './Icons';
@@ -119,7 +118,8 @@ export const Transactions: React.FC<TransactionsProps> = ({ transactions, setTra
 
     return (
         <div className="space-y-10">
-            <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title="THÊM GIAO DỊCH">
+            <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title="THÊM GIAO DỊCH"
+                   contentClassName="fixed inset-0 z-40 h-[100dvh] overflow-y-auto bg-gray-900 pt-24 pb-48 px-4">
                 <AddTransactionForm 
                     onAddTransaction={handleAddTransaction}
                     onClose={() => setIsModalOpen(false)}

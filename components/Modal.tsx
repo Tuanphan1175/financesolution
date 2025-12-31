@@ -6,9 +6,10 @@ interface ModalProps {
   onClose: () => void;
   title: string;
   children: React.ReactNode;
+  contentClassName?: string;
 }
 
-export const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children }) => {
+export const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children, contentClassName }) => {
   if (!isOpen) return null;
 
   return (
@@ -20,7 +21,7 @@ export const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children }
             <XIcon className="h-8 w-8" />
           </button>
         </div>
-        <div className="p-6">
+        <div className={`p-6 ${contentClassName || ''}`}>
           {children}
         </div>
       </div>
