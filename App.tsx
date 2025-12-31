@@ -199,9 +199,9 @@ const App: React.FC = () => {
       </div>
       <div className="flex-1 flex flex-col overflow-hidden">
         <header className="flex items-center justify-between p-6 bg-luxury-obsidian/80 backdrop-blur-md border-b border-slate-800 md:hidden sticky top-0 z-30">
-          <h1 className="text-2xl font-black text-luxury-gold tracking-tighter uppercase">TÀI CHÍNH THÔNG MINH</h1>
-          <button onClick={() => setSidebarOpen(!isSidebarOpen)} className="p-2 text-slate-400 hover:text-luxury-gold transition-all">
-            {isSidebarOpen ? <XIcon className="h-7 w-7" /> : <MenuIcon className="h-7 w-7" />}
+          <h1 className="text-3xl font-extrabold text-luxury-gold tracking-tight uppercase">TÀI CHÍNH THÔNG MINH</h1>
+          <button onClick={() => setSidebarOpen(!isSidebarOpen)} className="p-2 text-slate-300 hover:text-luxury-gold transition-all">
+            {isSidebarOpen ? <XIcon className="h-8 w-8" /> : <MenuIcon className="h-8 w-8" />}
           </button>
         </header>
         <main className="flex-1 overflow-x-hidden overflow-y-auto luxury-gradient scroll-smooth">
@@ -212,20 +212,20 @@ const App: React.FC = () => {
                     {currentView !== 'dashboard' && (
                         <button 
                             onClick={() => setCurrentView('dashboard')}
-                            className="flex items-center gap-2 group mr-4 bg-white/5 hover:bg-luxury-gold px-4 py-2 rounded-xl transition-all border border-white/10 hover:border-luxury-gold shadow-luxury"
+                            className="flex items-center gap-2 group mr-4 bg-white/5 hover:bg-luxury-gold px-5 py-2.5 rounded-xl transition-all border border-white/10 hover:border-luxury-gold shadow-luxury"
                         >
-                            <ArrowUpIcon className="h-4 w-4 -rotate-90 text-luxury-gold group-hover:text-black" />
-                            <span className="text-[10px] font-black text-white group-hover:text-black uppercase tracking-widest">QUAY LẠI</span>
+                            <ArrowUpIcon className="h-5 w-5 -rotate-90 text-luxury-gold group-hover:text-black" />
+                            <span className="text-xs font-black text-white group-hover:text-black uppercase tracking-widest">QUAY LẠI</span>
                         </button>
                     )}
-                    <div className="h-px w-8 bg-luxury-gold opacity-50"></div>
-                    <div className="text-[12px] font-black uppercase text-luxury-gold tracking-[0.4em] opacity-80">PREMIUM EXPERIENCE</div>
+                    <div className="h-px w-10 bg-luxury-gold opacity-60"></div>
+                    <div className="text-sm font-black uppercase text-luxury-gold tracking-[0.4em] opacity-90">PREMIUM EXPERIENCE</div>
                   </div>
-                  <h2 className="text-4xl md:text-6xl font-black text-white tracking-tighter leading-none italic">{viewTitles[currentView]}</h2>
+                  <h2 className="text-5xl md:text-7xl font-extrabold text-white tracking-tight leading-none italic">{viewTitles[currentView]}</h2>
                 </div>
-                <div className="flex items-center gap-4 bg-slate-900/50 backdrop-blur-md px-6 py-3 rounded-2xl border border-slate-800 shadow-luxury shrink-0">
-                   <div className="w-2.5 h-2.5 rounded-full bg-luxury-gold animate-pulse shadow-[0_0_10px_#C5A059]"></div>
-                   <span className="text-xs font-black uppercase text-slate-300 tracking-[0.2em] whitespace-nowrap">Lead Up Global • Coach Tuấn Dr</span>
+                <div className="flex items-center gap-4 bg-slate-900/50 backdrop-blur-md px-8 py-4 rounded-2xl border border-slate-800 shadow-luxury shrink-0">
+                   <div className="w-3 h-3 rounded-full bg-luxury-gold animate-pulse shadow-[0_0_12px_#C5A059]"></div>
+                   <span className="text-sm font-black uppercase text-slate-300 tracking-[0.2em] whitespace-nowrap">Lead Up Global • Coach Tuấn Dr</span>
                 </div>
             </div>
             <div className="animate-in fade-in slide-in-from-bottom-6 duration-1000">
