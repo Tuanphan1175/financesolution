@@ -211,7 +211,7 @@ const App: React.FC = () => {
             {isSidebarOpen ? <XIcon className="h-8 w-8" /> : <MenuIcon className="h-8 w-8" />}
           </button>
         </header>
-        <main className="flex-1 overflow-x-hidden overflow-y-auto luxury-gradient scroll-smooth">
+        <main className="flex-1 overflow-x-hidden overflow-y-auto luxury-gradient scroll-smooth pb-24">
           <div className="container mx-auto px-6 md:px-12 py-12 max-w-7xl">
             <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6">
                 <div className="flex-1">

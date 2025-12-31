@@ -17,7 +17,7 @@ export const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children }
         <div className="flex items-center justify-between p-4 border-b dark:border-gray-700">
           <h3 className="text-xl font-semibold text-gray-800 dark:text-white">{title}</h3>
           <button onClick={onClose} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
-            <XIcon className="h-6 w-6" />
+            <XIcon className="h-8 w-8" />
           </button>
         </div>
         <div className="p-6">

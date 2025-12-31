@@ -35,12 +35,12 @@ export const PricingModal: React.FC<PricingModalProps> = ({ isOpen, onClose }) =
 
   return (
     <Modal isOpen={isOpen} onClose={() => { onClose(); setShowPaymentInfo(false); }} title="Đầu tư cho Kỷ luật - Đầu tư cho Tương lai">
-      <div className="p-4">
+      <div className="p-4 max-h-[90vh] overflow-y-auto flex flex-col">
         {/* Toggle Thanh toán Tháng / Năm */}
-        <div className="flex justify-center mb-8">
+        <div className="flex justify-center mb-8 flex-shrink-0">
           <div className="relative flex p-1 bg-gray-100 dark:bg-gray-700 rounded-full">
             <button
-              onClick={() => setIsAnnual(false)}
+              onClick={() => { setIsAnnual(false); setShowPaymentInfo(false); }}
               className={`px-6 py-2 rounded-full text-sm font-semibold transition-all duration-300 ${
                 !isAnnual ? 'bg-primary-600 text-white shadow-md' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
               }`}
@@ -48,7 +48,7 @@ export const PricingModal: React.FC<PricingModalProps> = ({ isOpen, onClose }) =
               Thanh toán Tháng
             </button>
             <button
-              onClick={() => setIsAnnual(true)}
+              onClick={() => { setIsAnnual(true); setShowPaymentInfo(false); }}
               className={`px-6 py-2 rounded-full text-sm font-semibold transition-all duration-300 ${
                 isAnnual ? 'bg-primary-600 text-white shadow-md' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
               }`}
@@ -59,25 +59,27 @@ export const PricingModal: React.FC<PricingModalProps> = ({ isOpen, onClose }) =
         </div>
 
         {showPaymentInfo ? (
-          <div className="bg-gray-100 dark:bg-gray-700 p-8 rounded-xl text-center flex flex-col items-center justify-center">
-            <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">Thông tin thanh toán</h3>
-            <img src={qrCodeUrl} alt="QR Code Thanh Toán" className="w-64 h-64 md:w-80 md:h-80 object-contain mx-auto mb-6 border border-gray-300 dark:border-gray-600 rounded-lg p-2" />
-            <p className="text-gray-700 dark:text-gray-300 mb-2 text-lg">Ngân hàng: <span className="font-bold">Vietcombank</span></p>
-            <p className="text-gray-700 dark:text-gray-300 mb-2 text-lg">Số tài khoản: <span className="font-bold">{accountNumber}</span></p>
-            <p className="text-gray-700 dark:text-gray-300 mb-4 text-lg">Tên chủ thẻ: <span className="font-bold">{accountName}</span></p>
-            <p className="text-gray-700 dark:text-gray-300 mb-4 text-lg">Số tiền: <span className="font-bold">{amount.toLocaleString('vi-VN')} VNĐ</span></p>
-            <p className="text-gray-700 dark:text-gray-300 mb-6 text-lg">Nội dung: <span className="font-bold">SDT + VIP</span></p>
+          <div className="bg-gray-100 dark:bg-gray-700 p-8 rounded-xl text-center flex flex-col items-center justify-between flex-grow">
+            <div>
+              <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">Thông tin thanh toán</h3>
+              <img src={qrCodeUrl} alt="QR Code Thanh Toán" className="w-64 h-64 md:w-80 md:h-80 object-contain mx-auto mb-6 border border-gray-300 dark:border-gray-600 rounded-lg p-2" />
+              <p className="text-gray-700 dark:text-gray-300 mb-2 text-lg">Ngân hàng: <span className="font-bold">Vietcombank</span></p>
+              <p className="text-gray-700 dark:text-gray-300 mb-2 text-lg">Số tài khoản: <span className="font-bold">{accountNumber}</span></p>
+              <p className="text-gray-700 dark:text-gray-300 mb-4 text-lg">Chủ tài khoản: <span className="font-bold">{accountName}</span></p>
+              <p className="text-gray-700 dark:text-gray-300 mb-4 text-lg">Số tiền: <span className="font-bold">{amount.toLocaleString('vi-VN')} VNĐ</span></p>
+              <p className="text-gray-700 dark:text-gray-300 mb-6 text-lg">Nội dung: <span className="font-bold">{addInfo}</span></p>
+            </div>
             
             <button 
               onClick={() => setShowPaymentInfo(false)}
-              className="mt-6 px-8 py-3 bg-primary-600 text-white font-bold rounded-xl hover:bg-primary-700 transition-colors shadow-lg"
+              className="mt-6 px-8 py-3 bg-primary-600 text-white font-bold rounded-xl hover:bg-primary-700 transition-colors shadow-lg flex-shrink-0"
             >
               Quay lại
             </button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {/* Gói Nhận thức (Free) */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 flex-grow">
+            {/* Thẻ Free - Nhận thức */}
             <div className="flex flex-col p-8 rounded-3xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 shadow-md">
               <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Nhận thức</h3>
               <p className="text-gray-500 dark:text-gray-400 mb-6">Hiểu rõ tình hình tài chính của bạn.</p>
@@ -118,7 +120,7 @@ export const PricingModal: React.FC<PricingModalProps> = ({ isOpen, onClose }) =
               <p className="text-gray-600 dark:text-gray-300 mb-6">Đạt được tự do tài chính với sự kỷ luật.</p>
               
               <div className="text-4xl font-extrabold text-gray-900 dark:text-white mb-2">
-                {displayPrice} <span className="text-xl font-semibold">{priceUnit}</span>
+                {currentPrice.toLocaleString('vi-VN')} <span className="text-xl font-semibold">VNĐ</span>
               </div>
               <p className="text-gray-500 dark:text-gray-400 mb-6">
                 {isAnnual && `Tiết kiệm 20% so với thanh toán hàng tháng`}
@@ -144,7 +146,7 @@ export const PricingModal: React.FC<PricingModalProps> = ({ isOpen, onClose }) =
 
               <button 
                 onClick={handleSubscribeClick}
-                className="w-full py-3 bg-primary-600 dark:bg-luxury-gold text-white dark:text-black font-bold rounded-xl hover:bg-primary-700 dark:hover:bg-luxury-gold/90 transition-colors shadow-lg shadow-primary-900/20 dark:shadow-luxury-gold/30 flex items-center justify-center"
+                className="w-full py-3 bg-primary-600 dark:bg-luxury-gold text-white dark:text-black font-bold rounded-xl hover:bg-primary-700 dark:hover:bg-luxury-gold/90 transition-colors shadow-lg shadow-primary-900/20 dark:shadow-luxury-gold/30 flex items-center justify-center flex-shrink-0"
               >
                 Đăng ký ngay <ArrowRightIcon className="h-5 w-5 ml-2" />
               </button>
