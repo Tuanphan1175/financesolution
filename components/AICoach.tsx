@@ -95,7 +95,7 @@ export const AICoach: React.FC<AICoachProps> = ({ transactions, assets, liabilit
 
         try {
             // SỬA 2: Đã sửa lỗi chính tả trong Key (chữ í -> i)
-            const API_KEY_DIRECT = "AIzaSyD2QvJkU4PYY-G-muQlic4DbhMu349-hyl"; 
+            const API_KEY_DIRECT = "AIzaSyD2QvJkU4PYY-G-muQLic4DbhMu349-hyI"; 
             
             // SỬA 3: Khởi tạo bằng GoogleGenerativeAI (thư viện chuẩn)
             const genAI = new GoogleGenerativeAI(API_KEY_DIRECT);
