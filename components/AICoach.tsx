@@ -61,6 +61,10 @@ export const AICoach: React.FC<AICoachProps> = ({ transactions, assets, liabilit
     Phong cách: Ngắn gọn, súc tích, thực tế, ân cần.
     Dữ liệu người dùng: ${financialContext}
     Hãy trả lời ngắn (dưới 150 từ), tập trung vào hành động cụ thể.
+    Định dạng phản hồi:
+    - Bắt đầu mỗi ý bằng dấu gạch đầu dòng (-) hoặc số thứ tự.
+    - KHÔNG sử dụng ký tự in đậm (**) hoặc các ký tự markdown khác.
+    - Mỗi ý nên ở một dòng riêng biệt.
     `;
 
     const scrollToBottom = () => {
@@ -110,7 +114,18 @@ export const AICoach: React.FC<AICoachProps> = ({ transactions, assets, liabilit
             });
 
             const result = await chat.sendMessage(userText);
-            const response = result.response.text();
+            let response = result.response.text();
+
+            // Xử lý để loại bỏ ký tự markdown ** và đảm bảo xuống dòng
+            response = response.replace(/\*\*/g, '').trim(); // Loại bỏ **
+            // Đảm bảo mỗi ý bắt đầu bằng dấu gạch đầu dòng hoặc số thứ tự được xuống dòng
+            response = response.split('\n').map(line => {
+                if (line.startsWith('- ') || line.match(/^\d+\. /)) {
+                    return line;
+                }
+                return line.trim();
+            }).join('\n');
+
 
             setMessages(prev => [...prev, { id: Date.now().toString(), role: 'model', text: response }]);
         } catch (error: any) {
