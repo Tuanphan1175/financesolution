@@ -119,12 +119,25 @@ export const AICoach: React.FC<AICoachProps> = ({ transactions, assets, liabilit
             // Xử lý để loại bỏ ký tự markdown ** và đảm bảo xuống dòng
             response = response.replace(/\*\*/g, '').trim(); // Loại bỏ **
 
-            // Đảm bảo mỗi ý được đánh số thứ tự và xuống dòng
-            const lines = response.split('\n').filter(line => line.trim() !== '');
+            // Tách các dòng, loại bỏ dòng trống và dấu gạch ngang
+            const lines = response.split('\n')
+                                  .map(line => line.replace(/^- /, '').trim()) // Bỏ dấu gạch ngang đầu dòng
+                                  .filter(line => line !== '');
+
             let formattedResponse = '';
-            lines.forEach((line, index) => {
-                formattedResponse += `${index + 1}. ${line.trim()}\n`;
-            });
+            if (lines.length > 0) {
+                // Giữ nguyên câu chào đầu tiên nếu có, không đánh số
+                let startIndex = 0;
+                if (lines[0].toLowerCase().includes("chào bạn") || lines[0].toLowerCase().includes("xin chào")) {
+                    formattedResponse += lines[0] + '\n';
+                    startIndex = 1;
+                }
+
+                // Đánh số thứ tự cho các ý còn lại
+                for (let i = startIndex; i < lines.length; i++) {
+                    formattedResponse += `${i - startIndex + 1}. ${lines[i]}\n`;
+                }
+            }
             response = formattedResponse.trim(); // Loại bỏ dòng trống cuối cùng nếu có
 
 
