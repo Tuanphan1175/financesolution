@@ -63,6 +63,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, setCurrentView })
     { view: 'income-ladder', label: 'Cấp độ kiếm tiền', icon: <CurrencyDollarIcon /> },
     { view: 'reports', label: 'Báo cáo', icon: <DocumentReportIcon /> },
     { view: 'category-settings', label: 'Quản lý danh mục', icon: <PencilIcon /> },
+    { view: 'upgrade-plan', label: 'Nâng cấp Gói', icon: <SparklesIcon /> },
   ];
 
   return (

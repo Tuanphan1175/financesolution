@@ -17,6 +17,7 @@ import { ASSETS as INITIAL_ASSETS, LIABILITIES as INITIAL_LIABILITIES, GOLDEN_RU
 import { calculatePyramidStatus } from './lib/pyramidLogic';
 import { BudgetSettings } from './components/BudgetSettings';
 import { CategorySettings } from './components/CategorySettings';
+import { UpgradePlan } from './components/UpgradePlan';
 
 // Định nghĩa các danh mục mặc định ngay tại đây
 const DEFAULT_CATEGORIES: Category[] = [
@@ -43,7 +44,8 @@ const viewTitles: Record<View, string> = {
   '30-day-journey': 'Hành Trình Tỉnh Thức 30 Ngày',
   'ai-coach': 'AI Financial Coach',
   'playbook': 'Chiến Lược Tài Chính Premium',
-  'category-settings': 'Quản Lý Danh Mục'
+  'category-settings': 'Quản Lý Danh Mục',
+  'upgrade-plan': 'Nâng Cấp Gói'
 };
 
 const App: React.FC = () => {
@@ -184,6 +186,8 @@ const App: React.FC = () => {
         return <WealthPlaybookPanel />;
       case 'category-settings':
         return <CategorySettings categories={categories} setCategories={setCategories} />;
+      case 'upgrade-plan':
+        return <UpgradePlan />;
       default:
         return <Dashboard transactions={transactions} assets={assets} liabilities={liabilities} goldenRules={goldenRules} accountFilter={accountFilter} setAccountFilter={setAccountFilter} categories={categories} pyramidStatus={pyramidStatus} />;
     }
