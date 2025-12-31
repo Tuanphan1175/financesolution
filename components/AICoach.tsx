@@ -108,7 +108,7 @@ export const AICoach: React.FC<AICoachProps> = ({ transactions, assets, liabilit
 
         try {
             // --- QUAN TRỌNG: DÁN API KEY CỦA ANH VÀO DƯỚI ĐÂY ---
-            const API_KEY_DIRECT = "AIzaSyBTFgickNqixholP5NJ-0YBSE_G7t8YsNA"; 
+            const API_KEY_DIRECT = "AIzaSyBU_lRanTSgme-fwI3qKCdKzfoTzLgdqRg"; 
             
             if (!API_KEY_DIRECT || API_KEY_DIRECT.includes("DÁN_MÃ")) {
                 throw new Error("⚠️ Anh chưa dán API Key! Hãy sửa trong code components/AICoach.tsx");
