@@ -121,9 +121,6 @@ export const AICoach: React.FC<AICoachProps> = ({ transactions, assets, liabilit
             const result = await chat.sendMessage(userText);
             const response = result.response.text();
 
-            const result = await chat.sendMessage(userText);
-            const response = result.response.text();
-
             setMessages(prev => [...prev, { id: Date.now().toString(), role: 'model', text: response }]);
         } catch (error: any) {
             console.error("AI Error:", error);
