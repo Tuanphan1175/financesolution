@@ -131,13 +131,6 @@ export const AICoach: React.FC<AICoachProps> = ({ transactions, assets, liabilit
         })),
       });
 
-      const chat = model.startChat({
-        history: messages.map(m => ({
-          role: m.role,
-          parts: [{ text: m.text }],
-        })),
-      });
-
             // Send message and get response
             const result = await chat.sendMessage({ message: userText });
             const text = result.text; // Access text property directly as per @google/genai guidelines
