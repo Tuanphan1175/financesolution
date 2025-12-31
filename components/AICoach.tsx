@@ -114,14 +114,21 @@ export const AICoach: React.FC<AICoachProps> = ({ transactions, assets, liabilit
 
         try {
             // Fix: Initializing GoogleGenAI inside handleSendMessage to ensure use of latest environment API Key
-            const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-            
-            // Fix: Upgraded to 'gemini-3-pro-preview' as recommended for complex text/reasoning tasks
-            const chat = ai.chats.create({
-                model: "gemini-3-pro-preview",
-                config: {
-                    systemInstruction: SYSTEM_PROMPT,
-                },
+            // Sửa lỗi 1: Gọi đúng tên chìa khóa (VITE_GEMINI_API_KEY) và dùng đúng lệnh (import.meta.env)
+      const ai = new GoogleGenAI(import.meta.env.VITE_GEMINI_API_KEY);
+
+      // Sửa lỗi 2: Đổi sang model Flash chạy nhanh và ổn định hơn
+      const model = ai.getGenerativeModel({ 
+        model: "gemini-1.5-flash",
+        systemInstruction: SYSTEM_PROMPT, // Đảm bảo dòng này giữ nguyên logic cũ
+      });
+
+      const chat = model.startChat({
+        history: messages.map(m => ({
+          role: m.role,
+          parts: [{ text: m.text }],
+        })),
+      });
                 history: messages.map(m => ({
                     role: m.role,
                     parts: [{ text: m.text }],
