@@ -1,4 +1,3 @@
-
 import React, { useMemo, useEffect, useState } from 'react';
 import { CategoryPieChart, TrendLineChart } from './ChartComponents';
 import { Transaction, AccountType, GoldenRule, Category } from '../types';
@@ -260,6 +259,10 @@ export const Dashboard: React.FC<DashboardProps> = ({ transactions, assets, liab
 
             <div className="mt-6">
                 <WealthPlaybookPanel />
+            </div>
+
+            <div className="mt-6">
+                <BudgetSettings />
             </div>
 
             <div className="bg-slate-900/90 p-12 rounded-[3rem] shadow-premium border border-slate-800 relative overflow-hidden">
