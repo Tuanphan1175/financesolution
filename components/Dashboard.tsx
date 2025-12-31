@@ -1,99 +1,162 @@
 
-import React, { useMemo } from 'react';
-import { TRANSACTIONS, CATEGORIES, ASSETS, LIABILITIES, GOLDEN_RULES_SEED } from '../constants';
-import { ExpensePieChart, TrendLineChart } from './ChartComponents';
-import { Transaction, AccountType, GoldenRule } from '../types';
-import { ArrowUpIcon, ArrowDownIcon, CashIcon, CreditCardIcon, BanknotesIcon, ExclamationIcon, CheckCircleIcon } from './Icons';
+import React, { useMemo, useEffect, useState } from 'react';
+import { CategoryPieChart, TrendLineChart } from './ChartComponents';
+import { Transaction, AccountType, GoldenRule, Category } from '../types';
+import { ArrowUpIcon, ArrowDownIcon, CashIcon, ScaleIcon, RefreshIcon } from './Icons';
 import { IconMap } from './Icons';
+import { WealthPlaybookPanel } from './WealthPlaybookPanel';
+import { PyramidStatus } from '../lib/pyramidLogic';
 
-const getCategory = (id: string) => CATEGORIES.find(c => c.id === id);
-
-const StatCard: React.FC<{ title: string; amount: number; icon: React.ReactNode; color?: string }> = ({ title, amount, icon, color = 'primary' }) => (
-    <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md flex items-center justify-between">
-        <div>
-            <p className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase">{title}</p>
-            <p className="text-2xl font-bold text-gray-800 dark:text-white">{amount.toLocaleString('vi-VN')} ₫</p>
+const StatCard: React.FC<{ title: string; amount: string | number; icon: React.ReactNode; color?: string; subText?: string; isGold?: boolean }> = ({ title, amount, icon, color = 'primary', subText, isGold }) => (
+    <div className={`
+      relative p-10 rounded-[2.5rem] shadow-premium hover:shadow-glow transition-all duration-500 flex items-center justify-between border group overflow-hidden
+      ${isGold ? 'bg-gradient-to-br from-slate-900 to-black border-luxury-gold/30' : 'bg-slate-900/80 border-slate-800'}
+    `}>
+        <div className="absolute -right-6 -top-6 opacity-[0.05] group-hover:opacity-[0.1] transition-opacity rotate-12">
+          {React.cloneElement(icon as React.ReactElement, { className: "w-40 h-40" })}
         </div>
-        <div className={`bg-${color}-100 dark:bg-${color}-900/50 p-3 rounded-full`}>
-            {icon}
+        <div className="flex-1 min-w-0 relative z-10">
+            <p className={`text-[12px] font-black uppercase tracking-[0.3em] mb-4 truncate ${isGold ? 'text-luxury-gold' : 'text-slate-500'}`}>{title}</p>
+            <p className={`text-4xl md:text-5xl font-black truncate tracking-tighter leading-none ${isGold ? 'text-white' : 'text-white'}`}>
+                {typeof amount === 'number' ? `${amount.toLocaleString('vi-VN')} ₫` : amount}
+            </p>
+            {subText && <p className="text-[12px] font-bold text-slate-400 mt-5 flex items-center gap-3">
+              <span className={`w-2 h-2 rounded-full ${isGold ? 'bg-luxury-gold shadow-[0_0_10px_#C5A059]' : 'bg-primary-500'}`}></span>
+              {subText}
+            </p>}
+        </div>
+        <div className={`p-6 rounded-3xl shrink-0 ml-8 transform group-hover:scale-110 group-hover:rotate-6 transition-all duration-500 ${isGold ? 'bg-luxury-gold text-black shadow-luxury' : 'bg-slate-800 text-primary-400 border border-slate-700'}`}>
+            {React.cloneElement(icon as React.ReactElement, { className: `h-10 w-10` })}
         </div>
     </div>
 );
 
 const ScoreCard: React.FC<{ score: number }> = ({ score }) => {
-    let colorClass = 'text-green-500';
-    let bgColorClass = 'bg-green-100 dark:bg-green-900/50';
-    let label = 'Tuyệt vời';
+    let colorClass = 'text-emerald-400';
+    let label = 'TỐI ƯU';
+    let shadowColor = 'shadow-emerald-500/20';
 
     if (score < 50) {
-        colorClass = 'text-red-500';
-        bgColorClass = 'bg-red-100 dark:bg-red-900/50';
-        label = 'Cần cải thiện';
+        colorClass = 'text-rose-400';
+        label = 'CẢNH BÁO';
+        shadowColor = 'shadow-rose-500/20';
     } else if (score < 80) {
-        colorClass = 'text-yellow-500';
-        bgColorClass = 'bg-yellow-100 dark:bg-yellow-900/50';
-        label = 'Khá ổn';
+        colorClass = 'text-luxury-gold';
+        label = 'KHÁ ỔN';
+        shadowColor = 'shadow-luxury-gold/20';
     }
 
     return (
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md flex flex-col justify-between h-full">
-            <div className="flex justify-between items-center mb-2">
-                <p className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase">Điểm Tài Chính</p>
-                <span className={`text-xs font-bold px-2 py-1 rounded-full ${bgColorClass} ${colorClass}`}>{label}</span>
+        <div className="bg-slate-900/90 p-10 rounded-[2.5rem] shadow-premium flex flex-col justify-between h-full border border-slate-800 relative overflow-hidden group">
+            <div className="flex justify-between items-center mb-8">
+                <p className="text-[12px] font-black text-slate-500 uppercase tracking-[0.3em]">Health Score</p>
+                <span className={`text-[10px] font-black tracking-widest px-4 py-1.5 rounded-full border bg-black/40 ${colorClass} border-current`}>{label}</span>
             </div>
-            <div className="flex items-center mt-2">
-                <div className={`text-5xl font-bold ${colorClass}`}>{score}</div>
-                <span className="text-gray-400 text-xl ml-1">/100</span>
+            <div className="flex items-baseline mt-4">
+                <div className={`text-7xl font-black ${colorClass} tracking-tighter drop-shadow-lg`}>{score}</div>
+                <span className="text-slate-700 text-3xl ml-3 font-black">/100</span>
             </div>
-             <div className="mt-4">
-                <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5">
-                    <div className={`h-2.5 rounded-full ${score < 50 ? 'bg-red-500' : score < 80 ? 'bg-yellow-500' : 'bg-green-500'}`} style={{ width: `${score}%` }}></div>
+             <div className="mt-10">
+                <div className="w-full bg-black/40 rounded-full h-4 p-1 border border-slate-800 shadow-inner">
+                    <div className={`h-full rounded-full transition-all duration-1500 ${score < 50 ? 'bg-rose-500' : score < 80 ? 'bg-luxury-gold' : 'bg-emerald-500'} ${shadowColor} shadow-glow`} style={{ width: `${score}%` }}></div>
                 </div>
             </div>
         </div>
     );
 };
 
-const NudgeCard: React.FC<{ message: string; type?: 'warning' | 'info' }> = ({ message, type = 'warning' }) => (
-    <div className={`p-4 rounded-lg flex items-start space-x-3 ${type === 'warning' ? 'bg-orange-50 dark:bg-orange-900/30 text-orange-800 dark:text-orange-200' : 'bg-blue-50 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200'}`}>
-        <ExclamationIcon className="h-5 w-5 mt-0.5 shrink-0" />
-        <p className="text-sm font-medium">{message}</p>
-    </div>
-);
+const BudgetRuleCard: React.FC<{ need: number, want: number, save: number, income: number }> = ({ need, want, save, income }) => {
+    const safeIncome = income || 1;
+    const needPct = Math.round((need / safeIncome) * 100);
+    const wantPct = Math.round((want / safeIncome) * 100);
+    const savePct = Math.round((save / safeIncome) * 100);
 
-const TransactionRow: React.FC<{ transaction: Transaction }> = ({ transaction }) => {
-    const category = getCategory(transaction.categoryId);
+    return (
+        <div className="bg-slate-900/90 p-10 rounded-[2.5rem] shadow-premium h-full border border-slate-800">
+            <h3 className="text-[14px] font-black uppercase tracking-[0.3em] mb-12 text-white flex items-center">
+                <ScaleIcon className="w-6 h-6 mr-4 text-luxury-gold" />
+                Quy tắc 50/30/20
+                <span className="ml-auto text-[10px] font-black text-luxury-gold bg-luxury-gold/10 px-4 py-1.5 rounded-full tracking-[0.2em] border border-luxury-gold/20">LIVE</span>
+            </h3>
+            <div className="space-y-10">
+                {/* Needs */}
+                <div className="group">
+                    <div className="flex justify-between items-end mb-4">
+                        <span className="text-slate-400 text-[11px] font-black uppercase tracking-[0.2em]">Cần thiết (Need)</span>
+                        <div className="text-right">
+                            <span className="font-black text-2xl text-white tracking-tighter">{needPct}%</span>
+                            <span className="text-[12px] text-slate-500 font-bold ml-2">/ 50%</span>
+                        </div>
+                    </div>
+                    <div className="w-full bg-black/40 rounded-full h-2.5 border border-slate-800 shadow-inner overflow-hidden">
+                        <div className={`h-full transition-all duration-1000 ${needPct > 55 ? 'bg-rose-500 shadow-glow' : 'bg-primary-500 shadow-glow'}`} style={{ width: `${Math.min(needPct, 100)}%` }}></div>
+                    </div>
+                </div>
+
+                {/* Wants */}
+                <div className="group">
+                    <div className="flex justify-between items-end mb-4">
+                        <span className="text-slate-400 text-[11px] font-black uppercase tracking-[0.2em]">Mong muốn (Want)</span>
+                        <div className="text-right">
+                            <span className="font-black text-2xl text-white tracking-tighter">{wantPct}%</span>
+                            <span className="text-[12px] text-slate-500 font-bold ml-2">/ 30%</span>
+                        </div>
+                    </div>
+                    <div className="w-full bg-black/40 rounded-full h-2.5 border border-slate-800 shadow-inner overflow-hidden">
+                        <div className={`h-full transition-all duration-1000 ${wantPct > 35 ? 'bg-rose-500' : 'bg-amber-500 shadow-glow'}`} style={{ width: `${Math.min(wantPct, 100)}%` }}></div>
+                    </div>
+                </div>
+
+                {/* Savings */}
+                <div className="group">
+                    <div className="flex justify-between items-end mb-4">
+                        <span className="text-slate-400 text-[11px] font-black uppercase tracking-[0.2em]">Tiết kiệm (Save)</span>
+                        <div className="text-right">
+                            <span className="font-black text-2xl text-emerald-400 tracking-tighter">{savePct}%</span>
+                            <span className="text-[12px] text-slate-500 font-bold ml-2">/ 20%</span>
+                        </div>
+                    </div>
+                    <div className="w-full bg-black/40 rounded-full h-2.5 border border-slate-800 shadow-inner overflow-hidden">
+                        <div className={`h-full transition-all duration-1000 ${savePct < 15 ? 'bg-rose-500' : 'bg-emerald-500 shadow-glow'}`} style={{ width: `${Math.min(Math.max(savePct, 0), 100)}%` }}></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+const TransactionRow: React.FC<{ transaction: Transaction; categories: Category[] }> = ({ transaction, categories }) => {
+    const category = categories.find(c => c.id === transaction.categoryId);
     const isIncome = transaction.type === 'income';
     const IconComponent = (category && IconMap[category.icon]) ? IconMap[category.icon] : CashIcon;
 
     return (
-        <div className="flex items-center justify-between py-3">
+        <div className="flex items-center justify-between py-8 px-4 group rounded-3xl transition-all hover:bg-slate-800/40 border border-transparent hover:border-slate-800">
             <div className="flex items-center">
-                <div className="p-2 rounded-full" style={{ backgroundColor: `${category?.color || '#9ca3af'}20` }}>
-                    <IconComponent className="h-6 w-6" style={{ color: category?.color || '#9ca3af' }} />
+                <div className="p-5 rounded-[1.5rem] transition-all group-hover:scale-110 shadow-lg border border-white/5" style={{ backgroundColor: `${category?.color || '#9ca3af'}25` }}>
+                    <IconComponent className="h-7 w-7" style={{ color: category?.color || '#9ca3af' }} />
                 </div>
-                <div className="ml-4">
-                    <p className="font-medium text-gray-800 dark:text-white">{transaction.description}</p>
-                    <div className="flex items-center space-x-2 text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                        <span>{category?.name || 'Chưa phân loại'}</span>
+                <div className="ml-6">
+                    <p className="text-[16px] font-black text-white tracking-tight leading-none mb-2">{transaction.description}</p>
+                    <div className="flex items-center space-x-4">
+                        <span className="text-[11px] font-black text-slate-500 uppercase tracking-[0.2em]">
+                            {category?.name || 'Khác'}
+                        </span>
                         {transaction.type === 'expense' && (
-                            <>
-                                <span>•</span>
-                                <span className={`px-1.5 py-0.5 rounded text-[10px] font-semibold uppercase ${
-                                    transaction.classification === 'want' 
-                                    ? 'bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-300' 
-                                    : 'bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-300'
-                                }`}>
-                                    {transaction.classification === 'want' ? 'Mong muốn' : 'Cần thiết'}
-                                </span>
-                            </>
+                            <span className={`text-[9px] font-black uppercase px-3 py-0.5 rounded-lg border ${
+                                transaction.classification === 'want' 
+                                ? 'text-rose-400 border-rose-500/30 bg-rose-500/10' 
+                                : 'text-emerald-400 border-emerald-500/30 bg-emerald-500/10'
+                            }`}>
+                                {transaction.classification === 'want' ? 'MONG MUỐN' : 'CẦN THIẾT'}
+                            </span>
                         )}
                     </div>
                 </div>
             </div>
-            <div className={`text-right ${isIncome ? 'text-green-500' : 'text-red-500'}`}>
-                <p className="font-semibold">{isIncome ? '+' : '-'}{transaction.amount.toLocaleString('vi-VN')} ₫</p>
-                <p className="text-xs text-gray-500 dark:text-gray-400">{new Date(transaction.date).toLocaleDateString()}</p>
+            <div className={`text-right ${isIncome ? 'text-emerald-400' : 'text-rose-400'}`}>
+                <p className="text-xl font-black font-mono tracking-tighter leading-none mb-1">{isIncome ? '+' : '-'}{transaction.amount.toLocaleString('vi-VN')} ₫</p>
+                <p className="text-[11px] text-slate-500 font-black uppercase tracking-[0.2em]">{new Date(transaction.date).toLocaleDateString('vi-VN', { month: 'short', day: 'numeric' })}</p>
             </div>
         </div>
     );
@@ -106,117 +169,115 @@ interface DashboardProps {
     goldenRules: GoldenRule[];
     accountFilter: 'all' | AccountType;
     setAccountFilter: (val: 'all' | AccountType) => void;
+    categories: Category[];
+    pyramidStatus: PyramidStatus;
 }
 
-export const Dashboard: React.FC<DashboardProps> = ({ transactions, assets, liabilities, goldenRules, accountFilter, setAccountFilter }) => {
-    // Filter transactions based on selected account type
+export const Dashboard: React.FC<DashboardProps> = ({ transactions, assets, liabilities, goldenRules, accountFilter, setAccountFilter, categories, pyramidStatus }) => {
+    const [lastUpdated, setLastUpdated] = useState<string>(new Date().toLocaleTimeString('vi-VN'));
+
+    useEffect(() => {
+        setLastUpdated(new Date().toLocaleTimeString('vi-VN'));
+    }, [transactions, assets, liabilities, accountFilter]);
+
     const filteredTransactions = useMemo(() => {
         return accountFilter === 'all' 
             ? transactions 
             : transactions.filter(t => t.accountType === accountFilter);
     }, [transactions, accountFilter]);
 
-    const totalIncome = filteredTransactions.filter(t => t.type === 'income').reduce((sum, t) => sum + t.amount, 0);
-    const totalExpense = filteredTransactions.filter(t => t.type === 'expense').reduce((sum, t) => sum + t.amount, 0);
+    const totalIncome = useMemo(() => filteredTransactions.filter(t => t.type === 'income').reduce((sum, t) => sum + t.amount, 0), [filteredTransactions]);
+    const totalExpense = useMemo(() => filteredTransactions.filter(t => t.type === 'expense').reduce((sum, t) => sum + t.amount, 0), [filteredTransactions]);
     const balance = totalIncome - totalExpense;
-    const recentTransactions = [...filteredTransactions].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).slice(0, 5);
+    
+    const recentTransactions = useMemo(() => [...filteredTransactions].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).slice(0, 5), [filteredTransactions]);
 
-    // Calc Score
-    const calculateScore = () => {
-        let score = 0;
-        // 1. Cashflow (20pts)
-        if (totalIncome > totalExpense) score += 20;
-        // 2. Savings Rate (20pts)
-        const savingsRate = totalIncome > 0 ? (totalIncome - totalExpense) / totalIncome : 0;
-        score += Math.min(savingsRate * 100, 20); 
-        // 3. Emergency Fund (20pts)
-        const monthlyExpenseAvg = totalExpense; // Simplified for demo
-        const cashAssets = assets.filter(a => a.type === 'cash' || a.type === 'investment').reduce((sum, a) => sum + a.value, 0);
-        const monthsCovered = monthlyExpenseAvg > 0 ? cashAssets / monthlyExpenseAvg : 0;
-        score += Math.min(monthsCovered * 5, 20); // 4 months = 20 pts
-        // 4. Debt (20pts)
-        const totalDebt = liabilities.reduce((sum, l) => sum + l.amount, 0);
-        const debtRatio = totalIncome > 0 ? totalDebt / (totalIncome * 12) : 1;
-        score += Math.max(0, 20 - (debtRatio * 20));
-        // 5. Discipline (20pts)
-        const compliantRules = goldenRules.filter(r => r.isCompliant).length;
-        score += (compliantRules / goldenRules.length) * 20;
-
-        return Math.round(score);
-    };
-
-    const financialScore = calculateScore();
-
-    // Nudges
-    const nudges = [];
-    const wantExpense = filteredTransactions.filter(t => t.type === 'expense' && t.classification === 'want').reduce((sum, t) => sum + t.amount, 0);
-    const wantRatio = totalExpense > 0 ? wantExpense / totalExpense : 0;
-
-    if (wantRatio > 0.3) nudges.push({ msg: `Chi tiêu cho mong muốn chiếm ${(wantRatio*100).toFixed(0)}% (Khuyến nghị < 30%)`, type: 'warning' });
-    if (totalExpense > totalIncome) nudges.push({ msg: "Cảnh báo: Chi tiêu đang vượt quá thu nhập tháng này!", type: 'warning' });
-    if (accountFilter === 'business' && filteredTransactions.some(t => t.accountType === 'personal')) nudges.push({msg: "Phát hiện giao dịch cá nhân trong tài khoản kinh doanh.", type: 'warning'});
+    const needExpense = useMemo(() => filteredTransactions.filter(t => t.type === 'expense' && t.classification === 'need').reduce((sum, t) => sum + t.amount, 0), [filteredTransactions]);
+    const wantExpense = useMemo(() => filteredTransactions.filter(t => t.type === 'expense' && t.classification === 'want').reduce((sum, t) => sum + t.amount, 0), [filteredTransactions]);
+    const savings = Math.max(0, totalIncome - totalExpense);
 
     return (
-        <div className="space-y-6">
-            <div className="flex justify-between items-center bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm">
-                <span className="font-medium text-gray-700 dark:text-gray-300">Chế độ xem:</span>
-                <div className="flex bg-gray-100 dark:bg-gray-700 rounded-lg p-1">
-                    <button 
-                        onClick={() => setAccountFilter('all')}
-                        className={`px-4 py-1.5 text-sm rounded-md transition-colors ${accountFilter === 'all' ? 'bg-white dark:bg-gray-600 shadow-sm font-semibold' : 'text-gray-500 dark:text-gray-400'}`}
-                    >
-                        Tất cả
-                    </button>
-                    <button 
-                        onClick={() => setAccountFilter('personal')}
-                        className={`px-4 py-1.5 text-sm rounded-md transition-colors ${accountFilter === 'personal' ? 'bg-white dark:bg-gray-600 shadow-sm font-semibold' : 'text-gray-500 dark:text-gray-400'}`}
-                    >
-                        Cá nhân
-                    </button>
-                    <button 
-                        onClick={() => setAccountFilter('business')}
-                        className={`px-4 py-1.5 text-sm rounded-md transition-colors ${accountFilter === 'business' ? 'bg-white dark:bg-gray-600 shadow-sm font-semibold' : 'text-gray-500 dark:text-gray-400'}`}
-                    >
-                        Kinh doanh
-                    </button>
+        <div className="space-y-12 animate-in fade-in duration-1000">
+            <div className="flex flex-col md:flex-row justify-between items-center bg-slate-900/50 backdrop-blur-md p-5 rounded-[2.5rem] shadow-premium border border-slate-800 gap-6">
+                <div className="flex items-center gap-4 ml-4">
+                    <div className="w-3 h-3 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_10px_#10b981]"></div>
+                    <div>
+                        <span className="text-[11px] font-black uppercase text-luxury-gold tracking-[0.4em]">Dữ liệu thời gian thực</span>
+                        <p className="text-[9px] font-bold text-slate-500 uppercase tracking-widest mt-1">Cập nhật lúc: {lastUpdated}</p>
+                    </div>
+                </div>
+                <div className="flex bg-black/40 p-2 rounded-[1.5rem] w-full md:w-auto border border-slate-800 shadow-inner">
+                    {(['all', 'personal', 'business'] as const).map((type) => (
+                        <button 
+                            key={type}
+                            onClick={() => setAccountFilter(type)}
+                            className={`flex-1 md:flex-none px-10 py-3 text-[10px] font-black uppercase tracking-[0.3em] rounded-2xl transition-all duration-500 ${accountFilter === type ? 'bg-luxury-gold text-black shadow-glow' : 'text-slate-500 hover:text-white'}`}
+                        >
+                            {type === 'all' ? 'TẤT CẢ' : type === 'personal' ? 'CÁ NHÂN' : 'KINH DOANH'}
+                        </button>
+                    ))}
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                <StatCard title="Tổng thu nhập" amount={totalIncome} icon={<ArrowUpIcon className="h-6 w-6 text-green-500" />} color="green" />
-                <StatCard title="Tổng chi tiêu" amount={totalExpense} icon={<ArrowDownIcon className="h-6 w-6 text-red-500" />} color="red" />
-                <StatCard title="Số dư" amount={balance} icon={<CashIcon className="h-6 w-6 text-primary-500" />} color="primary" />
-                <ScoreCard score={financialScore} />
+            <div className="grid grid-cols-1 lg:grid-cols-5 gap-10">
+                <div className="lg:col-span-2">
+                  <StatCard title="Thặng dư thực tế" amount={balance} icon={<CashIcon />} isGold={true} subText="Nguồn vốn thặng dư có thể đầu tư" />
+                </div>
+                <div className="lg:col-span-3 grid grid-cols-1 md:grid-cols-2 gap-10">
+                   <StatCard title="Tổng Thu nhập" amount={totalIncome} icon={<ArrowUpIcon />} subText="Cashflow Inflow" />
+                   <StatCard title="Tổng Chi tiêu" amount={totalExpense} icon={<ArrowDownIcon />} subText="Cashflow Outflow" />
+                </div>
             </div>
 
-            {nudges.length > 0 && (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {nudges.map((n, idx) => <NudgeCard key={idx} message={n.msg} type={n.type as any} />)}
-                </div>
-            )}
-
-            <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-                <div className="lg:col-span-3 bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md">
-                    <h3 className="text-lg font-semibold mb-4 text-gray-800 dark:text-white">Xu hướng Thu nhập và Chi tiêu</h3>
-                    <div className="h-72">
+            <div className="grid grid-cols-1 lg:grid-cols-5 gap-10 items-start">
+               <div className="lg:col-span-2 space-y-10">
+                  <ScoreCard score={pyramidStatus.metrics.complianceScore} />
+                  <BudgetRuleCard need={needExpense} want={wantExpense} save={savings} income={totalIncome} />
+               </div>
+               
+               <div className="lg:col-span-3">
+                  <div className="bg-slate-900/90 p-12 rounded-[3rem] shadow-premium border border-slate-800 h-full relative overflow-hidden">
+                    <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-emerald-500 via-luxury-gold to-rose-500 opacity-30"></div>
+                    <div className="flex items-center justify-between mb-12">
+                      <h3 className="text-[14px] font-black uppercase tracking-[0.4em] text-white">Dòng tiền Monthly</h3>
+                      <div className="flex items-center gap-8 bg-black/30 px-6 py-3 rounded-2xl border border-slate-800">
+                        <div className="flex items-center gap-3">
+                           <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-[0_0_8px_#10b981]"></div>
+                           <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Thu nhập</span>
+                        </div>
+                        <div className="flex items-center gap-3">
+                           <div className="w-2.5 h-2.5 rounded-full bg-rose-500 shadow-[0_0_8px_#ef4444]"></div>
+                           <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Chi tiêu</span>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="h-[400px]">
                          <TrendLineChart data={filteredTransactions} />
                     </div>
-                </div>
-                <div className="lg:col-span-2 bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md">
-                    <h3 className="text-lg font-semibold mb-4 text-gray-800 dark:text-white">Chi tiêu theo Danh mục</h3>
-                     <div className="h-72">
-                        <ExpensePieChart data={filteredTransactions} categories={CATEGORIES} />
-                    </div>
-                </div>
+                  </div>
+               </div>
             </div>
 
-            <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md">
-                <h3 className="text-lg font-semibold mb-4 text-gray-800 dark:text-white">Giao dịch gần đây</h3>
-                <div className="divide-y divide-gray-200 dark:divide-gray-700">
+            <div className="mt-6">
+                <WealthPlaybookPanel />
+            </div>
+
+            <div className="bg-slate-900/90 p-12 rounded-[3rem] shadow-premium border border-slate-800 relative overflow-hidden">
+                <div className="flex justify-between items-center mb-12">
+                    <div>
+                      <h3 className="text-[16px] font-black uppercase tracking-[0.4em] text-white">Nhật ký tài chính</h3>
+                      <p className="text-slate-500 text-xs mt-2 font-bold tracking-widest">GẦN ĐÂY NHẤT</p>
+                    </div>
+                    <button className="text-[11px] font-black uppercase tracking-[0.3em] text-luxury-gold border border-luxury-gold/30 hover:bg-luxury-gold hover:text-black transition-all bg-black/40 px-8 py-3 rounded-2xl shadow-luxury">Toàn bộ giao dịch</button>
+                </div>
+                <div className="divide-y divide-slate-800/50">
                     {recentTransactions.length > 0 ? (
-                        recentTransactions.map(t => <TransactionRow key={t.id} transaction={t} />)
+                        recentTransactions.map(t => <TransactionRow key={t.id} transaction={t} categories={categories} />)
                     ) : (
-                         <p className="text-center text-gray-500 dark:text-gray-400 py-4">Không có giao dịch nào gần đây.</p>
+                         <div className="text-center py-24 bg-black/20 rounded-[2.5rem] border-2 border-dashed border-slate-800">
+                            <CashIcon className="w-16 h-16 text-slate-700 mx-auto mb-6 opacity-30" />
+                            <p className="text-xl text-slate-500 font-black italic uppercase tracking-[0.2em]">Sẵn sàng cho giao dịch đầu tiên?</p>
+                         </div>
                     )}
                 </div>
             </div>

@@ -1,18 +1,26 @@
+
 <!DOCTYPE html>
 <html lang="vi">
   <head>
-    <meta charset="UTF--8" />
+    <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Tài Chính Thông Minh</title>
+    <title>Tài Chính Thông Minh | Premium Finance</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
       tailwind.config = {
+        darkMode: 'class',
         theme: {
           extend: {
+            fontFamily: {
+              sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+            },
             colors: {
               primary: {
-                DEFAULT: '#14b8a6', // teal-500
+                DEFAULT: '#0f766e', 
                 '50': '#f0fdfa',
                 '100': '#ccfbf1',
                 '200': '#99f6e4',
@@ -20,16 +28,65 @@
                 '400': '#2dd4bf',
                 '500': '#14b8a6',
                 '600': '#0d9488',
-                '700': '#0f766e',
+                '700': '#0f766e', // Teal đậm hơn
                 '800': '#115e59',
                 '900': '#134e4a',
-                '950': '#042f2e',
+                '950': '#020617', // Đen Obsidian
               },
+              luxury: {
+                gold: '#C5A059', // Gold Champagne sang trọng
+                emerald: '#064e3b',
+                obsidian: '#020617',
+                slate: '#0f172a',
+                accent: '#fbbf24'
+              }
+            },
+            boxShadow: {
+              'premium': '0 20px 50px -12px rgba(0, 0, 0, 0.5)',
+              'luxury': '0 10px 40px -10px rgba(197, 160, 89, 0.2)',
+              'glow': '0 0 15px rgba(20, 184, 166, 0.3)',
             }
           }
         }
       }
     </script>
+    <style>
+      body {
+        font-feature-settings: "cv11", "ss01";
+        -webkit-font-smoothing: antialiased;
+        background-color: #020617; /* Mặc định nền tối Obsidian */
+      }
+      /* Cải thiện độ đậm của font chữ */
+      h1, h2, h3, h4, .font-black {
+        letter-spacing: -0.02em;
+        font-weight: 800;
+      }
+      * {
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+      /* Thanh cuộn Luxury */
+      ::-webkit-scrollbar {
+        width: 6px;
+      }
+      ::-webkit-scrollbar-track {
+        background: #020617;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #1e293b;
+        border-radius: 10px;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: #C5A059;
+      }
+      .luxury-gradient {
+        background: linear-gradient(135deg, #0f172a 0%, #020617 100%);
+      }
+      .gold-text {
+        background: linear-gradient(to right, #C5A059, #F3E5AB);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+    </style>
   <script type="importmap">
 {
   "imports": {
@@ -42,7 +99,7 @@
 }
 </script>
 </head>
-  <body class="bg-gray-100 dark:bg-gray-900">
+  <body class="dark bg-luxury-obsidian text-slate-100">
     <div id="root"></div>
     <script type="module" src="/index.tsx"></script>
   </body>

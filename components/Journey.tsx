@@ -1,272 +1,222 @@
 
-import React, { useMemo } from 'react';
-import { Transaction, Asset, Liability } from '../types';
-import { ShieldCheckIcon, TrendingUpIcon, ExclamationIcon, CheckCircleIcon, ChartPieIcon } from './Icons';
+import React, { useState, useEffect, useMemo } from 'react';
+import { ShieldCheckIcon, TrendingUpIcon, ExclamationIcon, CheckCircleIcon, SparklesIcon } from './Icons';
+import { PYRAMID_LEVELS, PyramidStatus } from '../lib/pyramidLogic';
 
-interface JourneyProps {
-    assets: number;
-    liabilities: number;
-    emergencyFund: number;
-    monthlyExpenses: number; // This prop is passed but we might recalculate more precisely inside
-    transactions?: Transaction[]; // Added to access history for 3-month avg
+interface Props {
+    pyramidStatus: PyramidStatus;
 }
 
-interface LevelConfig {
-    id: number;
-    name: string;
-    description: string;
-    color: string;
-    bg: string;
-    textColor: string;
-    criteria: string;
-}
+export const Journey: React.FC<Props> = ({ pyramidStatus }) => {
+    const [selectedLevelId, setSelectedLevelId] = useState<number | null>(null);
+    const { currentLevel, metrics, reasons, nextLevelConditions, actions7d } = pyramidStatus;
 
-const LEVELS: LevelConfig[] = [
-    { id: 7, name: 'Thịnh Vượng', description: 'Sống để cống hiến & tạo giá trị', color: 'bg-teal-500', bg: 'bg-teal-50', textColor: 'text-teal-700', criteria: 'Thụ động >> Chi tiêu' },
-    { id: 6, name: 'Tự Do Tài Chính', description: 'Không phụ thuộc thu nhập chủ động', color: 'bg-emerald-500', bg: 'bg-emerald-50', textColor: 'text-emerald-700', criteria: 'Thụ động ≥ Chi tiêu' },
-    { id: 5, name: 'Đầu Tư', description: 'Tiền bắt đầu sinh ra tiền', color: 'bg-blue-500', bg: 'bg-blue-50', textColor: 'text-blue-700', criteria: 'Có dòng tiền thụ động' },
-    { id: 4, name: 'Tích Lũy', description: 'An tâm trước biến cố lớn', color: 'bg-indigo-500', bg: 'bg-indigo-50', textColor: 'text-indigo-700', criteria: 'Quỹ dự phòng ≥ 6 tháng' },
-    { id: 3, name: 'Dư Dả', description: 'Bắt đầu có tiền để dành', color: 'bg-cyan-500', bg: 'bg-cyan-50', textColor: 'text-cyan-700', criteria: 'Dư dả ≥ 1 tháng' },
-    { id: 2, name: 'Ổn Định', description: 'Đủ sống, nhưng chưa an toàn', color: 'bg-yellow-500', bg: 'bg-yellow-50', textColor: 'text-yellow-700', criteria: 'Thu ≥ Chi' },
-    { id: 1, name: 'Sống Sót', description: 'Nguy cơ khủng hoảng cao', color: 'bg-red-500', bg: 'bg-red-50', textColor: 'text-red-700', criteria: 'Thu < Chi' },
-];
+    const [checkedConditions, setCheckedConditions] = useState<Record<string, boolean>>(() => {
+        const saved = localStorage.getItem('smartfinance_journey_checks');
+        return saved ? JSON.parse(saved) : {};
+    });
 
-export const Journey: React.FC<JourneyProps> = ({ assets, emergencyFund, transactions = [] }) => {
-    // 1. Calculate Metrics (Avg 3 Months)
-    const metrics = useMemo(() => {
-        const now = new Date();
-        const threeMonthsAgo = new Date();
-        threeMonthsAgo.setMonth(now.getMonth() - 3);
+    useEffect(() => {
+        localStorage.setItem('smartfinance_journey_checks', JSON.stringify(checkedConditions));
+    }, [checkedConditions]);
 
-        const recentTrans = transactions.filter(t => new Date(t.date) >= threeMonthsAgo);
-        
-        const totalIncome = recentTrans.filter(t => t.type === 'income').reduce((sum, t) => sum + t.amount, 0);
-        const totalExpense = recentTrans.filter(t => t.type === 'expense').reduce((sum, t) => sum + t.amount, 0);
-        
-        // Count distinct months to average correctly (simplified)
-        const monthsCount = 3; 
+    const displayLevel = selectedLevelId ? (PYRAMID_LEVELS.find(l => l.id === selectedLevelId) || currentLevel) : currentLevel;
 
-        const avgMonthlyIncome = totalIncome / monthsCount;
-        const avgMonthlyExpense = totalExpense / monthsCount;
-        
-        // Passive Income: Assume 'business' income or specific category 'cat-9' (Business) or investment assets yield
-        // For demo: Let's assume income from AccountType 'business' is "Passive-ish" or separate it. 
-        // Better: Filter income transactions where category implies investment/business.
-        const passiveIncomeTrans = recentTrans.filter(t => t.type === 'income' && (t.accountType === 'business')); 
-        const avgPassiveIncome = passiveIncomeTrans.reduce((sum, t) => sum + t.amount, 0) / monthsCount;
-
-        const emergencyMonths = avgMonthlyExpense > 0 ? emergencyFund / avgMonthlyExpense : 0;
-
-        return {
-            avgIncome: avgMonthlyIncome,
-            avgExpense: avgMonthlyExpense,
-            emergencyFundMonths: emergencyMonths,
-            passiveIncome: avgPassiveIncome
-        };
-    }, [transactions, emergencyFund]);
-
-    // 2. Determine Level based on Logic
-    const currentLevelId = useMemo(() => {
-        const { avgIncome, avgExpense, emergencyFundMonths, passiveIncome } = metrics;
-        
-        if (avgIncome <= avgExpense) return 1;
-        if (avgIncome > avgExpense && emergencyFundMonths < 1) return 2;
-        if (avgIncome > avgExpense && emergencyFundMonths >= 1 && emergencyFundMonths < 6) return 3;
-        if (emergencyFundMonths >= 6 && passiveIncome === 0) return 4;
-        if (passiveIncome > 0 && passiveIncome < avgExpense) return 5;
-        if (passiveIncome >= avgExpense) return 6;
-        return 7; // Fallback or logic for > 2x expense
-    }, [metrics]);
-
-    const currentLevel = LEVELS.find(l => l.id === currentLevelId) || LEVELS[6];
-
-    // 3. Level-Specific Content
-    const getNextLevelConditions = (level: number) => {
-        switch(level) {
-            case 1: return ["Cắt giảm chi tiêu để Thu > Chi", "Thanh lý đồ đạc không dùng"];
-            case 2: return ["Xây dựng quỹ dự phòng tối thiểu 1 tháng", "Không vay mượn tiêu dùng"];
-            case 3: return ["Nâng quỹ dự phòng lên 6 tháng", "Bắt đầu tìm hiểu đầu tư an toàn"];
-            case 4: return ["Tạo dòng tiền thụ động đầu tiên (lãi gửi, cổ tức)", "Đa dạng hóa tài sản"];
-            case 5: return ["Gia tăng thu nhập thụ động ≥ Chi phí sinh hoạt", "Tối ưu thuế"];
-            default: return ["Duy trì và phát triển di sản"];
-        }
+    const toggleCondition = (condition: string) => {
+        setCheckedConditions(prev => ({
+            ...prev,
+            [condition]: !prev[condition]
+        }));
     };
 
-    const getActions = (level: number) => {
-        switch(level) {
-            case 1: return [
-                "Ghi lại 100% chi tiêu, kể cả ly trà đá, trong 7 ngày tới.",
-                "Cắt giảm ngay 500k từ các khoản chi không thiết yếu (cafe, ăn ngoài).",
-                "Tìm kiếm và ứng tuyển 1 công việc làm thêm hoặc bán 3 món đồ cũ."
-            ];
-            case 2: return [
-                "Tự động chuyển 15% thu nhập vào quỹ dự phòng trong 7 ngày tới.",
-                "Hủy 1 gói đăng ký định kỳ không sử dụng thường xuyên (Netflix, Spotify, Gym...).",
-                "Trả hết toàn bộ dư nợ thẻ tín dụng hoặc nợ lãi cao trong tuần này."
-            ];
-            case 3: return [
-                "Mở sổ tiết kiệm online kỳ hạn ngắn (1-3 tháng) cho khoản dự phòng mới.",
-                "Tính toán chính xác số tiền cần cho 6 tháng sinh hoạt phí an toàn.",
-                "Đọc 30 phút mỗi ngày về quỹ mở hoặc ETF để chuẩn bị đầu tư."
-            ];
-            case 4: return [
-                "Mở tài khoản chứng khoán và tìm hiểu cách đặt lệnh đầu tiên.",
-                "Đầu tư thử nghiệm 1 triệu đồng vào chứng chỉ quỹ hoặc cổ phiếu blue-chip.",
-                "Mua bảo hiểm sức khỏe hoặc nhân thọ để bảo vệ trụ cột gia đình."
-            ];
-            case 5: return [
-                "Thiết lập lệnh đầu tư tự động hàng tháng (DCA) vào ngày nhận lương.",
-                "Tái cơ cấu danh mục để đạt lợi suất trung bình > 10%/năm.",
-                "Nghiên cứu thêm 1 kênh tài sản mới (Bất động sản dòng tiền, Kinh doanh online)."
-            ];
-            default: return ["Tối ưu hóa thuế cho các khoản đầu tư.", "Lập di chúc hoặc kế hoạch thừa kế tài sản.", "Tham gia vào các hoạt động từ thiện hoặc quỹ xã hội."];
-        }
-    };
+    const nextLevelProgress = useMemo(() => {
+        if (!nextLevelConditions.length) return 100;
+        const checkedCount = nextLevelConditions.filter(c => !!checkedConditions[c]).length;
+        return Math.round((checkedCount / nextLevelConditions.length) * 100);
+    }, [nextLevelConditions, checkedConditions]);
 
     return (
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-            {/* Left Column: The Pyramid */}
-            <div className="lg:col-span-5 flex flex-col items-center justify-center bg-white dark:bg-gray-800 p-8 rounded-xl shadow-md min-h-[600px]">
-                <h3 className="text-xl font-bold mb-6 text-gray-800 dark:text-white uppercase tracking-wider">Tháp Tài Chính</h3>
-                <div className="flex flex-col-reverse w-full items-center gap-1">
-                    {LEVELS.map((level) => {
-                        const isActive = level.id === currentLevelId;
-                        const isPassed = level.id < currentLevelId;
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+            {/* Left Column: The Premium Pyramid */}
+            <div className="lg:col-span-5 flex flex-col items-center bg-white dark:bg-gray-800 p-10 rounded-3xl shadow-2xl border border-gray-100 dark:border-gray-700">
+                <div className="text-center mb-10">
+                    <h3 className="text-2xl font-black text-gray-800 dark:text-white uppercase tracking-tighter">Bản Đồ Thịnh Vượng</h3>
+                    <p className="text-sm text-gray-500 mt-2">Hành trình từ Sống sót đến Di sản</p>
+                </div>
+
+                <div className="flex flex-col-reverse w-full items-center space-y-reverse space-y-1">
+                    {PYRAMID_LEVELS.map((level) => {
+                        const isCurrent = level.id === currentLevel.id;
+                        const isSelected = level.id === selectedLevelId;
+                        const isPassed = level.id < currentLevel.id;
                         
-                        // Dynamic width logic
-                        const widthClass = `w-[${30 + (8 - level.id) * 10}%]`; 
-                        // Tailwind arbitrary values don't interpolate well with dynamic strings in JIT unless hardcoded.
-                        // Using style for width to create pyramid shape
-                        const widthStyle = { width: `${100 - (level.id * 8)}%`, minWidth: '180px' };
+                        const widthPct = 100 - (level.id * 8);
 
                         return (
-                            <div 
+                            <button
                                 key={level.id}
-                                style={widthStyle}
+                                onClick={() => setSelectedLevelId(level.id)}
+                                style={{ width: `${widthPct}%` }}
                                 className={`
-                                    relative p-3 text-center rounded-lg transition-all duration-500 flex flex-col items-center justify-center
-                                    ${isActive 
-                                        ? `${level.color} text-white shadow-xl scale-110 z-10 font-bold border-2 border-white ring-2 ring-offset-2 ring-teal-400` 
+                                    group relative h-14 md:h-16 flex items-center justify-center transition-all duration-500 rounded-xl overflow-hidden
+                                    ${isCurrent 
+                                        ? `bg-gradient-to-r ${level.color} text-white shadow-xl scale-110 z-20 border-2 border-white dark:border-gray-800` 
                                         : isPassed 
-                                            ? `${level.bg} ${level.textColor} opacity-60 grayscale-[50%]` 
-                                            : 'bg-gray-100 dark:bg-gray-700 text-gray-400'
+                                            ? `bg-gradient-to-r ${level.color} text-white opacity-40 hover:opacity-100` 
+                                            : 'bg-gray-100 dark:bg-gray-700/50 text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700'
                                     }
+                                    ${isSelected ? 'ring-4 ring-primary-400 ring-offset-2 dark:ring-offset-gray-900' : ''}
                                 `}
                             >
-                                <span className="text-sm md:text-base whitespace-nowrap">{level.id}. {level.name}</span>
-                                {isActive && <span className="text-[10px] opacity-90 font-normal mt-0.5">{level.criteria}</span>}
+                                <span className={`text-xs md:text-sm font-black uppercase tracking-widest ${isCurrent ? 'opacity-100' : 'opacity-70 group-hover:opacity-100'}`}>
+                                    {level.id}. {level.name}
+                                </span>
                                 
-                                {isActive && (
-                                    <div className="absolute -right-16 md:-right-24 top-1/2 transform -translate-y-1/2 flex items-center">
-                                        <div className="bg-white dark:bg-gray-900 text-gray-800 dark:text-white text-xs py-1 px-2 rounded shadow border border-gray-200 dark:border-gray-700 whitespace-nowrap">
-                                            Bạn ở đây 👈
-                                        </div>
+                                {isCurrent && (
+                                    <div className="absolute left-4 animate-pulse">
+                                        <div className="w-2 h-2 bg-white rounded-full"></div>
                                     </div>
                                 )}
-                            </div>
+                            </button>
                         );
                     })}
                 </div>
-                <div className="mt-8 text-center text-sm text-gray-500 italic">
-                    "Không quan trọng bạn đang ở đâu, quan trọng là bạn đang đi lên."
+                
+                <div className="mt-12 flex items-center gap-3 p-4 bg-gray-50 dark:bg-gray-900/40 rounded-2xl w-full border border-dashed border-gray-300 dark:border-gray-700">
+                    <div className="p-2 bg-primary-100 dark:bg-primary-900/30 rounded-lg">
+                        <SparklesIcon className="w-5 h-5 text-primary-600" />
+                    </div>
+                    <p className="text-[11px] text-gray-500 leading-tight">
+                        “Sức mạnh của lãi kép không chỉ nằm ở tiền, mà nằm ở sự tích lũy của kỷ luật tài chính mỗi ngày.”
+                    </p>
                 </div>
             </div>
 
-            {/* Right Column: Details & Actions */}
+            {/* Right Column: Detailed Intelligence */}
             <div className="lg:col-span-7 space-y-6">
                 
-                {/* 1. Current Status Card */}
-                <div className={`${currentLevel.bg} border border-opacity-20 border-current p-6 rounded-xl shadow-sm`}>
-                    <div className="flex items-center space-x-4 mb-4">
-                        <div className={`p-3 rounded-full ${currentLevel.color} text-white`}>
-                           <TrendingUpIcon className="h-6 w-6" />
+                {/* 1. Header Level Card */}
+                <div className={`relative overflow-hidden p-8 rounded-3xl shadow-lg border transition-all duration-500 ${displayLevel.bg} ${displayLevel.id === currentLevel.id ? 'border-primary-200 dark:border-primary-900/50' : 'border-gray-200 dark:border-gray-700'}`}>
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10">
+                        <div className="flex items-center gap-5">
+                            <div className={`p-4 rounded-2xl bg-gradient-to-br ${displayLevel.color} text-white shadow-lg`}>
+                                <TrendingUpIcon className="w-8 h-8" />
+                            </div>
+                            <div>
+                                <div className="flex items-center gap-2">
+                                    <span className="text-xs font-black uppercase text-gray-400 tracking-widest">Tầng Tài Chính</span>
+                                    {displayLevel.id === currentLevel.id && (
+                                        <span className="px-2 py-0.5 bg-primary-500 text-white text-[10px] font-bold rounded-full animate-bounce">Bạn ở đây</span>
+                                    )}
+                                </div>
+                                <h2 className={`text-3xl font-black ${displayLevel.textColor}`}>{displayLevel.id}. {displayLevel.name}</h2>
+                            </div>
                         </div>
-                        <div>
-                            <p className="text-gray-600 dark:text-gray-400 text-sm uppercase font-semibold">Tầng hiện tại</p>
-                            <h2 className={`text-3xl font-bold ${currentLevel.textColor}`}>{currentLevelId}. {currentLevel.name}</h2>
-                            <p className={`text-sm ${currentLevel.textColor} opacity-80`}>{currentLevel.description}</p>
-                        </div>
-                    </div>
-
-                    <div className="bg-white dark:bg-gray-900 bg-opacity-60 rounded-lg p-4 grid grid-cols-2 gap-4">
-                        <div>
-                            <p className="text-xs text-gray-500 uppercase">TB Thu nhập (3 tháng)</p>
-                            <p className="font-semibold text-gray-800 dark:text-white">{metrics.avgIncome.toLocaleString('vi-VN')} ₫</p>
-                        </div>
-                        <div>
-                            <p className="text-xs text-gray-500 uppercase">TB Chi tiêu (3 tháng)</p>
-                            <p className="font-semibold text-gray-800 dark:text-white">{metrics.avgExpense.toLocaleString('vi-VN')} ₫</p>
-                        </div>
-                        <div>
-                            <p className="text-xs text-gray-500 uppercase">Quỹ dự phòng</p>
-                            <p className={`font-semibold ${metrics.emergencyFundMonths < 3 ? 'text-red-500' : 'text-green-500'}`}>
-                                {metrics.emergencyFundMonths.toFixed(1)} tháng
-                            </p>
-                        </div>
-                        <div>
-                            <p className="text-xs text-gray-500 uppercase">Thu nhập thụ động</p>
-                            <p className="font-semibold text-gray-800 dark:text-white">{metrics.passiveIncome.toLocaleString('vi-VN')} ₫</p>
+                        <div className="flex flex-col items-end">
+                            <div className="text-[10px] uppercase font-bold text-gray-500">Tiêu chí</div>
+                            <div className={`text-sm font-bold ${displayLevel.textColor}`}>{displayLevel.criteria}</div>
                         </div>
                     </div>
+                    
+                    <p className={`mt-6 text-sm leading-relaxed opacity-80 ${displayLevel.textColor}`}>
+                        {displayLevel.description}. Ở tầng này, mục tiêu cốt lõi của bạn là {nextLevelConditions[0].toLowerCase()}.
+                    </p>
                 </div>
 
-                {/* 2. Why am I here? */}
-                <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md">
-                    <h3 className="text-lg font-bold text-gray-800 dark:text-white mb-4 flex items-center">
-                        <ExclamationIcon className="h-5 w-5 text-orange-500 mr-2" />
-                        Vì sao bạn đang ở tầng này?
-                    </h3>
-                    <ul className="space-y-2 text-gray-600 dark:text-gray-300 text-sm">
-                        {metrics.avgIncome <= metrics.avgExpense && (
-                            <li className="flex items-start"><span className="mr-2 text-red-500">•</span>Thu nhập trung bình thấp hơn hoặc bằng chi tiêu. Bạn đang chi tiêu vượt quá khả năng.</li>
-                        )}
-                        {metrics.avgIncome > metrics.avgExpense && metrics.emergencyFundMonths < 1 && (
-                            <li className="flex items-start"><span className="mr-2 text-yellow-500">•</span>Đã có dư dả hàng tháng, nhưng chưa có Quỹ dự phòng đủ 1 tháng sinh hoạt. Rất rủi ro nếu ốm đau/mất việc.</li>
-                        )}
-                        {metrics.avgIncome > metrics.avgExpense && metrics.emergencyFundMonths >= 1 && metrics.emergencyFundMonths < 6 && (
-                            <li className="flex items-start"><span className="mr-2 text-blue-500">•</span>Quỹ dự phòng đang ở mức {metrics.emergencyFundMonths.toFixed(1)} tháng. Cần tích lũy thêm để đạt chuẩn an toàn (6 tháng).</li>
-                        )}
-                        {metrics.emergencyFundMonths >= 6 && metrics.passiveIncome === 0 && (
-                            <li className="flex items-start"><span className="mr-2 text-indigo-500">•</span>Tài chính đã an toàn, nhưng chưa có dòng tiền đầu tư sinh lời (Thu nhập thụ động = 0).</li>
-                        )}
-                        <li className="flex items-start italic opacity-75 mt-2">
-                             *Dữ liệu được tính dựa trên trung bình 3 tháng gần nhất.
-                        </li>
-                    </ul>
-                </div>
+                {/* 2. Real-time Indicators */}
+                {(selectedLevelId === null || selectedLevelId === currentLevel.id) && (
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <IndicatorCard 
+                            label="Cashflow TB" 
+                            value={formatVND(metrics.avgIncome - metrics.avgExpense)} 
+                            sub={metrics.avgIncome > metrics.avgExpense ? "Dương" : "Âm"}
+                            status={metrics.avgIncome > metrics.avgExpense ? "success" : "danger"}
+                        />
+                        <IndicatorCard 
+                            label="Quỹ Dự Phòng" 
+                            value={`${metrics.emergencyFundMonths.toFixed(1)} Tháng`} 
+                            sub={`Tiêu chuẩn: 6.0`}
+                            status={metrics.emergencyFundMonths >= 6 ? "success" : metrics.emergencyFundMonths >= 3 ? "warning" : "danger"}
+                        />
+                        <IndicatorCard 
+                            label="Điểm Kỷ Luật" 
+                            value={`${metrics.complianceScore}%`} 
+                            sub="11 Nguyên tắc vàng"
+                            status={metrics.complianceScore >= 80 ? "success" : metrics.complianceScore >= 50 ? "warning" : "danger"}
+                        />
+                    </div>
+                )}
 
-                {/* 3. Next Steps & Actions */}
+                {/* 3. Reasons & Next Level Checklist */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {/* Conditions */}
-                    <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md">
-                        <h3 className="text-base font-bold text-gray-800 dark:text-white mb-3 flex items-center">
-                            <ChartPieIcon className="h-5 w-5 text-primary-500 mr-2" />
-                            Điều kiện lên tầng {currentLevelId + 1}
-                        </h3>
-                        <ul className="space-y-3">
-                            {getNextLevelConditions(currentLevelId).map((cond, idx) => (
-                                <li key={idx} className="flex items-start text-sm text-gray-600 dark:text-gray-300">
-                                    <div className="min-w-[20px] h-5 border-2 border-gray-300 rounded mr-2 mt-0.5"></div>
-                                    <span>{cond}</span>
+                    <div className="bg-white dark:bg-gray-800 p-6 rounded-3xl shadow-md border border-gray-100 dark:border-gray-700">
+                        <h4 className="text-sm font-black uppercase tracking-widest text-gray-800 dark:text-white mb-4 flex items-center">
+                            <ExclamationIcon className="w-4 h-4 mr-2 text-orange-500" />
+                            Phân tích hiện tại
+                        </h4>
+                        <ul className="space-y-4 mb-8">
+                            {reasons.map((r, i) => (
+                                <li key={i} className="flex items-start text-xs text-gray-600 dark:text-gray-400 leading-relaxed">
+                                    <div className="w-1.5 h-1.5 rounded-full bg-orange-400 mt-1.5 mr-3 shrink-0"></div>
+                                    {r}
                                 </li>
                             ))}
                         </ul>
+                        
+                        <div className="pt-6 border-t border-gray-100 dark:border-gray-700">
+                             <div className="flex items-center justify-between mb-4">
+                                <h4 className="text-sm font-black uppercase text-gray-800 dark:text-white">Lộ trình thăng hạng</h4>
+                                <span className={`text-[10px] font-black px-2 py-0.5 rounded-full ${nextLevelProgress === 100 ? 'bg-emerald-100 text-emerald-600' : 'bg-primary-100 text-primary-600'}`}>
+                                    {nextLevelProgress}%
+                                </span>
+                             </div>
+                             
+                             <div className="space-y-3">
+                                {nextLevelConditions.map((condition, i) => (
+                                    <button 
+                                        key={i} 
+                                        onClick={() => toggleCondition(condition)}
+                                        className="w-full flex items-center group text-left"
+                                    >
+                                        <div className={`w-5 h-5 rounded-md border flex items-center justify-center shrink-0 mr-3 transition-all ${checkedConditions[condition] ? 'bg-emerald-500 border-emerald-500 shadow-sm' : 'border-gray-300 dark:border-gray-600 group-hover:border-primary-500'}`}>
+                                            {checkedConditions[condition] && <CheckCircleIcon className="w-4 h-4 text-white" />}
+                                        </div>
+                                        <span className={`text-xs font-bold transition-all ${checkedConditions[condition] ? 'text-gray-400 line-through' : 'text-gray-700 dark:text-gray-300 group-hover:text-primary-500'}`}>
+                                            {condition}
+                                        </span>
+                                    </button>
+                                ))}
+                             </div>
+
+                             <div className="mt-6 w-full bg-gray-100 dark:bg-gray-700 rounded-full h-1.5 overflow-hidden">
+                                <div 
+                                    className="bg-emerald-500 h-full transition-all duration-1000" 
+                                    style={{ width: `${nextLevelProgress}%` }}
+                                ></div>
+                             </div>
+                        </div>
                     </div>
 
-                    {/* 7-Day Actions */}
-                    <div className="bg-gradient-to-br from-primary-50 to-white dark:from-gray-700 dark:to-gray-800 p-6 rounded-xl shadow-md border border-primary-100 dark:border-gray-600">
-                        <h3 className="text-base font-bold text-primary-700 dark:text-primary-400 mb-3 flex items-center">
-                            <ShieldCheckIcon className="h-5 w-5 mr-2" />
-                            Hành động 7 ngày tới
-                        </h3>
-                        <ul className="space-y-3">
-                            {getActions(currentLevelId).map((action, idx) => (
-                                <li key={idx} className="flex items-start text-sm text-gray-700 dark:text-gray-200">
-                                    <CheckCircleIcon className="h-5 w-5 text-primary-500 mr-2 mt-0.5 shrink-0" />
-                                    <span>{action}</span>
-                                </li>
+                    <div className="bg-slate-900 p-6 rounded-3xl shadow-xl border border-slate-800">
+                        <h4 className="text-sm font-black uppercase tracking-widest text-emerald-400 mb-6 flex items-center">
+                            <ShieldCheckIcon className="w-4 h-4 mr-2" />
+                            7 Ngày Chiến Thuật
+                        </h4>
+                        <div className="space-y-4">
+                            {actions7d.map((a, i) => (
+                                <div key={i} className="flex gap-4 group cursor-pointer">
+                                    <div className="w-6 h-6 rounded-full border border-slate-700 flex items-center justify-center shrink-0 group-hover:bg-emerald-500/20 group-hover:border-emerald-500 transition-all">
+                                        <CheckCircleIcon className="w-4 h-4 text-slate-700 group-hover:text-emerald-500" />
+                                    </div>
+                                    <p className="text-xs text-slate-300 group-hover:text-white transition-colors leading-relaxed font-medium">
+                                        {a}
+                                    </p>
+                                </div>
                             ))}
-                        </ul>
+                        </div>
+                        <button className="w-full mt-8 py-3 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-black uppercase tracking-widest rounded-xl transition-all shadow-lg shadow-emerald-900/20 active:scale-95">
+                            Bắt đầu thực thi
+                        </button>
                     </div>
                 </div>
 
@@ -274,3 +224,18 @@ export const Journey: React.FC<JourneyProps> = ({ assets, emergencyFund, transac
         </div>
     );
 };
+
+function IndicatorCard({ label, value, sub, status }: { label: string, value: string, sub: string, status: 'success' | 'warning' | 'danger' }) {
+    const statusColor = status === 'success' ? 'text-emerald-500' : status === 'warning' ? 'text-orange-500' : 'text-red-500';
+    return (
+        <div className="bg-white dark:bg-gray-800 p-5 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 flex flex-col items-center text-center">
+            <span className="text-[10px] font-black uppercase text-gray-400 tracking-wider mb-2">{label}</span>
+            <span className={`text-lg font-black font-mono ${statusColor}`}>{value}</span>
+            <span className="text-[10px] font-medium text-gray-500 mt-1">{sub}</span>
+        </div>
+    );
+}
+
+function formatVND(n: number) {
+    return Math.round(n || 0).toLocaleString("vi-VN") + " ₫";
+}

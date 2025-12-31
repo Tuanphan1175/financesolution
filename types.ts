@@ -1,7 +1,7 @@
 
 export type TransactionType = 'income' | 'expense';
 export type PaymentMethod = 'cash' | 'credit_card' | 'bank_transfer';
-export type View = 'dashboard' | 'transactions' | 'budgets' | 'reports' | 'journey' | 'rules' | 'income-ladder' | 'net-worth' | '30-day-journey' | 'ai-coach';
+export type View = 'dashboard' | 'transactions' | 'budgets' | 'reports' | 'journey' | 'rules' | 'income-ladder' | 'net-worth' | '30-day-journey' | 'ai-coach' | 'playbook';
 export type AccountType = 'personal' | 'business';
 export type SpendingClassification = 'need' | 'want';
 
@@ -11,6 +11,7 @@ export interface Category {
   type: TransactionType;
   icon: string;
   color: string;
+  defaultClassification?: SpendingClassification;
 }
 
 export interface Transaction {
@@ -41,6 +42,7 @@ export interface Asset {
   name: string;
   value: number;
   type: 'cash' | 'real_estate' | 'investment' | 'vehicle' | 'other';
+  accountType: AccountType;
 }
 
 export interface Liability {
@@ -48,6 +50,7 @@ export interface Liability {
   name: string;
   amount: number;
   type: 'credit_card' | 'loan' | 'mortgage' | 'other';
+  accountType: AccountType;
 }
 
 export interface FinancialPyramidLevel {
@@ -67,6 +70,8 @@ export interface GoldenRule {
 }
 
 // 30 Day Journey Types
+export type TaskPillar = 'income' | 'expense' | 'protection' | 'investment' | 'mindset';
+
 export interface JourneyTask {
     day: number;
     week: number; // 1-4
@@ -74,6 +79,7 @@ export interface JourneyTask {
     description: string;
     action: string;
     coachMessage: string;
+    pillar: TaskPillar;
 }
 
 export interface JourneyProgress {

@@ -1,15 +1,17 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { GoogleGenAI } from "@google/genai";
-import { Transaction, Asset, Liability, JourneyProgress } from '../types';
+import { Transaction, Asset, Liability, JourneyProgress, GoldenRule } from '../types';
 import { SparklesIcon, ArrowUpIcon } from './Icons';
 import { JOURNEY_30_DAYS } from '../constants';
+import { calculatePyramidStatus } from '../lib/pyramidLogic';
 
 interface AICoachProps {
     transactions: Transaction[];
     assets: Asset[];
     liabilities: Liability[];
     journeyProgress: JourneyProgress;
+    goldenRules: GoldenRule[];
 }
 
 interface Message {
@@ -18,43 +20,22 @@ interface Message {
     text: string;
 }
 
-export const AICoach: React.FC<AICoachProps> = ({ transactions, assets, liabilities, journeyProgress }) => {
+export const AICoach: React.FC<AICoachProps> = ({ transactions, assets, liabilities, journeyProgress, goldenRules }) => {
     const [messages, setMessages] = useState<Message[]>([]);
     const [input, setInput] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const hasInitialized = useRef(false);
 
-    // --- 1. CALCULATE CONTEXT LOGIC (Duplicated locally for safety/isolation) ---
+    // --- 1. CALCULATE CONTEXT LOGIC ---
     const calculateFinancialContext = () => {
-        const now = new Date();
-        const threeMonthsAgo = new Date();
-        threeMonthsAgo.setMonth(now.getMonth() - 3);
+        // Fix: Added goldenRules as the 4th argument to satisfy the calculatePyramidStatus signature
+        const pyramidStatus = calculatePyramidStatus(transactions, assets, liabilities, goldenRules);
+        const { currentLevel, metrics } = pyramidStatus;
 
-        // 3-month average calculation
-        const recentTrans = transactions.filter(t => new Date(t.date) >= threeMonthsAgo);
-        const totalIncome = recentTrans.filter(t => t.type === 'income').reduce((sum, t) => sum + t.amount, 0);
-        const totalExpense = recentTrans.filter(t => t.type === 'expense').reduce((sum, t) => sum + t.amount, 0);
-        const monthsCount = 3;
-        const avgIncome = totalIncome / monthsCount;
-        const avgExpense = totalExpense / monthsCount;
-        
-        // Emergency Fund & Passive Income
-        const liquidAssets = assets.filter(a => a.type === 'cash' || a.type === 'investment').reduce((sum, a) => sum + a.value, 0);
-        const emergencyFundMonths = avgExpense > 0 ? liquidAssets / avgExpense : 0;
-        const passiveIncomeTrans = recentTrans.filter(t => t.type === 'income' && (t.accountType === 'business'));
-        const avgPassiveIncome = passiveIncomeTrans.reduce((sum, t) => sum + t.amount, 0) / monthsCount;
-
-        // Level Logic
-        let level = 1;
-        let levelName = "Sống Sót";
-        if (avgIncome <= avgExpense) { level = 1; levelName = "Sống Sót"; }
-        else if (avgIncome > avgExpense && emergencyFundMonths < 1) { level = 2; levelName = "Ổn Định"; }
-        else if (avgIncome > avgExpense && emergencyFundMonths >= 1 && emergencyFundMonths < 6) { level = 3; levelName = "Dư Dả"; }
-        else if (emergencyFundMonths >= 6 && avgPassiveIncome === 0) { level = 4; levelName = "Tích Lũy"; }
-        else if (avgPassiveIncome > 0 && avgPassiveIncome < avgExpense) { level = 5; levelName = "Đầu Tư"; }
-        else if (avgPassiveIncome >= avgExpense) { level = 6; levelName = "Tự Do Tài Chính"; }
-        else { level = 7; levelName = "Thịnh Vượng"; }
+        // Fix: Calculate totalAssets and totalLiabilities locally because they do not exist on the metrics object
+        const totalAssets = assets.reduce((sum, a) => sum + a.value, 0);
+        const totalLiabilities = liabilities.reduce((sum, l) => sum + l.amount, 0);
 
         // Journey Progress
         const completedDays = Object.keys(journeyProgress).length;
@@ -69,12 +50,12 @@ export const AICoach: React.FC<AICoachProps> = ({ transactions, assets, liabilit
 
         return `
         DỮ LIỆU TÀI CHÍNH NGƯỜI DÙNG:
-        - Tầng Tháp Tài Chính: ${level} (${levelName})
-        - Thu nhập TB (3 tháng): ${avgIncome.toLocaleString('vi-VN')} VND
-        - Chi tiêu TB (3 tháng): ${avgExpense.toLocaleString('vi-VN')} VND
-        - Quỹ dự phòng: ${emergencyFundMonths.toFixed(1)} tháng chi tiêu
-        - Tổng tài sản: ${assets.reduce((s,a)=>s+a.value,0).toLocaleString('vi-VN')} VND
-        - Tổng nợ: ${liabilities.reduce((s,l)=>s+l.amount,0).toLocaleString('vi-VN')} VND
+        - Tầng Tháp Tài Chính: ${currentLevel.id} (${currentLevel.name})
+        - Thu nhập TB (3 tháng): ${metrics.avgIncome.toLocaleString('vi-VN')} VND
+        - Chi tiêu TB (3 tháng): ${metrics.avgExpense.toLocaleString('vi-VN')} VND
+        - Quỹ dự phòng: ${metrics.emergencyFundMonths.toFixed(1)} tháng chi tiêu
+        - Tổng tài sản: ${totalAssets.toLocaleString('vi-VN')} VND
+        - Tổng nợ: ${totalLiabilities.toLocaleString('vi-VN')} VND
         - Hành trình 30 ngày: Đã hoàn thành ${completedDays} ngày.
         - Nhiệm vụ hôm nay (Ngày ${nextTask.day}): "${nextTask.title}" - ${nextTask.action}.
         `;
@@ -132,11 +113,12 @@ export const AICoach: React.FC<AICoachProps> = ({ transactions, assets, liabilit
         setIsLoading(true);
 
         try {
+            // Fix: Initializing GoogleGenAI inside handleSendMessage to ensure use of latest environment API Key
             const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
             
-            // Updated for @google/genai SDK
+            // Fix: Upgraded to 'gemini-3-pro-preview' as recommended for complex text/reasoning tasks
             const chat = ai.chats.create({
-                model: "gemini-2.5-flash",
+                model: "gemini-3-pro-preview",
                 config: {
                     systemInstruction: SYSTEM_PROMPT,
                 },
@@ -148,7 +130,7 @@ export const AICoach: React.FC<AICoachProps> = ({ transactions, assets, liabilit
 
             // Send message and get response
             const result = await chat.sendMessage({ message: userText });
-            const text = result.text; // Access text property directly
+            const text = result.text; // Access text property directly as per @google/genai guidelines
 
             if (text) {
                 const newAiMsg: Message = { id: (Date.now() + 1).toString(), role: 'model', text: text };
