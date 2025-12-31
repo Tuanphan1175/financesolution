@@ -4,6 +4,7 @@ import { Transaction, Asset, Liability, JourneyProgress, GoldenRule } from '../t
 import { SparklesIcon, ArrowUpIcon } from './Icons';
 import { JOURNEY_30_DAYS } from '../constants';
 import { calculatePyramidStatus } from '../lib/pyramidLogic';
+import { EXPERT_KNOWLEDGE } from '../lib/expertKnowledge'; // Import EXPERT_KNOWLEDGE
 
 interface AICoachProps {
     transactions: Transaction[];
@@ -60,16 +61,16 @@ export const AICoach: React.FC<AICoachProps> = ({ transactions, assets, liabilit
 
     const financialContext = calculateFinancialContext();
 
-    // --- 2. CÂU LỆNH HỆ THỐNG ---
+    // --- 2. SYSTEM PROMPT ---
     const SYSTEM_PROMPT = `
-    Bạn là AI Financial Coach. Nhiệm vụ: Giúp người dùng quản lý tài chính cá nhân.
-    Phong cách: Ngắn gọn, súc tích, thực tế, ân cần.
-    Dữ liệu người dùng: ${financialContext}
-    Hãy trả lời ngắn (dưới 150 từ), tập trung vào hành động cụ thể.
-    Định dạng phản hồi:
-    - Bắt đầu mỗi ý bằng dấu gạch đầu dòng (-) hoặc số thứ tự.
-    - KHÔNG sử dụng ký tự in đậm (**) hoặc các ký tự markdown khác.
-    - Mỗi ý nên ở một dòng riêng biệt.
+    Bạn là AI Financial Coach chuyên nghiệp.
+    Kiến thức cốt lõi bạn cần tuân thủ:
+    ${EXPERT_KNOWLEDGE}
+
+    Dữ liệu người dùng hiện tại:
+    ${financialContext}
+
+    Hãy tư vấn dựa trên các nguyên tắc cốt lõi trên. Giọng văn chuyên gia, điềm đạm, nhưng quyết liệt về kỷ luật.
     `;
 
     const scrollToBottom = () => {
