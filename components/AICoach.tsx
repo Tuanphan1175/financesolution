@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-// SỬA 1: Dùng đúng thư viện chuẩn của Google
+// SỬA 1: Dùng đúng thư viện chuẩn của Google cho Web
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { Transaction, Asset, Liability, JourneyProgress, GoldenRule } from '../types';
 import { SparklesIcon, ArrowUpIcon } from './Icons';
@@ -94,7 +94,7 @@ export const AICoach: React.FC<AICoachProps> = ({ transactions, assets, liabilit
         setIsLoading(true);
 
         try {
-            // SỬA 2: Sửa lỗi chính tả trong Key (chữ í -> i) và dùng class đúng
+            // SỬA 2: Đã sửa lỗi chính tả trong Key (chữ í -> i)
             const API_KEY_DIRECT = "AIzaSyD2QvJkU4PYY-G-muQlic4DbhMu349-hyl"; 
             
             // SỬA 3: Khởi tạo bằng GoogleGenerativeAI (thư viện chuẩn)
