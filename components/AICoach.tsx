@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-// SỬA 1: Dùng đúng thư viện chuẩn của Google cho Web
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import { GoogleGenerativeAI } from "@google/generative-ai"; // Thư viện chuẩn
 import { Transaction, Asset, Liability, JourneyProgress, GoldenRule } from '../types';
 import { SparklesIcon, ArrowUpIcon } from './Icons';
 import { JOURNEY_30_DAYS } from '../constants';
@@ -27,11 +26,10 @@ export const AICoach: React.FC<AICoachProps> = ({ transactions, assets, liabilit
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const hasInitialized = useRef(false);
 
-    // --- 1. CALCULATE CONTEXT LOGIC ---
+    // --- 1. TÍNH TOÁN DỮ LIỆU TÀI CHÍNH ---
     const calculateFinancialContext = () => {
         const pyramidStatus = calculatePyramidStatus(transactions, assets, liabilities, goldenRules);
         const { currentLevel, metrics } = pyramidStatus;
-
         const totalAssets = assets.reduce((sum, a) => sum + a.value, 0);
         const totalLiabilities = liabilities.reduce((sum, l) => sum + l.amount, 0);
 
@@ -45,29 +43,24 @@ export const AICoach: React.FC<AICoachProps> = ({ transactions, assets, liabilit
         }
 
         return `
-        DỮ LIỆU TÀI CHÍNH NGƯỜI DÙNG:
-        - Tầng Tháp Tài Chính: ${currentLevel.id} (${currentLevel.name})
-        - Thu nhập TB (3 tháng): ${metrics.avgIncome.toLocaleString('vi-VN')} VND
-        - Chi tiêu TB (3 tháng): ${metrics.avgExpense.toLocaleString('vi-VN')} VND
-        - Quỹ dự phòng: ${metrics.emergencyFundMonths.toFixed(1)} tháng chi tiêu
-        - Tổng tài sản: ${totalAssets.toLocaleString('vi-VN')} VND
-        - Tổng nợ: ${totalLiabilities.toLocaleString('vi-VN')} VND
-        - Hành trình 30 ngày: Đã hoàn thành ${completedDays} ngày.
-        - Nhiệm vụ hôm nay (Ngày ${nextTask.day}): "${nextTask.title}" - ${nextTask.action}.
+        DỮ LIỆU TÀI CHÍNH:
+        - Cấp độ: ${currentLevel.name}
+        - Thu nhập TB: ${metrics.avgIncome.toLocaleString('vi-VN')} đ
+        - Chi tiêu TB: ${metrics.avgExpense.toLocaleString('vi-VN')} đ
+        - Tài sản: ${totalAssets.toLocaleString('vi-VN')} đ
+        - Nợ: ${totalLiabilities.toLocaleString('vi-VN')} đ
+        - Hành trình 30 ngày: Ngày ${nextTask.day} - ${nextTask.title}.
         `;
     };
 
     const financialContext = calculateFinancialContext();
 
-    // --- 2. SYSTEM PROMPT ---
+    // --- 2. CÂU LỆNH HỆ THỐNG ---
     const SYSTEM_PROMPT = `
-    VAI TRÒ: Bạn là AI Financial Coach - Người đồng hành tài chính cá nhân.
-    NHIỆM VỤ: Giúp người dùng hiểu, kiểm soát và cải thiện tài chính mỗi ngày (5-10 phút).
-    
-    CẤU TRÚC TRẢ LỜI NGẮN GỌN (Dưới 200 từ):
-    A. CHECK-IN: Hỏi thăm.
-    B. PHÂN TÍCH: Dựa trên dữ liệu: ${financialContext}
-    C. HÀNH ĐỘNG: Giao 1 việc nhỏ cụ thể.
+    Bạn là AI Financial Coach. Nhiệm vụ: Giúp người dùng quản lý tài chính cá nhân.
+    Phong cách: Ngắn gọn, súc tích, thực tế, ân cần.
+    Dữ liệu người dùng: ${financialContext}
+    Hãy trả lời ngắn (dưới 150 từ), tập trung vào hành động cụ thể.
     `;
 
     const scrollToBottom = () => {
@@ -81,7 +74,7 @@ export const AICoach: React.FC<AICoachProps> = ({ transactions, assets, liabilit
     useEffect(() => {
         if (!hasInitialized.current) {
             hasInitialized.current = true;
-            handleSendMessage("Xin chào Coach, tình hình tài chính của tôi hôm nay thế nào?");
+            handleSendMessage("Chào Coach, tình hình tôi thế nào?");
         }
     }, []);
 
@@ -94,23 +87,21 @@ export const AICoach: React.FC<AICoachProps> = ({ transactions, assets, liabilit
         setIsLoading(true);
 
         try {
-            // 1. Chìa khóa cứng (Anh giữ nguyên chìa khóa đang dùng được)
-            const API_KEY_DIRECT = "AIzaSyD2QvJkU4PYY-G-muQlic4DbhMu349-hyl"; 
+            // --- QUAN TRỌNG: DÁN CHÌA KHÓA MỚI VÀO DƯỚI ĐÂY ---
+            const API_KEY_DIRECT = "DÁN_MÃ_KEY_MỚI_CỦA_ANH_VÀO_CHỖ_NÀY"; 
             
-            // 2. Khởi tạo
-            const genAI = new GoogleGenerativeAI(API_KEY_DIRECT);
+            if (API_KEY_DIRECT.includes("DÁN_MÃ")) {
+                throw new Error("Anh chưa dán API Key mới vào code!");
+            }
 
-            // 3. SỬA TÊN MODEL TẠI ĐÂY: Dùng bản 2.0 Flash Experimental mới nhất
-            const model = genAI.getGenerativeModel({ 
-                model: "gemini-2.0-flash-exp" 
-            });
+            const genAI = new GoogleGenerativeAI(API_KEY_DIRECT);
+            
+            // SỬA DÙNG MODEL MỚI NHẤT: GEMINI 2.0 FLASH
+            const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-exp" });
 
             const chat = model.startChat({
                 history: [
-                    {
-                        role: "user",
-                        parts: [{ text: SYSTEM_PROMPT }],
-                    },
+                    { role: "user", parts: [{ text: SYSTEM_PROMPT }] },
                     ...messages.map(m => ({
                         role: m.role === 'user' ? 'user' : 'model',
                         parts: [{ text: m.text }],
@@ -127,7 +118,7 @@ export const AICoach: React.FC<AICoachProps> = ({ transactions, assets, liabilit
             setMessages(prev => [...prev, { 
                 id: Date.now().toString(), 
                 role: 'model', 
-                text: `Lỗi kết nối: ${error.message || "Vui lòng kiểm tra lại API Key."}`
+                text: `⚠️ Lỗi: ${error.message}\n(Anh hãy kiểm tra kỹ lại API Key nhé)`
             }]);
         } finally {
             setIsLoading(false);
@@ -135,58 +126,36 @@ export const AICoach: React.FC<AICoachProps> = ({ transactions, assets, liabilit
     };
 
     return (
-        <div className="flex flex-col h-[calc(100vh-140px)] bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden border border-gray-200 dark:border-gray-700">
-            {/* Header */}
+        <div className="flex flex-col h-[calc(100vh-140px)] bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700">
             <div className="bg-gradient-to-r from-primary-600 to-teal-500 p-4 flex items-center shadow-sm shrink-0">
-                <div className="bg-white/20 p-2 rounded-full mr-3">
-                    <SparklesIcon className="h-6 w-6 text-white" />
-                </div>
-                <div>
-                    <h3 className="text-white font-bold text-lg">AI Financial Coach</h3>
-                    <p className="text-white/80 text-xs">Người đồng hành tài chính cá nhân</p>
-                </div>
+                <SparklesIcon className="h-6 w-6 text-white mr-2" />
+                <h3 className="text-white font-bold text-lg">AI Financial Coach (Gemini 2.0)</h3>
             </div>
 
-            {/* Chat Area */}
             <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50 dark:bg-gray-900/50">
                 {messages.map((msg) => (
                     <div key={msg.id} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                        <div className={`max-w-[85%] md:max-w-[70%] rounded-2xl p-4 text-sm md:text-base shadow-sm whitespace-pre-wrap leading-relaxed ${msg.role === 'user' ? 'bg-primary-600 text-white rounded-tr-none' : 'bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 border border-gray-200 dark:border-gray-700 rounded-tl-none'}`}>
+                        <div className={`max-w-[80%] rounded-2xl p-3 text-sm shadow-sm ${msg.role === 'user' ? 'bg-primary-600 text-white' : 'bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 border'}`}>
                             {msg.text}
                         </div>
                     </div>
                 ))}
-                {isLoading && (
-                    <div className="flex justify-start">
-                        <div className="bg-white dark:bg-gray-800 p-4 rounded-2xl rounded-tl-none border border-gray-200 dark:border-gray-700 shadow-sm">
-                            <div className="flex space-x-2">
-                                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
-                                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce delay-75"></div>
-                                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce delay-150"></div>
-                            </div>
-                        </div>
-                    </div>
-                )}
+                {isLoading && <div className="text-gray-500 text-sm ml-4 animate-pulse">AI đang suy nghĩ...</div>}
                 <div ref={messagesEndRef} />
             </div>
 
-            {/* Input Area */}
-            <div className="p-4 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 shrink-0">
-                <div className="flex items-center space-x-2">
+            <div className="p-3 border-t dark:border-gray-700 bg-white dark:bg-gray-800">
+                <div className="flex space-x-2">
                     <input
                         type="text"
                         value={input}
                         onChange={(e) => setInput(e.target.value)}
                         onKeyPress={(e) => e.key === 'Enter' && handleSendMessage(input)}
-                        placeholder="Nhập tin nhắn..."
-                        className="flex-1 border border-gray-300 dark:border-gray-600 rounded-full px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary-500 bg-gray-50 dark:bg-gray-700 dark:text-white"
+                        placeholder="Hỏi về tài chính..."
+                        className="flex-1 border rounded-full px-4 py-2 focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 dark:text-white"
                         disabled={isLoading}
                     />
-                    <button
-                        onClick={() => handleSendMessage(input)}
-                        disabled={isLoading || !input.trim()}
-                        className="bg-primary-600 hover:bg-primary-700 text-white p-3 rounded-full shadow-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
+                    <button onClick={() => handleSendMessage(input)} disabled={isLoading} className="bg-primary-600 text-white p-2 rounded-full">
                         <ArrowUpIcon className="h-6 w-6 transform rotate-90" />
                     </button>
                 </div>
