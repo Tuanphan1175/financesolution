@@ -15,13 +15,13 @@ export const UpgradePlan: React.FC = () => {
   };
 
   // Thông tin QR Code
-  const bankCode = "VCB";
+  const bankCode = "VCB"; // Đã đổi thành VCB
   const accountNumber = "0171003462117";
-  const accountName = "PHAN ANH TUAN";
+  const accountName = "PHAN ANH TUAN"; // Đã đổi thành PHAN ANH TUAN
   const amount = isAnnual ? premiumTotalAnnual : premiumMonthlyPrice;
-  const addInfo = "KHOA_HOC_VIP";
+  const addInfo = "SDT VIP"; // Đã đổi thành SDT VIP
 
-  const qrCodeUrl = `https://img.vietqr.io/image/${bankCode}-${accountNumber}-compact2.png?amount=${amount}&addInfo=${addInfo}&accountName=${accountName}`;
+  const qrCodeUrl = `https://img.vietqr.io/image/${bankCode}-${accountNumber}-compact2.png?amount=${amount}&addInfo=${encodeURIComponent(addInfo)}&accountName=${encodeURIComponent(accountName)}`;
 
   return (
     <div className="p-6 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700">
@@ -55,11 +55,11 @@ export const UpgradePlan: React.FC = () => {
         <div className="bg-gray-100 dark:bg-gray-700 p-8 rounded-xl text-center flex flex-col items-center justify-center">
           <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">Thông tin thanh toán</h3>
           <img src={qrCodeUrl} alt="QR Code Thanh Toán" className="w-64 h-64 md:w-80 md:h-80 object-contain mx-auto mb-6 border border-gray-300 dark:border-gray-600 rounded-lg p-2" />
-          <p className="text-gray-700 dark:text-gray-300 mb-2 text-lg">Ngân hàng: <span className="font-bold">MB Bank</span></p>
+          <p className="text-gray-700 dark:text-gray-300 mb-2 text-lg">Ngân hàng: <span className="font-bold">Vietcombank</span></p>
           <p className="text-gray-700 dark:text-gray-300 mb-2 text-lg">Số tài khoản: <span className="font-bold">{accountNumber}</span></p>
-          <p className="text-gray-700 dark:text-gray-300 mb-4 text-lg">Tên chủ thẻ: <span className="font-bold">{accountName}</span></p>
+          <p className="text-gray-700 dark:text-gray-300 mb-4 text-lg">Chủ tài khoản: <span className="font-bold">{accountName}</span></p>
           <p className="text-gray-700 dark:text-gray-300 mb-4 text-lg">Số tiền: <span className="font-bold">{amount.toLocaleString('vi-VN')} VNĐ</span></p>
-          <p className="text-gray-700 dark:text-gray-300 mb-6 text-lg">Nội dung: <span className="font-bold">SDT + VIP</span></p>
+          <p className="text-gray-700 dark:text-gray-300 mb-6 text-lg">Nội dung: <span className="font-bold">{addInfo}</span></p>
           
           <button 
             onClick={() => setShowPaymentInfo(false)} // Đóng thông tin thanh toán
