@@ -14,6 +14,7 @@ export const PricingModal: React.FC<PricingModalProps> = ({ isOpen, onClose }) =
   const premiumMonthlyPrice = 200000;
   const premiumAnnualPrice = premiumMonthlyPrice * 12 * 0.8; // Giảm 20% cho hàng năm
   const premiumAnnualPricePerMonth = premiumAnnualPrice / 12;
+  const premiumTotalAnnual = premiumAnnualPrice * 12;
 
   const currentPrice = isAnnual ? premiumAnnualPricePerMonth : premiumMonthlyPrice;
   const displayPrice = isAnnual ? premiumAnnualPrice.toLocaleString('vi-VN') : premiumMonthlyPrice.toLocaleString('vi-VN');
@@ -22,6 +23,15 @@ export const PricingModal: React.FC<PricingModalProps> = ({ isOpen, onClose }) =
   const handleSubscribeClick = () => {
     setShowPaymentInfo(true);
   };
+
+  // Thông tin QR Code
+  const bankCode = "VCB"; // Đã là VCB (Vietcombank)
+  const accountNumber = "0171003462117";
+  const accountName = "PHAN ANH TUAN";
+  const amount = isAnnual ? premiumTotalAnnual : premiumMonthlyPrice;
+  const addInfo = "KHOA_HOC_VIP";
+
+  const qrCodeUrl = `https://img.vietqr.io/image/${bankCode}-${accountNumber}-compact2.png?amount=${amount}&addInfo=${addInfo}&accountName=${accountName}`;
 
   return (
     <Modal isOpen={isOpen} onClose={() => { onClose(); setShowPaymentInfo(false); }} title="Đầu tư cho Kỷ luật - Đầu tư cho Tương lai">
@@ -54,15 +64,15 @@ export const PricingModal: React.FC<PricingModalProps> = ({ isOpen, onClose }) =
             <img src={qrCodeUrl} alt="QR Code Thanh Toán" className="w-64 h-64 md:w-80 md:h-80 object-contain mx-auto mb-6 border border-gray-300 dark:border-gray-600 rounded-lg p-2" />
             <p className="text-gray-700 dark:text-gray-300 mb-2 text-lg">Ngân hàng: <span className="font-bold">Vietcombank</span></p>
             <p className="text-gray-700 dark:text-gray-300 mb-2 text-lg">Số tài khoản: <span className="font-bold">{accountNumber}</span></p>
-            <p className="text-gray-700 dark:text-gray-300 mb-4">Nội dung: <span className="font-bold">SDT + VIP</span></p>
-            <p className="text-sm text-gray-500 dark:text-gray-400 italic">
-              (Sau này sẽ chèn ảnh QR Code vào đây)
-            </p>
+            <p className="text-gray-700 dark:text-gray-300 mb-4 text-lg">Tên chủ thẻ: <span className="font-bold">{accountName}</span></p>
+            <p className="text-gray-700 dark:text-gray-300 mb-4 text-lg">Số tiền: <span className="font-bold">{amount.toLocaleString('vi-VN')} VNĐ</span></p>
+            <p className="text-gray-700 dark:text-gray-300 mb-6 text-lg">Nội dung: <span className="font-bold">SDT + VIP</span></p>
+            
             <button 
-              onClick={() => { onClose(); setShowPaymentInfo(false); }}
-              className="mt-6 px-6 py-3 bg-primary-600 text-white font-bold rounded-xl hover:bg-primary-700 transition-colors"
+              onClick={() => setShowPaymentInfo(false)}
+              className="mt-6 px-8 py-3 bg-primary-600 text-white font-bold rounded-xl hover:bg-primary-700 transition-colors shadow-lg"
             >
-              Đã chuyển khoản
+              Quay lại
             </button>
           </div>
         ) : (
