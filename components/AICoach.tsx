@@ -114,12 +114,21 @@ export const AICoach: React.FC<AICoachProps> = ({ transactions, assets, liabilit
         try {
             // Fix: Initializing GoogleGenAI inside handleSendMessage to ensure use of latest environment API Key
             // Sửa lỗi 1: Gọi đúng tên chìa khóa (VITE_GEMINI_API_KEY) và dùng đúng lệnh (import.meta.env)
-      const ai = new GoogleGenAI(import.meta.env.VITE_GEMINI_API_KEY);
-
-      // Sửa lỗi 2: Đổi sang model Flash chạy nhanh và ổn định hơn
+      // SỬA: Lấy chìa khóa đúng chuẩn Vite và dùng Model Flash cho nhanh
+      const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+      if (!apiKey) throw new Error("Chưa có API Key");
+      
+      const ai = new GoogleGenAI(apiKey);
       const model = ai.getGenerativeModel({ 
-        model: "gemini-1.5-flash",
-        systemInstruction: SYSTEM_PROMPT, // Đảm bảo dòng này giữ nguyên logic cũ
+        model: "gemini-1.5-flash", 
+        systemInstruction: SYSTEM_PROMPT 
+      });
+
+      const chat = model.startChat({
+        history: messages.map(m => ({
+          role: m.role,
+          parts: [{ text: m.text }],
+        })),
       });
 
       const chat = model.startChat({
