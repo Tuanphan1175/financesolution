@@ -4,22 +4,22 @@ import { XIcon } from './Icons'; // Thêm dòng này
 
 export const UpgradePlan: React.FC = () => {
   const [isAnnual, setIsAnnual] = useState(false);
-  const [showPaymentInfo, setShowPaymentInfo] = useState(false); // State để hiển thị thông tin thanh toán/QR
+  const [showPaymentInfo, setShowPaymentInfo] = useState(false);
 
   const premiumMonthlyPrice = 200000;
-  const premiumAnnualPrice = 180000; // Giả định giảm giá còn 180k/tháng khi trả hàng năm
-  const premiumTotalAnnual = premiumAnnualPrice * 12;
+  const premiumAnnualPricePerMonthDisplay = 160000; // Giá hiển thị 160k/tháng khi chọn năm
+  const premiumTotalAnnual = 1920000; // Tổng 1.920.000 VNĐ/năm (160k * 12)
 
   const handleUpgradeClick = () => {
     setShowPaymentInfo(true); // Khi bấm nút, hiển thị thông tin thanh toán
   };
 
   // Thông tin QR Code
-  const bankCode = "VCB"; // Đã đổi thành VCB
+  const bankCode = "VCB";
   const accountNumber = "0171003462117";
-  const accountName = "PHAN ANH TUAN"; // Đã đổi thành PHAN ANH TUAN
-  const amount = isAnnual ? premiumTotalAnnual : premiumMonthlyPrice;
-  const addInfo = "SDT VIP"; // Đã đổi thành SDT VIP
+  const accountName = "PHAN ANH TUAN";
+  const amount = isAnnual ? premiumTotalAnnual : premiumMonthlyPrice; // Cập nhật số tiền cho QR Code
+  const addInfo = isAnnual ? "SDT VIP NAM" : "SDT VIP"; // Cập nhật nội dung chuyển khoản
 
   const qrCodeUrl = `https://img.vietqr.io/image/${bankCode}-${accountNumber}-compact2.png?amount=${amount}&addInfo=${encodeURIComponent(addInfo)}&accountName=${encodeURIComponent(accountName)}`;
 
@@ -111,10 +111,10 @@ export const UpgradePlan: React.FC = () => {
             <p className="text-gray-600 dark:text-gray-300 mb-6">Đạt được tự do tài chính với sự kỷ luật.</p>
             
             <div className="text-4xl font-extrabold text-gray-900 dark:text-white mb-2">
-              {isAnnual ? premiumAnnualPrice.toLocaleString('vi-VN') : premiumMonthlyPrice.toLocaleString('vi-VN')} <span className="text-xl font-semibold">VNĐ</span>
+              {isAnnual ? premiumAnnualPricePerMonthDisplay.toLocaleString('vi-VN') : premiumMonthlyPrice.toLocaleString('vi-VN')} <span className="text-xl font-semibold">VNĐ</span>
             </div>
             <p className="text-gray-500 dark:text-gray-400 mb-6">
-              {isAnnual ? `/tháng (Tổng ${premiumTotalAnnual.toLocaleString('vi-VN')} VNĐ/năm)` : '/tháng'}
+              {isAnnual ? `(Tiết kiệm 20% - Tổng ${premiumTotalAnnual.toLocaleString('vi-VN')} VNĐ/năm)` : '/tháng'}
             </p>
 
             <ul className="space-y-3 text-gray-700 dark:text-gray-300 flex-grow mb-8">
