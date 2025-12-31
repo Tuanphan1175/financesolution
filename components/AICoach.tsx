@@ -94,12 +94,16 @@ export const AICoach: React.FC<AICoachProps> = ({ transactions, assets, liabilit
         setIsLoading(true);
 
         try {
-            // SỬA 2: Đã sửa lỗi chính tả trong Key (chữ í -> i)
-            const API_KEY_DIRECT = "AIzaSyD2QvJkU4PYY-G-muQLic4DbhMu349-hyI"; 
+            // 1. Chìa khóa cứng (Anh giữ nguyên chìa khóa đang dùng được)
+            const API_KEY_DIRECT = "AIzaSyD2QvJkU4PYY-G-muQlic4DbhMu349-hyl"; 
             
-            // SỬA 3: Khởi tạo bằng GoogleGenerativeAI (thư viện chuẩn)
+            // 2. Khởi tạo
             const genAI = new GoogleGenerativeAI(API_KEY_DIRECT);
-            const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+
+            // 3. SỬA TÊN MODEL TẠI ĐÂY: Dùng bản 2.0 Flash Experimental mới nhất
+            const model = genAI.getGenerativeModel({ 
+                model: "gemini-2.0-flash-exp" 
+            });
 
             const chat = model.startChat({
                 history: [
@@ -113,6 +117,9 @@ export const AICoach: React.FC<AICoachProps> = ({ transactions, assets, liabilit
                     }))
                 ],
             });
+
+            const result = await chat.sendMessage(userText);
+            const response = result.response.text();
 
             const result = await chat.sendMessage(userText);
             const response = result.response.text();
