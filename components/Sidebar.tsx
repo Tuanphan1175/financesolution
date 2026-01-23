@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+```tsx
+import React, { useEffect, useMemo, useState } from 'react';
 import { View } from '../types';
 import {
   ChartPieIcon,
@@ -15,6 +16,7 @@ import {
   PencilIcon,
   RefreshIcon,
 } from './Icons';
+import { logout } from '../lib/logout';
 
 interface SidebarProps {
   currentView: View;
@@ -87,21 +89,39 @@ export const Sidebar: React.FC<SidebarProps> = ({
     setIsEditing(false);
   };
 
-  const navItems: { view: View; label: string; icon: React.ReactNode }[] = [
-    { view: 'dashboard', label: 'Bảng điều khiển', icon: <ChartPieIcon /> },
-    { view: 'ai-coach', label: 'AI Coach', icon: <SparklesIcon /> },
-    { view: 'playbook', label: 'Chiến lược', icon: <BookOpenIcon /> },
-    { view: '30-day-journey', label: 'Hành trình 30 ngày', icon: <CalendarIcon /> },
-    { view: 'journey', label: 'Tháp Tài Chính', icon: <TrendingUpIcon /> },
-    { view: 'transactions', label: 'Giao dịch', icon: <CollectionIcon /> },
-    { view: 'budgets', label: 'Ngân sách', icon: <ClipboardListIcon /> },
-    { view: 'rules', label: 'Nguyên tắc vàng', icon: <ShieldCheckIcon /> },
-    { view: 'net-worth', label: 'Tài sản ròng', icon: <ScaleIcon /> },
-    { view: 'income-ladder', label: 'Cấp độ kiếm tiền', icon: <CurrencyDollarIcon /> },
-    { view: 'reports', label: 'Báo cáo', icon: <DocumentReportIcon /> },
-    { view: 'category-settings', label: 'Quản lý danh mục', icon: <PencilIcon /> },
-    { view: 'upgrade-plan', label: 'Nâng cấp Gói', icon: <SparklesIcon /> },
-  ];
+  const navItems: { view: View; label: string; icon: React.ReactNode }[] =
+    useMemo(
+      () => [
+        { view: 'dashboard', label: 'Bảng điều khiển', icon: <ChartPieIcon /> },
+        { view: 'ai-coach', label: 'AI Coach', icon: <SparklesIcon /> },
+        { view: 'playbook', label: 'Chiến lược', icon: <BookOpenIcon /> },
+        {
+          view: '30-day-journey',
+          label: 'Hành trình 30 ngày',
+          icon: <CalendarIcon />,
+        },
+        { view: 'journey', label: 'Tháp Tài Chính', icon: <TrendingUpIcon /> },
+        { view: 'transactions', label: 'Giao dịch', icon: <CollectionIcon /> },
+        { view: 'budgets', label: 'Ngân sách', icon: <ClipboardListIcon /> },
+        { view: 'rules', label: 'Nguyên tắc vàng', icon: <ShieldCheckIcon /> },
+        { view: 'net-worth', label: 'Tài sản ròng', icon: <ScaleIcon /> },
+        {
+          view: 'income-ladder',
+          label: 'Cấp độ kiếm tiền',
+          icon: <CurrencyDollarIcon />,
+        },
+        { view: 'reports', label: 'Báo cáo', icon: <DocumentReportIcon /> },
+        {
+          view: 'category-settings',
+          label: 'Quản lý danh mục',
+          icon: <PencilIcon />,
+        },
+        { view: 'upgrade-plan', label: 'Nâng cấp Gói', icon: <SparklesIcon /> },
+      ],
+      []
+    );
+
+  const membershipLabel = isPremium ? 'Premium Member' : 'Free Member';
 
   return (
     <div className="flex flex-col w-full h-full px-6 py-12 bg-luxury-obsidian overflow-y-auto">
@@ -147,48 +167,73 @@ export const Sidebar: React.FC<SidebarProps> = ({
           <button
             onClick={() => setIsPremium(!isPremium)}
             className="w-full flex items-center px-8 py-3 text-[10px] font-black uppercase tracking-[0.2em] rounded-2xl transition-all duration-500 text-slate-500 hover:text-white hover:bg-slate-800/50 mb-4"
+            type="button"
           >
             <RefreshIcon className="h-5 w-5 mr-4 text-slate-600" />
             Dev: Toggle VIP ({isPremium ? 'ON' : 'OFF'})
           </button>
         )}
 
-        <div className="flex items-center p-4 rounded-[1.8rem] bg-slate-900 border border-slate-800 shadow-inner">
-          <div className="relative shrink-0">
-            <img
-              className="w-14 h-14 rounded-2xl bg-luxury-gold object-cover shadow-luxury border-2 border-black"
-              src={`https://ui-avatars.com/api/?name=${encodeURIComponent(
-                userName
-              )}&background=C5A059&color=000&bold=true&font-size=0.4`}
-              alt="User"
-            />
-            <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-emerald-500 border-4 border-slate-900 rounded-full"></div>
+        {/* USER CARD */}
+        <div className="rounded-[1.8rem] bg-slate-900 border border-slate-800 shadow-inner p-4">
+          <div className="flex items-center">
+            <div className="relative shrink-0">
+              <img
+                className="w-14 h-14 rounded-2xl bg-luxury-gold object-cover shadow-luxury border-2 border-black"
+                src={`https://ui-avatars.com/api/?name=${encodeURIComponent(
+                  userName
+                )}&background=C5A059&color=000&bold=true&font-size=0.4`}
+                alt="User"
+              />
+              <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-emerald-500 border-4 border-slate-900 rounded-full"></div>
+            </div>
+
+            <div className="ml-5 flex-1 min-w-0">
+              {isEditing ? (
+                <input
+                  value={userName}
+                  onChange={(e) => setUserName(e.target.value)}
+                  onBlur={handleSaveName}
+                  onKeyDown={(e) => e.key === 'Enter' && handleSaveName()}
+                  className="w-full text-sm font-black text-white bg-transparent border-b-2 border-luxury-gold focus:outline-none py-1"
+                  autoFocus
+                />
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => setIsEditing(true)}
+                  className="text-left w-full cursor-pointer group"
+                  aria-label="Chỉnh sửa tên hiển thị"
+                >
+                  <p className="text-[16px] font-black text-white truncate flex items-center mb-2">
+                    {userName}
+                    <PencilIcon className="h-3 w-3 ml-3 text-slate-500 opacity-0 group-hover:opacity-100 transition-opacity" />
+                  </p>
+                  <p
+                    className={`text-[9px] font-black uppercase tracking-[0.3em] opacity-70 ${
+                      isPremium ? 'text-luxury-gold' : 'text-slate-400'
+                    }`}
+                  >
+                    {membershipLabel}
+                  </p>
+                </button>
+              )}
+            </div>
           </div>
 
-          <div className="ml-5 flex-1 min-w-0">
-            {isEditing ? (
-              <input
-                value={userName}
-                onChange={(e) => setUserName(e.target.value)}
-                onBlur={handleSaveName}
-                onKeyDown={(e) => e.key === 'Enter' && handleSaveName()}
-                className="w-full text-sm font-black text-white bg-transparent border-b-2 border-luxury-gold focus:outline-none py-1"
-                autoFocus
-              />
-            ) : (
-              <div onClick={() => setIsEditing(true)} className="cursor-pointer">
-                <p className="text-[16px] font-black text-white truncate flex items-center mb-2">
-                  {userName}
-                  <PencilIcon className="h-3 w-3 ml-3 text-slate-500 opacity-0 group-hover:opacity-100" />
-                </p>
-                <p className="text-[9px] font-black text-luxury-gold uppercase tracking-[0.3em] opacity-60">
-                  Elite Member
-                </p>
-              </div>
-            )}
+          {/* LOGOUT BUTTON (ĐÚNG VỊ TRÍ UX: DƯỚI PROFILE) */}
+          <div className="mt-4">
+            <button
+              onClick={logout}
+              type="button"
+              className="w-full rounded-xl bg-red-500/10 text-red-300 px-4 py-2 text-sm hover:bg-red-500/20 transition"
+            >
+              Đăng xuất
+            </button>
           </div>
         </div>
       </div>
     </div>
   );
 };
+```
