@@ -10,17 +10,14 @@ import {
 import { IconMap, PlusIcon, XIcon, CogIcon, SparklesIcon, ArrowUpIcon } from './Icons';
 
 interface AddTransactionFormProps {
-  // ADD
-  onAddTransaction: (transaction: Omit<Transaction, 'id'>) => void;
-
-  // EDIT (optional)
   initialTransaction?: Transaction | null;
-  onUpdateTransaction?: (transaction: Transaction) => void;
-  onDeleteTransaction?: (id: string) => void;
+
+  onAddTransaction: (transaction: Omit<Transaction, 'id'>) => void;
+  onUpdateTransaction: (id: string, updated: Omit<Transaction, 'id'>) => void;
+  onDeleteTransaction: (id: string) => void;
 
   onClose: () => void;
 
-  // Categories
   categories: Category[];
   onAddCategory: (cat: Category) => void;
   onUpdateCategory: (cat: Category) => void;
@@ -42,8 +39,8 @@ const PRESET_COLORS = [
 type FormMode = 'transaction' | 'add_category' | 'edit_category';
 
 export const AddTransactionForm: React.FC<AddTransactionFormProps> = ({
-  onAddTransaction,
   initialTransaction,
+  onAddTransaction,
   onUpdateTransaction,
   onDeleteTransaction,
   onClose,
@@ -51,32 +48,28 @@ export const AddTransactionForm: React.FC<AddTransactionFormProps> = ({
   onAddCategory,
   onUpdateCategory,
 }) => {
-  const isEdit = !!initialTransaction?.id;
+  const isEditing = !!initialTransaction;
 
+  // ===== Transaction form state =====
   const [type, setType] = useState<TransactionType>('expense');
-  const [amount, setAmount] = useState('');
-  const [description, setDescription] = useState('');
-  const [categoryId, setCategoryId] = useState('');
-  const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
+  const [amount, setAmount] = useState<string>('');
+  const [description, setDescription] = useState<string>('');
+  const [categoryId, setCategoryId] = useState<string>('');
+  const [date, setDate] = useState<string>(new Date().toISOString().split('T')[0]);
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('credit_card');
   const [accountType, setAccountType] = useState<AccountType>('personal');
   const [classification, setClassification] = useState<SpendingClassification>('need');
 
-  // Mode management
+  // ===== Mode management =====
   const [formMode, setFormMode] = useState<FormMode>('transaction');
 
-  // State for new/edit category
+  // ===== Category editor state =====
   const [catName, setCatName] = useState('');
   const [catColor, setCatColor] = useState(PRESET_COLORS[0]);
-  const [catIcon, setCatIcon] = useState('ChartPie');
+  const [catIcon, setCatIcon] = useState<string>('ChartPie');
   const [catDefaultClass, setCatDefaultClass] = useState<SpendingClassification>('need');
 
-  const availableCategories = useMemo(
-    () => categories.filter(c => c.type === type),
-    [categories, type]
-  );
-
-  // Prefill when edit
+  // ===== Hydrate form when editing =====
   useEffect(() => {
     if (!initialTransaction) return;
 
@@ -84,43 +77,44 @@ export const AddTransactionForm: React.FC<AddTransactionFormProps> = ({
     setAmount(String(initialTransaction.amount ?? ''));
     setDescription(initialTransaction.description ?? '');
     setCategoryId(initialTransaction.categoryId ?? '');
-    setDate((initialTransaction.date ?? new Date().toISOString().split('T')[0]).split('T')[0]);
-
+    setDate(initialTransaction.date ?? new Date().toISOString().split('T')[0]);
     setPaymentMethod(initialTransaction.paymentMethod ?? 'credit_card');
     setAccountType(initialTransaction.accountType ?? 'personal');
-
-    setClassification(
-      initialTransaction.type === 'income'
-        ? 'need'
-        : (initialTransaction.classification ?? 'need')
-    );
-
+    setClassification(initialTransaction.classification ?? 'need');
     setFormMode('transaction');
   }, [initialTransaction]);
 
-  // Handle smart classification flipping (when user changes category)
+  const availableCategories = useMemo(
+    () => categories.filter((c) => c.type === type),
+    [categories, type]
+  );
+
+  // Auto apply default classification (only for expense)
   useEffect(() => {
+    if (type !== 'expense') return;
     if (!categoryId || categoryId === 'NEW_CAT') return;
 
-    const selectedCat = categories.find(c => c.id === categoryId);
+    const selectedCat = categories.find((c) => c.id === categoryId);
     if (selectedCat?.defaultClassification) {
-      // Chỉ áp dụng defaultClassification cho CHI TIÊU
-      if (type === 'expense') setClassification(selectedCat.defaultClassification);
+      setClassification(selectedCat.defaultClassification);
     }
   }, [categoryId, categories, type]);
 
-  const handleStartAddCategory = () => {
+  const resetCategoryEditor = () => {
     setCatName('');
     setCatColor(PRESET_COLORS[0]);
     setCatIcon('ChartPie');
     setCatDefaultClass('need');
+  };
+
+  const handleStartAddCategory = () => {
+    resetCategoryEditor();
     setFormMode('add_category');
   };
 
   const handleStartEditCategory = () => {
     if (!categoryId || categoryId === 'NEW_CAT') return;
-
-    const selectedCat = categories.find(c => c.id === categoryId);
+    const selectedCat = categories.find((c) => c.id === categoryId);
     if (!selectedCat) return;
 
     setCatName(selectedCat.name);
@@ -131,31 +125,33 @@ export const AddTransactionForm: React.FC<AddTransactionFormProps> = ({
   };
 
   const handleSaveCategory = () => {
-    const name = catName.trim();
-    if (!name) return;
+    if (!catName.trim()) {
+      alert('Vui lòng nhập tên danh mục.');
+      return;
+    }
 
     if (formMode === 'add_category') {
       const newId = `cat-custom-${Date.now()}`;
       const newCat: Category = {
         id: newId,
-        name,
+        name: catName.trim(),
         type,
         icon: catIcon,
         color: catColor,
-        defaultClassification: catDefaultClass,
+        defaultClassification: type === 'expense' ? catDefaultClass : 'need',
       };
       onAddCategory(newCat);
       setCategoryId(newId);
     }
 
-    if (formMode === 'edit_category' && categoryId && categoryId !== 'NEW_CAT') {
+    if (formMode === 'edit_category' && categoryId) {
       const updatedCat: Category = {
         id: categoryId,
-        name,
+        name: catName.trim(),
         type,
         icon: catIcon,
         color: catColor,
-        defaultClassification: catDefaultClass,
+        defaultClassification: type === 'expense' ? catDefaultClass : 'need',
       };
       onUpdateCategory(updatedCat);
     }
@@ -163,23 +159,24 @@ export const AddTransactionForm: React.FC<AddTransactionFormProps> = ({
     setFormMode('transaction');
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (formMode !== 'transaction') return;
+  const parseAmount = (raw: string) => {
+    // user may type 30.000 or 30,000 -> normalize
+    const cleaned = raw.replace(/[.,\s]/g, '');
+    const n = Number(cleaned);
+    return Number.isFinite(n) ? n : NaN;
+  };
 
-    if (!amount || !description || !categoryId || categoryId === 'NEW_CAT' || !date) {
-      alert('Vui lòng điền đầy đủ các trường.');
-      return;
-    }
+  const validateTransaction = () => {
+    if (!amount || !description.trim() || !categoryId || categoryId === 'NEW_CAT' || !date) return false;
+    const n = parseAmount(amount);
+    if (!Number.isFinite(n) || n <= 0) return false;
+    return true;
+  };
 
-    const parsedAmount = Number(amount);
-    if (!Number.isFinite(parsedAmount) || parsedAmount <= 0) {
-      alert('Số tiền không hợp lệ.');
-      return;
-    }
-
-    const payload: Omit<Transaction, 'id'> = {
-      amount: parsedAmount,
+  const buildPayload = (): Omit<Transaction, 'id'> => {
+    const n = parseAmount(amount);
+    return {
+      amount: n,
       description: description.trim(),
       categoryId,
       date,
@@ -188,19 +185,28 @@ export const AddTransactionForm: React.FC<AddTransactionFormProps> = ({
       accountType,
       classification: type === 'income' ? 'need' : classification,
     };
+  };
 
-    // EDIT
-    if (isEdit && initialTransaction && onUpdateTransaction) {
-      onUpdateTransaction({ ...initialTransaction, ...payload });
-      onClose();
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (formMode !== 'transaction') return;
+
+    if (!validateTransaction()) {
+      alert('Vui lòng điền đầy đủ và đúng các trường.');
       return;
     }
 
-    // ADD
+    const payload = buildPayload();
+
+    if (isEditing && initialTransaction) {
+      onUpdateTransaction(initialTransaction.id, payload);
+      return;
+    }
+
     onAddTransaction(payload);
   };
 
-  // CATEGORY MODE UI
+  // ===== Category Editor UI =====
   if (formMode !== 'transaction') {
     return (
       <div className="space-y-8 animate-in fade-in slide-in-from-top-4 duration-500">
@@ -231,9 +237,9 @@ export const AddTransactionForm: React.FC<AddTransactionFormProps> = ({
             <input
               type="text"
               value={catName}
-              onChange={e => setCatName(e.target.value)}
+              onChange={(e) => setCatName(e.target.value)}
               className="w-full p-4 rounded-2xl bg-black/40 border border-slate-800 text-white text-base font-bold focus:border-luxury-gold outline-none transition-all"
-              placeholder="Nhập tên danh mục..."
+              placeholder="VD: Ăn uống, Xăng xe, Học tập..."
               autoFocus
             />
           </div>
@@ -276,7 +282,7 @@ export const AddTransactionForm: React.FC<AddTransactionFormProps> = ({
                 Bảng màu sắc
               </span>
               <div className="flex flex-wrap gap-3">
-                {PRESET_COLORS.map(c => (
+                {PRESET_COLORS.map((c) => (
                   <button
                     key={c}
                     type="button"
@@ -287,7 +293,7 @@ export const AddTransactionForm: React.FC<AddTransactionFormProps> = ({
                         : 'opacity-40 hover:opacity-100 hover:scale-110'
                     }`}
                     style={{ backgroundColor: c }}
-                    aria-label={`Màu ${c}`}
+                    title={c}
                   />
                 ))}
               </div>
@@ -298,7 +304,7 @@ export const AddTransactionForm: React.FC<AddTransactionFormProps> = ({
                 Biểu tượng
               </span>
               <div className="flex flex-wrap gap-2.5">
-                {Object.keys(IconMap).map(iconName => {
+                {Object.keys(IconMap).map((iconName) => {
                   const Icon = IconMap[iconName];
                   return (
                     <button
@@ -341,7 +347,7 @@ export const AddTransactionForm: React.FC<AddTransactionFormProps> = ({
     );
   }
 
-  // TRANSACTION MODE UI
+  // ===== Transaction UI =====
   return (
     <form onSubmit={handleSubmit} className="space-y-8 animate-in fade-in duration-700">
       <div className="flex justify-center">
@@ -351,7 +357,6 @@ export const AddTransactionForm: React.FC<AddTransactionFormProps> = ({
             onClick={() => {
               setType('expense');
               setCategoryId('');
-              setClassification('need');
             }}
             className={`flex-1 py-3 rounded-xl transition-all text-xs font-black uppercase tracking-widest ${
               type === 'expense'
@@ -366,7 +371,6 @@ export const AddTransactionForm: React.FC<AddTransactionFormProps> = ({
             onClick={() => {
               setType('income');
               setCategoryId('');
-              setClassification('need');
             }}
             className={`flex-1 py-3 rounded-xl transition-all text-xs font-black uppercase tracking-widest ${
               type === 'income'
@@ -386,7 +390,7 @@ export const AddTransactionForm: React.FC<AddTransactionFormProps> = ({
           </label>
           <select
             value={accountType}
-            onChange={e => setAccountType(e.target.value as AccountType)}
+            onChange={(e) => setAccountType(e.target.value as AccountType)}
             className="w-full bg-black/40 border border-slate-800 text-white rounded-2xl p-4 text-sm font-bold focus:border-luxury-gold outline-none appearance-none cursor-pointer shadow-inner"
           >
             <option value="personal">Ví Cá Nhân</option>
@@ -433,14 +437,19 @@ export const AddTransactionForm: React.FC<AddTransactionFormProps> = ({
             Số tiền giao dịch (₫)
           </label>
           <input
-            type="number"
+            type="text"
+            inputMode="numeric"
             value={amount}
-            onChange={e => setAmount(e.target.value)}
+            onChange={(e) => setAmount(e.target.value)}
             className="w-full bg-black/40 border border-slate-800 text-white rounded-2xl p-4 text-2xl font-black font-mono focus:border-luxury-gold outline-none shadow-inner placeholder-slate-800"
-            placeholder="0"
+            placeholder="30000 hoặc 30.000"
             required
           />
+          <p className="mt-2 text-[10px] text-slate-500 font-bold uppercase tracking-widest">
+            Mẹo: gõ 30000 (không dấu) để tránh nhầm 30.000.000
+          </p>
         </div>
+
         <div>
           <label className="block text-[10px] font-black text-slate-500 uppercase mb-3 tracking-widest">
             Thời gian
@@ -448,7 +457,7 @@ export const AddTransactionForm: React.FC<AddTransactionFormProps> = ({
           <input
             type="date"
             value={date}
-            onChange={e => setDate(e.target.value)}
+            onChange={(e) => setDate(e.target.value)}
             className="w-full bg-black/40 border border-slate-800 text-white rounded-2xl p-4 text-sm font-bold focus:border-luxury-gold outline-none appearance-none cursor-pointer"
             required
           />
@@ -462,7 +471,7 @@ export const AddTransactionForm: React.FC<AddTransactionFormProps> = ({
         <input
           type="text"
           value={description}
-          onChange={e => setDescription(e.target.value)}
+          onChange={(e) => setDescription(e.target.value)}
           className="w-full bg-black/40 border border-slate-800 text-white rounded-2xl p-4 text-base font-bold focus:border-luxury-gold outline-none shadow-inner"
           placeholder="VD: Mua quà tặng, Thanh toán hóa đơn..."
           required
@@ -478,12 +487,12 @@ export const AddTransactionForm: React.FC<AddTransactionFormProps> = ({
           <div className="relative flex-1 group">
             <select
               value={categoryId}
-              onChange={e => {
+              onChange={(e) => {
                 if (e.target.value === 'NEW_CAT') {
                   handleStartAddCategory();
-                  return;
+                } else {
+                  setCategoryId(e.target.value);
                 }
-                setCategoryId(e.target.value);
               }}
               className="w-full bg-black/40 border border-slate-800 text-white rounded-2xl p-4 text-base font-black focus:border-luxury-gold outline-none appearance-none cursor-pointer group-hover:border-slate-700 transition-all"
               required
@@ -491,13 +500,11 @@ export const AddTransactionForm: React.FC<AddTransactionFormProps> = ({
               <option value="" disabled>
                 -- Chọn một danh mục --
               </option>
-
-              {availableCategories.map(cat => (
+              {availableCategories.map((cat) => (
                 <option key={cat.id} value={cat.id}>
                   {cat.name}
                 </option>
               ))}
-
               <option value="NEW_CAT" className="text-luxury-gold font-black italic">
                 ⊕ Nhập danh mục tùy chỉnh...
               </option>
@@ -522,15 +529,6 @@ export const AddTransactionForm: React.FC<AddTransactionFormProps> = ({
             >
               <CogIcon className="h-6 w-6" />
             </button>
-
-            <button
-              type="button"
-              onClick={handleStartAddCategory}
-              className="p-4 rounded-2xl border bg-black/40 border-slate-800 text-slate-500 hover:text-luxury-gold hover:border-luxury-gold/50 transition-all"
-              title="Tạo danh mục mới"
-            >
-              <PlusIcon className="h-6 w-6" />
-            </button>
           </div>
         </div>
       </div>
@@ -539,9 +537,8 @@ export const AddTransactionForm: React.FC<AddTransactionFormProps> = ({
         <label className="block text-[10px] font-black text-slate-500 uppercase mb-3 tracking-widest">
           Phương thức thanh toán
         </label>
-
         <div className="grid grid-cols-3 gap-3">
-          {(['credit_card', 'cash', 'bank_transfer'] as const).map(method => (
+          {(['credit_card', 'cash', 'bank_transfer'] as const).map((method) => (
             <button
               key={method}
               type="button"
@@ -552,42 +549,49 @@ export const AddTransactionForm: React.FC<AddTransactionFormProps> = ({
                   : 'bg-black/40 text-slate-500 border-slate-800 hover:border-slate-700'
               }`}
             >
-              {method === 'credit_card' ? 'Thẻ/Credit' : method === 'cash' ? 'Tiền mặt' : 'Chuyển khoản'}
+              {method === 'credit_card'
+                ? 'Thẻ/Credit'
+                : method === 'cash'
+                ? 'Tiền mặt'
+                : 'Chuyển khoản'}
             </button>
           ))}
         </div>
       </div>
 
       <div className="flex gap-4 pt-8">
-        {isEdit && initialTransaction?.id && onDeleteTransaction ? (
-          <button
-            type="button"
-            onClick={() => {
-              const ok = confirm('Xóa giao dịch này? Hành động không thể hoàn tác.');
-              if (!ok) return;
-              onDeleteTransaction(initialTransaction.id);
-              onClose();
-            }}
-            className="flex-1 py-4 text-xs font-black uppercase tracking-widest text-rose-400 border border-rose-500/30 bg-rose-500/10 rounded-2xl hover:bg-rose-500 hover:text-white transition-all"
-          >
-            Xóa giao dịch
-          </button>
+        <button
+          type="button"
+          onClick={onClose}
+          className="flex-1 py-4 text-xs font-black uppercase tracking-widest text-slate-500 hover:text-white transition-colors"
+        >
+          Đóng
+        </button>
+
+        {isEditing && initialTransaction ? (
+          <>
+            <button
+              type="button"
+              onClick={() => onDeleteTransaction(initialTransaction.id)}
+              className="flex-1 py-4 bg-rose-500/15 text-rose-400 text-xs font-black rounded-2xl border border-rose-500/20 hover:bg-rose-500 hover:text-white transition-all uppercase tracking-[0.2em]"
+            >
+              Xóa giao dịch
+            </button>
+            <button
+              type="submit"
+              className="flex-[2] py-5 bg-gradient-to-r from-luxury-gold to-amber-600 text-black text-sm font-black uppercase tracking-[0.3em] rounded-2xl shadow-luxury hover:scale-[1.02] active:scale-95 transition-all"
+            >
+              Cập nhật
+            </button>
+          </>
         ) : (
           <button
-            type="button"
-            onClick={onClose}
-            className="flex-1 py-4 text-xs font-black uppercase tracking-widest text-slate-500 hover:text-white transition-colors"
+            type="submit"
+            className="flex-[2] py-5 bg-gradient-to-r from-luxury-gold to-amber-600 text-black text-sm font-black uppercase tracking-[0.3em] rounded-2xl shadow-luxury hover:scale-[1.02] active:scale-95 transition-all"
           >
-            Hủy giao dịch
+            Ghi nhận ngay
           </button>
         )}
-
-        <button
-          type="submit"
-          className="flex-[2] py-5 bg-gradient-to-r from-luxury-gold to-amber-600 text-black text-sm font-black uppercase tracking-[0.3em] rounded-2xl shadow-luxury hover:scale-[1.02] active:scale-95 transition-all"
-        >
-          {isEdit ? 'Lưu chỉnh sửa' : 'Ghi nhận ngay'}
-        </button>
       </div>
     </form>
   );
