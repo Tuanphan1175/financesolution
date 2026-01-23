@@ -1,12 +1,15 @@
 {
-  "name": "ứng-dụng-quản-lý-tài-chính-cá-nhân-thông-minh",
+  "name": "ung-dung-quan-ly-tai-chinh-ca-nhan-thong-minh",
   "private": true,
   "version": "0.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint . --ext .ts,.tsx --max-warnings=0",
+    "check": "pnpm run typecheck && pnpm run lint && pnpm run build"
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
