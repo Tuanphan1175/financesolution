@@ -1,19 +1,25 @@
 // App.tsx
-import React, { useEffect, useMemo, useState } from 'react';
-import Sidebar from './components/Sidebar';
-import { Dashboard } from './components/Dashboard';
-import { Transactions } from './components/Transactions';
-import { Budgets } from './components/Budgets';
-import { Reports } from './components/Reports';
-import { Journey } from './components/Journey';
-import { GoldenRules } from './components/GoldenRules';
-import { IncomeLadder } from './components/IncomeLadder';
-import { NetWorth } from './components/NetWorth';
-import { ThirtyDayJourney } from './components/ThirtyDayJourney';
-import { AICoach } from './components/AICoach';
-import { WealthPlaybookPanel } from './components/WealthPlaybookPanel';
-import { MenuIcon, XIcon, ArrowUpIcon } from './components/Icons';
-import {
+import React, { useEffect, useMemo, useState } from "react";
+
+// ✅ Sidebar đang là named export => phải import dạng { Sidebar }
+import { Sidebar } from "./components/Sidebar";
+
+// ✅ Dashboard đã export default => import default
+import Dashboard from "./components/Dashboard";
+
+import { Transactions } from "./components/Transactions";
+import { Budgets } from "./components/Budgets";
+import { Reports } from "./components/Reports";
+import { Journey } from "./components/Journey";
+import { GoldenRules } from "./components/GoldenRules";
+import { IncomeLadder } from "./components/IncomeLadder";
+import { NetWorth } from "./components/NetWorth";
+import { ThirtyDayJourney } from "./components/ThirtyDayJourney";
+import { AICoach } from "./components/AICoach";
+import { WealthPlaybookPanel } from "./components/WealthPlaybookPanel";
+import { MenuIcon, XIcon, ArrowUpIcon } from "./components/Icons";
+
+import type {
   View,
   AccountType,
   GoldenRule,
@@ -23,40 +29,42 @@ import {
   Budget,
   Asset,
   Liability,
-} from './types';
+} from "./types";
+
 import {
   ASSETS as INITIAL_ASSETS,
   LIABILITIES as INITIAL_LIABILITIES,
   GOLDEN_RULES_SEED,
   TRANSACTIONS as INITIAL_TRANSACTIONS,
   BUDGETS as INITIAL_BUDGETS,
-} from './constants';
-import { calculatePyramidStatus } from './lib/pyramidLogic';
-import { CategorySettings } from './components/CategorySettings';
-import { UpgradePlan } from './components/UpgradePlan';
-import { PricingModal } from './components/PricingModal';
-import { UpgradeButton } from './components/UpgradeButton';
+} from "./constants";
+
+import { calculatePyramidStatus } from "./lib/pyramidLogic";
+import { CategorySettings } from "./components/CategorySettings";
+import { UpgradePlan } from "./components/UpgradePlan";
+import { PricingModal } from "./components/PricingModal";
+import { UpgradeButton } from "./components/UpgradeButton";
 
 // ✅ AuthGate (file cùng cấp với App.tsx trong repo root)
-import { AuthGate } from './AuthGate';
+import { AuthGate } from "./AuthGate";
 
 // ===============================
 // LocalStorage keys (chuẩn hoá 1 nơi)
 // ===============================
 const LS_KEYS = {
-  assets: 'smartfinance_assets',
-  liabilities: 'smartfinance_liabilities',
-  transactions: 'smartfinance_transactions', // KEY ĐÚNG
-  categories: 'smartfinance_categories',
-  budgets: 'smartfinance_budgets',
-  rules: 'smartfinance_rules',
-  journey: 'smartfinance_journey',
-  targetLevel: 'smartfinance_target_level',
+  assets: "smartfinance_assets",
+  liabilities: "smartfinance_liabilities",
+  transactions: "smartfinance_transactions",
+  categories: "smartfinance_categories",
+  budgets: "smartfinance_budgets",
+  rules: "smartfinance_rules",
+  journey: "smartfinance_journey",
+  targetLevel: "smartfinance_target_level",
 } as const;
 
 // Fallback keys (để MIGRATE dữ liệu cũ nếu trước đây lưu sai)
 const LEGACY_KEYS = {
-  transactions: ['smartfinance_transactions'],
+  transactions: ["transactions", "smartfinance_tx", "smartfinance_transaction"],
 } as const;
 
 // ===============================
@@ -72,11 +80,9 @@ function safeJsonParse<T>(raw: string | null, fallback: T): T {
 }
 
 function loadWithMigration<T>(primaryKey: string, legacyKeys: string[], fallback: T): T {
-  // 1) ưu tiên key đúng
   const primaryRaw = localStorage.getItem(primaryKey);
   if (primaryRaw) return safeJsonParse<T>(primaryRaw, fallback);
 
-  // 2) tìm key cũ -> migrate sang key đúng
   for (const k of legacyKeys) {
     const legacyRaw = localStorage.getItem(k);
     if (legacyRaw) {
@@ -97,74 +103,70 @@ function loadWithMigration<T>(primaryKey: string, legacyKeys: string[], fallback
 // Default categories
 // ===============================
 const DEFAULT_CATEGORIES: Category[] = [
-  { id: 'cat-1', name: 'Lương', type: 'income', icon: 'Briefcase', color: '#10b981', defaultClassification: 'need' },
-  { id: 'cat-2', name: 'Tạp hóa', type: 'expense', icon: 'ShoppingCart', color: '#ef4444', defaultClassification: 'need' },
-  { id: 'cat-3', name: 'Tiền thuê nhà', type: 'expense', icon: 'Home', color: '#f97316', defaultClassification: 'need' },
-  { id: 'cat-4', name: 'Đi lại', type: 'expense', icon: 'Bus', color: '#3b82f6', defaultClassification: 'need' },
-  { id: 'cat-5', name: 'Giải trí', type: 'expense', icon: 'Ticket', color: '#8b5cf6', defaultClassification: 'want' },
-  { id: 'cat-6', name: 'Làm tự do', type: 'income', icon: 'Pencil', color: '#14b8a6', defaultClassification: 'need' },
-  { id: 'cat-7', name: 'Tiện ích', type: 'expense', icon: 'LightningBolt', color: '#f59e0b', defaultClassification: 'need' },
-  { id: 'cat-8', name: 'Sức khỏe', type: 'expense', icon: 'Heart', color: '#ec4899', defaultClassification: 'need' },
-  { id: 'cat-9', name: 'Kinh doanh', type: 'income', icon: 'ChartPie', color: '#6366f1', defaultClassification: 'need' },
+  { id: "cat-1", name: "Lương", type: "income", icon: "Briefcase", color: "#10b981", defaultClassification: "need" },
+  { id: "cat-2", name: "Tạp hóa", type: "expense", icon: "ShoppingCart", color: "#ef4444", defaultClassification: "need" },
+  { id: "cat-3", name: "Tiền thuê nhà", type: "expense", icon: "Home", color: "#f97316", defaultClassification: "need" },
+  { id: "cat-4", name: "Đi lại", type: "expense", icon: "Bus", color: "#3b82f6", defaultClassification: "need" },
+  { id: "cat-5", name: "Giải trí", type: "expense", icon: "Ticket", color: "#8b5cf6", defaultClassification: "want" },
+  { id: "cat-6", name: "Làm tự do", type: "income", icon: "Pencil", color: "#14b8a6", defaultClassification: "need" },
+  { id: "cat-7", name: "Tiện ích", type: "expense", icon: "LightningBolt", color: "#f59e0b", defaultClassification: "need" },
+  { id: "cat-8", name: "Sức khỏe", type: "expense", icon: "Heart", color: "#ec4899", defaultClassification: "need" },
+  { id: "cat-9", name: "Kinh doanh", type: "income", icon: "ChartPie", color: "#6366f1", defaultClassification: "need" },
 ];
 
 const viewTitles: Record<View, string> = {
-  dashboard: 'Bảng Điều Khiển',
-  transactions: 'Nhật Ký Giao Dịch',
-  budgets: 'Quản Lý Ngân Sách',
-  reports: 'Báo Cáo Tài Chính',
-  journey: 'Tháp Tài Chính Lead Up',
-  rules: '11 Nguyên Tắc Vàng',
-  'income-ladder': '7 Cấp Độ Kiếm Tiền',
-  'net-worth': 'Bảng Cân Đối Tài Sản',
-  '30-day-journey': 'Hành Trình Tỉnh Thức 30 Ngày',
-  'ai-coach': 'AI Financial Coach',
-  playbook: 'Chiến Lược Tài Chính Premium',
-  'category-settings': 'Quản Lý Danh Mục',
-  'upgrade-plan': 'Nâng Cấp Gói',
+  dashboard: "Bảng Điều Khiển",
+  transactions: "Nhật Ký Giao Dịch",
+  budgets: "Quản Lý Ngân Sách",
+  reports: "Báo Cáo Tài Chính",
+  journey: "Tháp Tài Chính Lead Up",
+  rules: "11 Nguyên Tắc Vàng",
+  "income-ladder": "7 Cấp Độ Kiếm Tiền",
+  "net-worth": "Bảng Cân Đối Tài Sản",
+  "30-day-journey": "Hành Trình Tỉnh Thức 30 Ngày",
+  "ai-coach": "AI Financial Coach",
+  playbook: "Chiến Lược Tài Chính Premium",
+  "category-settings": "Quản Lý Danh Mục",
+  "upgrade-plan": "Nâng Cấp Gói",
 };
 
 // ===============================
-// PREVIEW BADGE (Vercel Preview vs Production)
-// - Với Vite: chỉ biến env bắt đầu bằng VITE_ mới được đưa ra client.
-// - Khuyến nghị: set VITE_DEPLOY_ENV=preview cho Preview, VITE_DEPLOY_ENV=production cho Production trên Vercel.
+// PREVIEW BADGE
 // ===============================
-function getDeployEnv(): 'preview' | 'production' | 'unknown' {
+function getDeployEnv(): "preview" | "production" | "unknown" {
   const env = (import.meta as any)?.env?.VITE_DEPLOY_ENV as string | undefined;
 
-  if (env === 'preview') return 'preview';
-  if (env === 'production') return 'production';
+  if (env === "preview") return "preview";
+  if (env === "production") return "production";
 
-  // Fallback: đoán theo hostname (hữu ích khi Bác chưa set env)
-  // Lưu ý: nếu Production cũng dùng *.vercel.app thì fallback có thể coi là preview.
-  if (typeof window !== 'undefined') {
-    const host = window.location.hostname || '';
-    const isLikelyPreview = host.includes('-git-') || host.includes('--');
-    if (isLikelyPreview) return 'preview';
+  if (typeof window !== "undefined") {
+    const host = window.location.hostname || "";
+    const isLikelyPreview = host.includes("-git-") || host.includes("--");
+    if (isLikelyPreview) return "preview";
   }
 
-  return 'unknown';
+  return "unknown";
 }
 
 const PreviewBadge: React.FC = () => {
   const deployEnv = getDeployEnv();
-  if (deployEnv !== 'preview') return null;
+  if (deployEnv !== "preview") return null;
 
   return (
     <div
       style={{
-        position: 'fixed',
+        position: "fixed",
         top: 12,
         right: 12,
         zIndex: 9999,
-        padding: '8px 10px',
+        padding: "8px 10px",
         borderRadius: 10,
         fontSize: 12,
         fontWeight: 800,
         letterSpacing: 0.8,
-        background: 'rgba(255, 193, 7, 0.92)',
-        color: '#111',
-        boxShadow: '0 10px 25px rgba(0,0,0,0.25)',
+        background: "rgba(255, 193, 7, 0.92)",
+        color: "#111",
+        boxShadow: "0 10px 25px rgba(0,0,0,0.25)",
       }}
       title="Bạn đang ở môi trường Preview (không phải Production)."
       aria-label="Preview Mode"
@@ -175,19 +177,16 @@ const PreviewBadge: React.FC = () => {
 };
 
 // ===============================
-// AppShell: UI hiện tại của app (giữ nguyên logic)
+// AppShell
 // ===============================
 const AppShell: React.FC = () => {
-  const [currentView, setCurrentView] = useState<View>('dashboard');
+  const [currentView, setCurrentView] = useState<View>("dashboard");
   const [isSidebarOpen, setSidebarOpen] = useState(false);
 
-  const [accountFilter, setAccountFilter] = useState<'all' | AccountType>('all');
+  const [accountFilter, setAccountFilter] = useState<"all" | AccountType>("all");
   const [isPricingModalOpen, setIsPricingModalOpen] = useState(false);
   const [isPremium, setIsPremium] = useState(false);
 
-  // ===============================
-  // State: load from localStorage (safe) + migrate if needed
-  // ===============================
   const [assets, setAssets] = useState<Asset[]>(() =>
     safeJsonParse<Asset[]>(localStorage.getItem(LS_KEYS.assets), INITIAL_ASSETS)
   );
@@ -226,9 +225,6 @@ const AppShell: React.FC = () => {
     return Number.isFinite(parsed) ? parsed : 2;
   });
 
-  // ===============================
-  // Persist all to localStorage
-  // ===============================
   useEffect(() => {
     localStorage.setItem(LS_KEYS.assets, JSON.stringify(assets));
     localStorage.setItem(LS_KEYS.liabilities, JSON.stringify(liabilities));
@@ -240,15 +236,14 @@ const AppShell: React.FC = () => {
     localStorage.setItem(LS_KEYS.targetLevel, targetLevelId.toString());
   }, [assets, liabilities, transactions, categories, budgets, goldenRules, journeyProgress, targetLevelId]);
 
-  // ===============================
-  // Reactive Pyramid Status based on Two Wallets selection
-  // ===============================
   const pyramidStatus = useMemo(() => {
     const filteredTransactions =
-      accountFilter === 'all' ? transactions : transactions.filter((t) => t.accountType === accountFilter);
-    const filteredAssets = accountFilter === 'all' ? assets : assets.filter((a) => a.accountType === accountFilter);
+      accountFilter === "all" ? transactions : transactions.filter((t) => t.accountType === accountFilter);
+
+    const filteredAssets = accountFilter === "all" ? assets : assets.filter((a) => a.accountType === accountFilter);
+
     const filteredLiabilities =
-      accountFilter === 'all' ? liabilities : liabilities.filter((l) => l.accountType === accountFilter);
+      accountFilter === "all" ? liabilities : liabilities.filter((l) => l.accountType === accountFilter);
 
     return calculatePyramidStatus(filteredTransactions, filteredAssets, filteredLiabilities, goldenRules);
   }, [transactions, assets, liabilities, goldenRules, accountFilter]);
@@ -256,34 +251,17 @@ const AppShell: React.FC = () => {
   const handleCompleteDay = (day: number, note?: string) => {
     setJourneyProgress((prev) => ({
       ...prev,
-      [day]: {
-        completed: true,
-        completedAt: new Date().toISOString(),
-        note,
-      },
+      [day]: { completed: true, completedAt: new Date().toISOString(), note },
     }));
   };
 
-  // ===============================
-  // Render View
-  // ===============================
   const renderView = () => {
     switch (currentView) {
-      case 'dashboard':
-        return (
-          <Dashboard
-            transactions={transactions}
-            assets={assets}
-            liabilities={liabilities}
-            goldenRules={goldenRules}
-            accountFilter={accountFilter}
-            setAccountFilter={setAccountFilter}
-            categories={categories}
-            pyramidStatus={pyramidStatus}
-          />
-        );
+      case "dashboard":
+        // ✅ Dashboard hiện tại chỉ cần transactions + categories
+        return <Dashboard transactions={transactions} categories={categories} />;
 
-      case 'transactions':
+      case "transactions":
         return (
           <Transactions
             transactions={transactions}
@@ -294,16 +272,16 @@ const AppShell: React.FC = () => {
           />
         );
 
-      case 'budgets':
+      case "budgets":
         return <Budgets categories={categories} transactions={transactions} budgets={budgets} setBudgets={setBudgets} />;
 
-      case 'reports':
+      case "reports":
         return <Reports transactions={transactions} categories={categories} />;
 
-      case 'journey':
+      case "journey":
         return <Journey pyramidStatus={pyramidStatus} />;
 
-      case 'rules':
+      case "rules":
         return (
           <GoldenRules
             rules={goldenRules}
@@ -313,10 +291,10 @@ const AppShell: React.FC = () => {
           />
         );
 
-      case 'income-ladder':
+      case "income-ladder":
         return <IncomeLadder />;
 
-      case 'net-worth':
+      case "net-worth":
         return (
           <NetWorth
             assets={assets}
@@ -329,7 +307,7 @@ const AppShell: React.FC = () => {
           />
         );
 
-      case '30-day-journey':
+      case "30-day-journey":
         return (
           <ThirtyDayJourney
             progress={journeyProgress}
@@ -340,7 +318,7 @@ const AppShell: React.FC = () => {
           />
         );
 
-      case 'ai-coach':
+      case "ai-coach":
         return (
           <AICoach
             transactions={transactions}
@@ -353,40 +331,27 @@ const AppShell: React.FC = () => {
           />
         );
 
-      case 'playbook':
+      case "playbook":
         return <WealthPlaybookPanel />;
 
-      case 'category-settings':
+      case "category-settings":
         return <CategorySettings categories={categories} setCategories={setCategories} />;
 
-      case 'upgrade-plan':
+      case "upgrade-plan":
         return <UpgradePlan />;
 
       default:
-        return (
-          <Dashboard
-            transactions={transactions}
-            assets={assets}
-            liabilities={liabilities}
-            goldenRules={goldenRules}
-            accountFilter={accountFilter}
-            setAccountFilter={setAccountFilter}
-            categories={categories}
-            pyramidStatus={pyramidStatus}
-          />
-        );
+        return <Dashboard transactions={transactions} categories={categories} />;
     }
   };
 
   return (
     <div className="flex h-screen bg-luxury-obsidian text-slate-100 font-sans selection:bg-luxury-gold selection:text-black">
-      {/* Preview Badge */}
       <PreviewBadge />
 
-      {/* Sidebar */}
       <div
         className={`fixed inset-y-0 left-0 z-40 w-96 bg-luxury-obsidian shadow-premium transform ${
-          isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
+          isSidebarOpen ? "translate-x-0" : "-translate-x-full"
         } transition-transform duration-500 md:relative md:translate-x-0 md:flex md:flex-shrink-0 border-r border-slate-800`}
       >
         <Sidebar
@@ -400,9 +365,7 @@ const AppShell: React.FC = () => {
         />
       </div>
 
-      {/* Main */}
       <div className="flex-1 flex flex-col overflow-hidden">
-        {/* Mobile header */}
         <header className="flex items-center justify-between p-6 bg-luxury-obsidian/80 backdrop-blur-md border-b border-slate-800 md:hidden sticky top-0 z-30">
           <h1 className="text-3xl font-extrabold text-luxury-gold tracking-tight uppercase">TÀI CHÍNH THÔNG MINH</h1>
           <button
@@ -413,15 +376,14 @@ const AppShell: React.FC = () => {
           </button>
         </header>
 
-        {/* Content */}
         <main className="flex-1 overflow-x-hidden overflow-y-auto luxury-gradient scroll-smooth pb-40">
           <div className="container mx-auto px-6 md:px-12 py-12 max-w-7xl">
             <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6">
               <div className="flex-1">
                 <div className="flex items-center gap-3 mb-3">
-                  {currentView !== 'dashboard' && (
+                  {currentView !== "dashboard" && (
                     <button
-                      onClick={() => setCurrentView('dashboard')}
+                      onClick={() => setCurrentView("dashboard")}
                       className="flex items-center gap-2 group mr-4 bg-white/5 hover:bg-luxury-gold px-5 py-2.5 rounded-xl transition-all border border-white/10 hover:border-luxury-gold shadow-luxury"
                     >
                       <ArrowUpIcon className="h-5 w-5 -rotate-90 text-luxury-gold group-hover:text-black" />
@@ -454,16 +416,12 @@ const AppShell: React.FC = () => {
         </main>
       </div>
 
-      {/* Global Upgrade CTA */}
       <UpgradeButton onClick={() => setIsPricingModalOpen(true)} />
       <PricingModal isOpen={isPricingModalOpen} onClose={() => setIsPricingModalOpen(false)} />
     </div>
   );
 };
 
-// ===============================
-// App (export): bọc AuthGate toàn app
-// ===============================
 const App: React.FC = () => {
   return (
     <AuthGate>
