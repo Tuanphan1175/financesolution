@@ -1,3 +1,192 @@
+// components/Dashboard.tsx
+import React, { useMemo } from "react";
+import type { Category, Transaction, SpendingClassification } from "../types";
+import { ScaleIcon } from "./Icons";
+
+type DashboardProps = {
+  transactions: Transaction[];
+  categories: Category[];
+};
+
+const formatMoney = (v: number) =>
+  (Number.isFinite(v) ? Math.round(v) : 0).toLocaleString("vi-VN");
+
+const StatCard: React.FC<{
+  label: string;
+  value: string;
+  sub?: string;
+  tone?: "neutral" | "good" | "bad";
+}> = ({ label, value, sub, tone = "neutral" }) => {
+  const toneClass =
+    tone === "good"
+      ? "text-emerald-300"
+      : tone === "bad"
+      ? "text-rose-300"
+      : "text-white";
+
+  return (
+    <div className="bg-slate-900/70 border border-slate-800 rounded-3xl p-6 shadow-premium">
+      <div className="text-[11px] font-black uppercase tracking-[0.22em] text-slate-400">
+        {label}
+      </div>
+      <div className={`mt-3 text-3xl font-black tracking-tight ${toneClass}`}>
+        {value}
+      </div>
+      {sub && (
+        <div className="mt-2 text-[12px] font-bold text-slate-500 tracking-wide">
+          {sub}
+        </div>
+      )}
+    </div>
+  );
+};
+
+export const Dashboard: React.FC<DashboardProps> = ({ transactions, categories }) => {
+  const categoryMap = useMemo(() => {
+    const m = new Map<string, Category>();
+    for (const c of categories) m.set(c.id, c);
+    return m;
+  }, [categories]);
+
+  const computed = useMemo(() => {
+    let income = 0;
+    let expenseTotal = 0;
+
+    let need = 0;
+    let want = 0;
+    let other = 0;
+
+    for (const t of transactions) {
+      if (t.type === "income") {
+        income += t.amount;
+        continue;
+      }
+
+      expenseTotal += t.amount;
+
+      const cat = categoryMap.get(t.categoryId);
+      const cls = (cat?.defaultClassification ?? null) as SpendingClassification | null;
+
+      if (cls === "need") need += t.amount;
+      else if (cls === "want") want += t.amount;
+      else other += t.amount;
+    }
+
+    const save = Math.max(0, income - expenseTotal);
+    const net = income - expenseTotal;
+
+    const recent = [...transactions]
+      .sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : 0))
+      .slice(0, 8)
+      .map((t) => {
+        const cat = categoryMap.get(t.categoryId);
+        return {
+          ...t,
+          categoryName: cat?.name ?? "Không rõ",
+        };
+      });
+
+    return { income, expenseTotal, need, want, other, save, net, recent };
+  }, [transactions, categoryMap]);
+
+  return (
+    <div className="w-full">
+      {/* Header */}
+      <div className="mb-8">
+        <div className="text-[12px] font-black uppercase tracking-[0.28em] text-slate-400">
+          Tổng quan
+        </div>
+        <div className="mt-2 text-3xl font-black tracking-tight text-white">
+          Dashboard tài chính
+        </div>
+        <div className="mt-2 text-[13px] font-bold text-slate-500">
+          Dữ liệu được tổng hợp theo bộ lọc hiện tại (nếu anh đang lọc theo thời gian/tài khoản ở App).
+        </div>
+      </div>
+
+      {/* Stats */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-8">
+        <StatCard label="Thu nhập" value={`${formatMoney(computed.income)} ₫`} tone="good" />
+        <StatCard label="Chi tiêu" value={`${formatMoney(computed.expenseTotal)} ₫`} tone="bad" />
+        <StatCard
+          label="Dòng tiền ròng"
+          value={`${formatMoney(computed.net)} ₫`}
+          sub={computed.net >= 0 ? "Dương: đang dư" : "Âm: đang thâm hụt"}
+          tone={computed.net >= 0 ? "good" : "bad"}
+        />
+      </div>
+
+      {/* Main grid */}
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+        {/* 50/30/20 */}
+        <div className="xl:col-span-2">
+          <BudgetRuleCard
+            income={computed.income}
+            need={computed.need}
+            want={computed.want}
+            save={computed.save}
+          />
+
+          {/* Breakdown */}
+          <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-5">
+            <StatCard label="Need (Cần thiết)" value={`${formatMoney(computed.need)} ₫`} />
+            <StatCard label="Want (Mong muốn)" value={`${formatMoney(computed.want)} ₫`} />
+            <StatCard label="Khác (Chưa phân loại)" value={`${formatMoney(computed.other)} ₫`} />
+          </div>
+        </div>
+
+        {/* Recent transactions */}
+        <div className="bg-slate-900/70 border border-slate-800 rounded-[2rem] p-6 shadow-premium">
+          <div className="text-[12px] font-black uppercase tracking-[0.28em] text-slate-400">
+            Giao dịch gần đây
+          </div>
+
+          <div className="mt-4 space-y-3">
+            {computed.recent.length === 0 ? (
+              <div className="text-slate-500 text-[13px] font-bold">
+                Chưa có giao dịch trong bộ lọc hiện tại.
+              </div>
+            ) : (
+              computed.recent.map((t) => (
+                <div
+                  key={t.id}
+                  className="flex items-center justify-between bg-black/30 border border-slate-800 rounded-2xl p-4"
+                >
+                  <div className="min-w-0">
+                    <div className="text-[12px] font-black text-white truncate">
+                      {t.categoryName}
+                      {t.description ? (
+                        <span className="text-slate-500 font-bold"> • {t.description}</span>
+                      ) : null}
+                    </div>
+                    <div className="mt-1 text-[11px] font-black uppercase tracking-[0.22em] text-slate-500">
+                      {t.date}
+                    </div>
+                  </div>
+
+                  <div
+                    className={`ml-4 text-right text-[13px] font-black ${
+                      t.type === "income" ? "text-emerald-300" : "text-rose-300"
+                    }`}
+                  >
+                    {t.type === "income" ? "+" : "-"}
+                    {formatMoney(t.amount)} ₫
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+
+          <div className="mt-5 text-[11px] font-bold text-slate-500">
+            Gợi ý: để % 50/30/20 chạy đúng, hãy đặt{" "}
+            <span className="text-slate-300">defaultClassification</span> cho Category (need/want).
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const BudgetRuleCard: React.FC<{
   need: number;
   want: number;
@@ -17,7 +206,7 @@ const BudgetRuleCard: React.FC<{
   const wantPct = calcPct(want);
   const savePct = calcPct(save);
 
-  const displayPct = (pct: number) => (hasIncome ? `${pct}%` : '—');
+  const displayPct = (pct: number) => (hasIncome ? `${pct}%` : "—");
 
   return (
     <div className="bg-slate-900/90 p-10 rounded-[2.5rem] shadow-premium h-full border border-slate-800">
@@ -54,7 +243,7 @@ const BudgetRuleCard: React.FC<{
           <div className="w-full bg-black/40 rounded-full h-2.5 border border-slate-800 shadow-inner overflow-hidden">
             <div
               className={`h-full transition-all duration-1000 ${
-                hasIncome && needPct > 55 ? 'bg-rose-500 shadow-glow' : 'bg-primary-500 shadow-glow'
+                hasIncome && needPct > 55 ? "bg-rose-500 shadow-glow" : "bg-primary-500 shadow-glow"
               }`}
               style={{ width: `${clamp01_100(needPct)}%` }}
             />
@@ -77,7 +266,7 @@ const BudgetRuleCard: React.FC<{
           <div className="w-full bg-black/40 rounded-full h-2.5 border border-slate-800 shadow-inner overflow-hidden">
             <div
               className={`h-full transition-all duration-1000 ${
-                hasIncome && wantPct > 35 ? 'bg-rose-500' : 'bg-amber-500 shadow-glow'
+                hasIncome && wantPct > 35 ? "bg-rose-500" : "bg-amber-500 shadow-glow"
               }`}
               style={{ width: `${clamp01_100(wantPct)}%` }}
             />
@@ -100,7 +289,7 @@ const BudgetRuleCard: React.FC<{
           <div className="w-full bg-black/40 rounded-full h-2.5 border border-slate-800 shadow-inner overflow-hidden">
             <div
               className={`h-full transition-all duration-1000 ${
-                hasIncome && savePct < 15 ? 'bg-rose-500' : 'bg-emerald-500 shadow-glow'
+                hasIncome && savePct < 15 ? "bg-rose-500" : "bg-emerald-500 shadow-glow"
               }`}
               style={{ width: `${clamp01_100(savePct)}%` }}
             />
@@ -110,3 +299,6 @@ const BudgetRuleCard: React.FC<{
     </div>
   );
 };
+
+// ✅ Export default để App.tsx có thể import Dashboard dạng default trên Vercel
+export default Dashboard;
