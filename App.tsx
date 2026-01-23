@@ -5,7 +5,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { Sidebar } from './components/Sidebar';
 
 // ✅ Dashboard đã export default => import default
-import Dashboard from "./components/Dashboard";
+import { Dashboard } from "./components/Dashboard";
 
 import { Transactions } from "./components/Transactions";
 import { Budgets } from "./components/Budgets";
