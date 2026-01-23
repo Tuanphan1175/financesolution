@@ -1,6 +1,15 @@
-import React, { useState, useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Transaction, Category, TransactionType, SpendingClassification } from '../types';
-import { IconMap, PlusIcon, FilterIcon, CashIcon, SparklesIcon, CogIcon, SaveDiskIcon } from './Icons';
+import {
+  IconMap,
+  PlusIcon,
+  FilterIcon,
+  CashIcon,
+  SparklesIcon,
+  CogIcon,
+  SaveDiskIcon,
+  XIcon,
+} from './Icons';
 import { Modal } from './Modal';
 import { AddTransactionForm } from './AddTransactionForm';
 
@@ -16,7 +25,8 @@ const TransactionRow: React.FC<{
   transaction: Transaction;
   categories: Category[];
   onEdit: (t: Transaction) => void;
-}> = ({ transaction, categories, onEdit }) => {
+  onDelete: (id: string) => void;
+}> = ({ transaction, categories, onEdit, onDelete }) => {
   const category = categories.find((c) => c.id === transaction.categoryId);
   const isIncome = transaction.type === 'income';
   const IconComponent = category && IconMap[category.icon] ? IconMap[category.icon] : CashIcon;
@@ -79,14 +89,30 @@ const TransactionRow: React.FC<{
       </td>
 
       <td className="px-8 py-6 whitespace-nowrap text-right">
-        <button
-          onClick={() => onEdit(transaction)}
-          className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-2xl border border-slate-700 bg-black/30 text-slate-200 hover:text-black hover:bg-luxury-gold transition-all font-black uppercase tracking-[0.2em] text-[10px] active:scale-95"
-          title="Chỉnh sửa giao dịch"
-        >
-          <CogIcon className="w-4 h-4" />
-          Sửa
-        </button>
+        <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+          <button
+            type="button"
+            onClick={() => onEdit(transaction)}
+            className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-2xl border border-slate-700 bg-black/30 text-slate-200 hover:text-black hover:bg-luxury-gold transition-all font-black uppercase tracking-[0.2em] text-[10px] active:scale-95"
+            title="Chỉnh sửa giao dịch"
+          >
+            <CogIcon className="w-4 h-4" />
+            Sửa
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              const ok = window.confirm('Xoá giao dịch này? Hành động này không thể hoàn tác.');
+              if (ok) onDelete(transaction.id);
+            }}
+            className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-2xl border border-rose-500/30 bg-rose-500/10 text-rose-200 hover:bg-rose-500 hover:text-white transition-all font-black uppercase tracking-[0.2em] text-[10px] active:scale-95"
+            title="Xoá giao dịch"
+          >
+            <XIcon className="w-4 h-4" />
+            Xoá
+          </button>
+        </div>
       </td>
     </tr>
   );
@@ -121,29 +147,28 @@ export const Transactions: React.FC<TransactionsProps> = ({
     setEditingTransaction(null);
   };
 
+  const sortByDateDesc = (arr: Transaction[]) =>
+    arr.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+
   const handleAddTransaction = (newTransactionData: Omit<Transaction, 'id'>) => {
     const newTransaction: Transaction = {
       id: `trans-${Date.now()}`,
       ...newTransactionData,
     };
-    setTransactions((prev) =>
-      [newTransaction, ...prev].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-    );
+    setTransactions((prev) => sortByDateDesc([newTransaction, ...prev]));
     closeModal();
   };
 
-  const handleUpdateTransaction = (id: string, updatedData: Omit<Transaction, 'id'>) => {
-    setTransactions((prev) =>
-      prev
-        .map((t) => (t.id === id ? { id, ...updatedData } : t))
-        .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-    );
+  // NOTE: AddTransactionForm (phiên bản edit) nên gọi onUpdateTransaction(updatedTransaction: Transaction)
+  const handleUpdateTransaction = (updated: Transaction) => {
+    setTransactions((prev) => {
+      const next = prev.map((t) => (t.id === updated.id ? updated : t));
+      return sortByDateDesc(next);
+    });
     closeModal();
   };
 
   const handleDeleteTransaction = (id: string) => {
-    const ok = window.confirm('Xoá giao dịch này? Hành động này không thể hoàn tác.');
-    if (!ok) return;
     setTransactions((prev) => prev.filter((t) => t.id !== id));
     closeModal();
   };
@@ -296,7 +321,13 @@ export const Transactions: React.FC<TransactionsProps> = ({
                 <tbody className="divide-y divide-slate-800/50">
                   {filteredTransactions.length > 0 ? (
                     filteredTransactions.map((t) => (
-                      <TransactionRow key={t.id} transaction={t} categories={categories} onEdit={openEdit} />
+                      <TransactionRow
+                        key={t.id}
+                        transaction={t}
+                        categories={categories}
+                        onEdit={openEdit}
+                        onDelete={handleDeleteTransaction}
+                      />
                     ))
                   ) : (
                     <tr>
@@ -314,7 +345,7 @@ export const Transactions: React.FC<TransactionsProps> = ({
           </div>
         </div>
 
-        {/* Categories Management Panel (giữ nguyên như Bác đang có) */}
+        {/* Categories Management Panel */}
         <div className="w-full lg:w-96 space-y-6 shrink-0">
           <div className="bg-gradient-to-br from-slate-900 to-black p-8 rounded-[2.5rem] border border-luxury-gold/20 shadow-luxury">
             <div className="flex items-center justify-between mb-8">
@@ -327,6 +358,7 @@ export const Transactions: React.FC<TransactionsProps> = ({
               <button
                 onClick={openCreate}
                 className="p-2 rounded-full border border-slate-800 text-luxury-gold hover:bg-luxury-gold hover:text-black transition-all"
+                title="Thêm giao dịch / danh mục"
               >
                 <PlusIcon className="w-5 h-5" />
               </button>
@@ -352,8 +384,9 @@ export const Transactions: React.FC<TransactionsProps> = ({
                         </p>
                       </div>
                     </div>
+
                     <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <button className="text-slate-600 hover:text-luxury-gold p-1">
+                      <button className="text-slate-600 hover:text-luxury-gold p-1" title="(Tuỳ chọn) Chỉnh danh mục trong form">
                         <CogIcon className="w-4 h-4" />
                       </button>
                     </div>
