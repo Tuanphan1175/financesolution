@@ -2,7 +2,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 
 // ✅ Sidebar đang là named export => phải import dạng { Sidebar }
-import { Sidebar } from "./components/Sidebar";
+import { Sidebar } from './components/Sidebar';
 
 // ✅ Dashboard đã export default => import default
 import Dashboard from "./components/Dashboard";
