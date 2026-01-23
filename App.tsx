@@ -37,6 +37,9 @@ import { UpgradePlan } from './components/UpgradePlan';
 import { PricingModal } from './components/PricingModal';
 import { UpgradeButton } from './components/UpgradeButton';
 
+// ✅ AuthGate (file cùng cấp với App.tsx trong repo root)
+import { AuthGate } from './AuthGate';
+
 // ===============================
 // LocalStorage keys (chuẩn hoá 1 nơi)
 // ===============================
@@ -171,7 +174,10 @@ const PreviewBadge: React.FC = () => {
   );
 };
 
-const App: React.FC = () => {
+// ===============================
+// AppShell: UI hiện tại của app (giữ nguyên logic)
+// ===============================
+const AppShell: React.FC = () => {
   const [currentView, setCurrentView] = useState<View>('dashboard');
   const [isSidebarOpen, setSidebarOpen] = useState(false);
 
@@ -438,7 +444,7 @@ const App: React.FC = () => {
               <div className="flex items-center gap-4 bg-slate-900/50 backdrop-blur-md px-8 py-4 rounded-2xl border border-slate-800 shadow-luxury shrink-0">
                 <div className="w-3 h-3 rounded-full bg-luxury-gold animate-pulse shadow-[0_0_12px_#C5A059]"></div>
                 <span className="text-sm font-black uppercase text-slate-300 tracking-[0.2em] whitespace-nowrap">
-                  Lead Up Global • Coach 
+                  Lead Up Global • Coach Tuấn Dr
                 </span>
               </div>
             </div>
@@ -452,6 +458,17 @@ const App: React.FC = () => {
       <UpgradeButton onClick={() => setIsPricingModalOpen(true)} />
       <PricingModal isOpen={isPricingModalOpen} onClose={() => setIsPricingModalOpen(false)} />
     </div>
+  );
+};
+
+// ===============================
+// App (export): bọc AuthGate toàn app
+// ===============================
+const App: React.FC = () => {
+  return (
+    <AuthGate>
+      <AppShell />
+    </AuthGate>
   );
 };
 
