@@ -1,6 +1,6 @@
 // App.tsx
 import React, { useEffect, useMemo, useState } from 'react';
-import { Sidebar } from './components/Sidebar';
+import Sidebar from './components/Sidebar';
 import { Dashboard } from './components/Dashboard';
 import { Transactions } from './components/Transactions';
 import { Budgets } from './components/Budgets';
