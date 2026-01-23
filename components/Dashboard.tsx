@@ -2,6 +2,7 @@
 import React, { useMemo } from "react";
 import type { Category, Transaction, SpendingClassification } from "../types";
 import { ScaleIcon } from "./Icons";
+import { Dashboard } from './components/Dashboard';
 
 type DashboardProps = {
   transactions: Transaction[];
