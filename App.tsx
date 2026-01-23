@@ -52,11 +52,7 @@ const LS_KEYS = {
 } as const;
 
 // Fallback keys (để MIGRATE dữ liệu cũ nếu trước đây lưu sai)
-// Lưu ý: theo ảnh DevTools của Bác Sĩ, key cũ đang là "smartfinance_transactions"
 const LEGACY_KEYS = {
-  // Nếu Bác từng có bản build lưu nhầm tên key khác, thêm vào đây.
-  // Hiện tại, em để sẵn 1 key dự phòng hay gặp: "smartfinance_transactions"
-  // (đọc được -> tự chuyển sang LS_KEYS.transactions)
   transactions: ['smartfinance_transactions'],
 } as const;
 
@@ -123,6 +119,56 @@ const viewTitles: Record<View, string> = {
   playbook: 'Chiến Lược Tài Chính Premium',
   'category-settings': 'Quản Lý Danh Mục',
   'upgrade-plan': 'Nâng Cấp Gói',
+};
+
+// ===============================
+// PREVIEW BADGE (Vercel Preview vs Production)
+// - Với Vite: chỉ biến env bắt đầu bằng VITE_ mới được đưa ra client.
+// - Khuyến nghị: set VITE_DEPLOY_ENV=preview cho Preview, VITE_DEPLOY_ENV=production cho Production trên Vercel.
+// ===============================
+function getDeployEnv(): 'preview' | 'production' | 'unknown' {
+  const env = (import.meta as any)?.env?.VITE_DEPLOY_ENV as string | undefined;
+
+  if (env === 'preview') return 'preview';
+  if (env === 'production') return 'production';
+
+  // Fallback: đoán theo hostname (hữu ích khi Bác chưa set env)
+  // Lưu ý: nếu Production cũng dùng *.vercel.app thì fallback có thể coi là preview.
+  if (typeof window !== 'undefined') {
+    const host = window.location.hostname || '';
+    const isLikelyPreview = host.includes('-git-') || host.includes('--');
+    if (isLikelyPreview) return 'preview';
+  }
+
+  return 'unknown';
+}
+
+const PreviewBadge: React.FC = () => {
+  const deployEnv = getDeployEnv();
+  if (deployEnv !== 'preview') return null;
+
+  return (
+    <div
+      style={{
+        position: 'fixed',
+        top: 12,
+        right: 12,
+        zIndex: 9999,
+        padding: '8px 10px',
+        borderRadius: 10,
+        fontSize: 12,
+        fontWeight: 800,
+        letterSpacing: 0.8,
+        background: 'rgba(255, 193, 7, 0.92)',
+        color: '#111',
+        boxShadow: '0 10px 25px rgba(0,0,0,0.25)',
+      }}
+      title="Bạn đang ở môi trường Preview (không phải Production)."
+      aria-label="Preview Mode"
+    >
+      PREVIEW MODE
+    </div>
+  );
 };
 
 const App: React.FC = () => {
@@ -328,6 +374,9 @@ const App: React.FC = () => {
 
   return (
     <div className="flex h-screen bg-luxury-obsidian text-slate-100 font-sans selection:bg-luxury-gold selection:text-black">
+      {/* Preview Badge */}
+      <PreviewBadge />
+
       {/* Sidebar */}
       <div
         className={`fixed inset-y-0 left-0 z-40 w-96 bg-luxury-obsidian shadow-premium transform ${
@@ -350,7 +399,10 @@ const App: React.FC = () => {
         {/* Mobile header */}
         <header className="flex items-center justify-between p-6 bg-luxury-obsidian/80 backdrop-blur-md border-b border-slate-800 md:hidden sticky top-0 z-30">
           <h1 className="text-3xl font-extrabold text-luxury-gold tracking-tight uppercase">TÀI CHÍNH THÔNG MINH</h1>
-          <button onClick={() => setSidebarOpen(!isSidebarOpen)} className="p-2 text-slate-300 hover:text-luxury-gold transition-all">
+          <button
+            onClick={() => setSidebarOpen(!isSidebarOpen)}
+            className="p-2 text-slate-300 hover:text-luxury-gold transition-all"
+          >
             {isSidebarOpen ? <XIcon className="h-8 w-8" /> : <MenuIcon className="h-8 w-8" />}
           </button>
         </header>
@@ -367,7 +419,9 @@ const App: React.FC = () => {
                       className="flex items-center gap-2 group mr-4 bg-white/5 hover:bg-luxury-gold px-5 py-2.5 rounded-xl transition-all border border-white/10 hover:border-luxury-gold shadow-luxury"
                     >
                       <ArrowUpIcon className="h-5 w-5 -rotate-90 text-luxury-gold group-hover:text-black" />
-                      <span className="text-xs font-black text-white group-hover:text-black uppercase tracking-widest">QUAY LẠI</span>
+                      <span className="text-xs font-black text-white group-hover:text-black uppercase tracking-widest">
+                        QUAY LẠI
+                      </span>
                     </button>
                   )}
                   <div className="h-px w-10 bg-luxury-gold opacity-60"></div>
@@ -384,7 +438,7 @@ const App: React.FC = () => {
               <div className="flex items-center gap-4 bg-slate-900/50 backdrop-blur-md px-8 py-4 rounded-2xl border border-slate-800 shadow-luxury shrink-0">
                 <div className="w-3 h-3 rounded-full bg-luxury-gold animate-pulse shadow-[0_0_12px_#C5A059]"></div>
                 <span className="text-sm font-black uppercase text-slate-300 tracking-[0.2em] whitespace-nowrap">
-                  Lead Up Global • Coach Tuấn Dr
+                  Lead Up Global • Coach 
                 </span>
               </div>
             </div>
