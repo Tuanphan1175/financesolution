@@ -107,7 +107,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   ];
 
   return (
-    <div className="flex flex-col w-full h-full px-6 py-12 bg-luxury-obsidian overflow-y-auto">
+    <div className="flex flex-col w-full h-screen px-6 py-12 bg-luxury-obsidian overflow-y-auto">
       {/* LOGO */}
       <div
         className="flex items-center mb-16 px-4 cursor-pointer"
