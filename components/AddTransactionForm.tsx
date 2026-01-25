@@ -15,7 +15,7 @@ interface AddTransactionFormProps {
   onAddTransaction: (transaction: Omit<Transaction, 'id'>) => void;
   onUpdateTransaction: (id: string, updated: Omit<Transaction, 'id'>) => void;
   onDeleteTransaction: (id: string) => void;
-
+  
   onClose: () => void;
 
   categories: Category[];
