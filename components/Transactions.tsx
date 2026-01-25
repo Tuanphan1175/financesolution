@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { Transaction, Category, TransactionType, SpendingClassification } from '../types';
+import type { Transaction, Category, TransactionType, SpendingClassification } from '../types';
 import { IconMap, PlusIcon, FilterIcon, CashIcon, SparklesIcon, CogIcon, SaveDiskIcon } from './Icons';
 import { Modal } from './Modal';
 import { AddTransactionForm } from './AddTransactionForm';
@@ -32,11 +32,11 @@ const TransactionRow: React.FC<{
             <IconComponent className="h-6 w-6" style={{ color: category?.color || '#9ca3af' }} />
           </div>
 
-          <div className="ml-5">
-            <div className="text-[15px] font-black text-white tracking-tight leading-none mb-2">
-              {transaction.description}
+          <div className="ml-5 min-w-0">
+            <div className="text-[15px] font-black text-white tracking-tight leading-none mb-2 truncate">
+              {transaction.description || '(Không có mô tả)'}
             </div>
-            <div className="text-[11px] font-black text-slate-500 uppercase tracking-widest">
+            <div className="text-[11px] font-black text-slate-500 uppercase tracking-widest truncate">
               {category?.name || 'Khác'}
             </div>
           </div>
@@ -62,13 +62,13 @@ const TransactionRow: React.FC<{
       </td>
 
       <td className="px-8 py-6 whitespace-nowrap text-[12px] font-bold text-slate-500 uppercase tracking-widest">
-        {new Date(transaction.date).toLocaleDateString('vi-VN')}
+        {transaction.date ? new Date(transaction.date).toLocaleDateString('vi-VN') : '—'}
       </td>
 
       <td className={`px-8 py-6 whitespace-nowrap text-right ${isIncome ? 'text-emerald-400' : 'text-rose-400'}`}>
         <div className="text-xl font-black font-mono tracking-tighter">
           {isIncome ? '+' : '-'}
-          {Number(transaction.amount).toLocaleString('vi-VN')} ₫
+          {Number(transaction.amount || 0).toLocaleString('vi-VN')} ₫
         </div>
         <div className="text-[10px] text-slate-500 font-black mt-1 uppercase tracking-widest">
           {transaction.paymentMethod === 'cash'
@@ -100,6 +100,10 @@ export const Transactions: React.FC<TransactionsProps> = ({
   onAddCategory,
   onUpdateCategory,
 }) => {
+  // ✅ Guard tuyệt đối tránh runtime crash
+  const safeTransactions = useMemo(() => (Array.isArray(transactions) ? transactions : []), [transactions]);
+  const safeCategories = useMemo(() => (Array.isArray(categories) ? categories : []), [categories]);
+
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
 
@@ -128,38 +132,48 @@ export const Transactions: React.FC<TransactionsProps> = ({
       ...newTransactionData,
     };
 
-    setTransactions((prev) =>
-      [newTransaction, ...prev].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-    );
+    setTransactions((prev) => {
+      const base = Array.isArray(prev) ? prev : [];
+      return [newTransaction, ...base].sort(
+        (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+      );
+    });
 
     closeModal();
   };
 
   const handleUpdateTransaction = (id: string, updatedData: Omit<Transaction, 'id'>) => {
-    setTransactions((prev) =>
-      prev
+    setTransactions((prev) => {
+      const base = Array.isArray(prev) ? prev : [];
+      return base
         .map((t) => (t.id === id ? { id, ...updatedData } : t))
-        .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-    );
+        .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    });
+
     closeModal();
   };
 
   const handleDeleteTransaction = (id: string) => {
     const ok = window.confirm('Xoá giao dịch này? Hành động này không thể hoàn tác.');
     if (!ok) return;
-    setTransactions((prev) => prev.filter((t) => t.id !== id));
+
+    setTransactions((prev) => {
+      const base = Array.isArray(prev) ? prev : [];
+      return base.filter((t) => t.id !== id);
+    });
+
     closeModal();
   };
 
   const handleExportCSV = () => {
-    if (transactions.length === 0) {
+    if (safeTransactions.length === 0) {
       alert('Không có dữ liệu để xuất!');
       return;
     }
 
     const headers = ['ID', 'Mô tả', 'Danh mục', 'Số tiền', 'Loại', 'Ngày', 'Ví', 'Phân loại', 'Phương thức'];
-    const rows = transactions.map((t) => {
-      const category = categories.find((c) => c.id === t.categoryId);
+    const rows = safeTransactions.map((t) => {
+      const category = safeCategories.find((c) => c.id === t.categoryId);
       return [
         t.id,
         `"${String(t.description || '').replace(/"/g, '""')}"`,
@@ -184,17 +198,22 @@ export const Transactions: React.FC<TransactionsProps> = ({
     document.body.removeChild(link);
   };
 
+  const availableFilterCategories = useMemo(() => {
+    if (filterType === 'all') return safeCategories;
+    return safeCategories.filter((c) => c.type === filterType);
+  }, [filterType, safeCategories]);
+
   const filteredTransactions = useMemo(() => {
-    return transactions
+    return safeTransactions
       .filter((t) => filterType === 'all' || t.type === filterType)
       .filter((t) => filterCategory === 'all' || t.categoryId === filterCategory)
-      .filter((t) => filterClassification === 'all' || t.classification === filterClassification);
-  }, [transactions, filterType, filterCategory, filterClassification]);
-
-  const availableFilterCategories = useMemo(() => {
-    if (filterType === 'all') return categories;
-    return categories.filter((c) => c.type === filterType);
-  }, [filterType, categories]);
+      .filter((t) => {
+        if (filterClassification === 'all') return true;
+        // Chỉ áp cho expense; income không bị lọc theo need/want
+        if (t.type !== 'expense') return true;
+        return t.classification === filterClassification;
+      });
+  }, [safeTransactions, filterType, filterCategory, filterClassification]);
 
   return (
     <div className="space-y-10">
@@ -210,7 +229,7 @@ export const Transactions: React.FC<TransactionsProps> = ({
           onUpdateTransaction={handleUpdateTransaction}
           onDeleteTransaction={handleDeleteTransaction}
           onClose={closeModal}
-          categories={categories}
+          categories={safeCategories}
           onAddCategory={onAddCategory}
           onUpdateCategory={onUpdateCategory}
         />
@@ -231,6 +250,7 @@ export const Transactions: React.FC<TransactionsProps> = ({
                   onChange={(e) => {
                     setFilterType(e.target.value as any);
                     setFilterCategory('all');
+                    setFilterClassification('all');
                   }}
                   className="bg-black/40 border border-slate-800 text-white rounded-xl p-3 text-[11px] font-black uppercase tracking-widest outline-none focus:border-luxury-gold appearance-none px-6"
                 >
@@ -250,6 +270,18 @@ export const Transactions: React.FC<TransactionsProps> = ({
                       {c.name}
                     </option>
                   ))}
+                </select>
+
+                {/* ✅ Filter Need/Want (trước đó Bác Sĩ có state nhưng chưa có UI) */}
+                <select
+                  value={filterClassification}
+                  onChange={(e) => setFilterClassification(e.target.value as any)}
+                  className="bg-black/40 border border-slate-800 text-white rounded-xl p-3 text-[11px] font-black uppercase tracking-widest outline-none focus:border-luxury-gold appearance-none px-6"
+                  title="Lọc Need/Want (chỉ áp dụng cho chi tiêu)"
+                >
+                  <option value="all">NEED/WANT</option>
+                  <option value="need">CẦN THIẾT</option>
+                  <option value="want">MONG MUỐN</option>
                 </select>
               </div>
             </div>
@@ -300,7 +332,7 @@ export const Transactions: React.FC<TransactionsProps> = ({
                 <tbody className="divide-y divide-slate-800/50">
                   {filteredTransactions.length > 0 ? (
                     filteredTransactions.map((t) => (
-                      <TransactionRow key={t.id} transaction={t} categories={categories} onEdit={openEdit} />
+                      <TransactionRow key={t.id} transaction={t} categories={safeCategories} onEdit={openEdit} />
                     ))
                   ) : (
                     <tr>
@@ -318,7 +350,7 @@ export const Transactions: React.FC<TransactionsProps> = ({
           </div>
         </div>
 
-        {/* Categories panel giữ nguyên */}
+        {/* Categories panel */}
         <div className="w-full lg:w-96 space-y-6 shrink-0">
           <div className="bg-gradient-to-br from-slate-900 to-black p-8 rounded-[2.5rem] border border-luxury-gold/20 shadow-luxury">
             <div className="flex items-center justify-between mb-8">
@@ -331,39 +363,51 @@ export const Transactions: React.FC<TransactionsProps> = ({
               <button
                 onClick={openCreate}
                 className="p-2 rounded-full border border-slate-800 text-luxury-gold hover:bg-luxury-gold hover:text-black transition-all"
+                title="Thêm giao dịch mới"
               >
                 <PlusIcon className="w-5 h-5" />
               </button>
             </div>
 
             <div className="space-y-4 max-h-[600px] overflow-y-auto pr-2 custom-scrollbar">
-              <p className="text-[10px] font-black text-slate-600 uppercase tracking-widest ml-1 mb-4">Danh mục hiện tại</p>
-              {categories.map((cat) => {
-                const Icon = IconMap[cat.icon] || CashIcon;
-                return (
-                  <div
-                    key={cat.id}
-                    className="flex items-center justify-between p-4 rounded-2xl bg-black/30 border border-slate-800 hover:border-slate-700 group transition-all"
-                  >
-                    <div className="flex items-center">
-                      <div className="p-2.5 rounded-xl mr-4" style={{ backgroundColor: `${cat.color}15` }}>
-                        <Icon className="w-5 h-5" style={{ color: cat.color }} />
+              <p className="text-[10px] font-black text-slate-600 uppercase tracking-widest ml-1 mb-4">
+                Danh mục hiện tại
+              </p>
+
+              {safeCategories.length === 0 ? (
+                <div className="text-slate-600 text-[11px] font-black uppercase tracking-widest py-6 text-center">
+                  Chưa có danh mục.
+                </div>
+              ) : (
+                safeCategories.map((cat) => {
+                  const Icon = IconMap[cat.icon] || CashIcon;
+                  return (
+                    <div
+                      key={cat.id}
+                      className="flex items-center justify-between p-4 rounded-2xl bg-black/30 border border-slate-800 hover:border-slate-700 group transition-all"
+                    >
+                      <div className="flex items-center min-w-0">
+                        <div className="p-2.5 rounded-xl mr-4" style={{ backgroundColor: `${cat.color}15` }}>
+                          <Icon className="w-5 h-5" style={{ color: cat.color }} />
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-[13px] font-black text-white tracking-tight truncate">{cat.name}</p>
+                          <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest truncate">
+                            {cat.type === 'income' ? 'Thu nhập' : 'Chi tiêu'}
+                          </p>
+                        </div>
                       </div>
-                      <div>
-                        <p className="text-[13px] font-black text-white tracking-tight">{cat.name}</p>
-                        <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest">
-                          {cat.type === 'income' ? 'Thu nhập' : 'Chi tiêu'}
-                        </p>
+
+                      {/* (UI placeholder) */}
+                      <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <button className="text-slate-600 hover:text-luxury-gold p-1" title="(UI) Chỉnh sửa danh mục">
+                          <CogIcon className="w-4 h-4" />
+                        </button>
                       </div>
                     </div>
-                    <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <button className="text-slate-600 hover:text-luxury-gold p-1" title="(UI) Chỉnh sửa danh mục">
-                        <CogIcon className="w-4 h-4" />
-                      </button>
-                    </div>
-                  </div>
-                );
-              })}
+                  );
+                })
+              )}
             </div>
 
             <div className="mt-8 pt-8 border-t border-slate-800/50">

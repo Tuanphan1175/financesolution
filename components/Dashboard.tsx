@@ -165,11 +165,21 @@ const BudgetRuleCard: React.FC<{
 };
 
 const Dashboard: React.FC<DashboardProps> = ({ transactions, categories }) => {
+  // ✅ Guard tuyệt đối để tránh "is not iterable" ở production
+  const safeTransactions = useMemo(
+    () => (Array.isArray(transactions) ? transactions : []),
+    [transactions]
+  );
+  const safeCategories = useMemo(
+    () => (Array.isArray(categories) ? categories : []),
+    [categories]
+  );
+
   const categoryMap = useMemo(() => {
     const m = new Map<string, Category>();
-    for (const c of categories) m.set(c.id, c);
+    for (const c of safeCategories) m.set(c.id, c);
     return m;
-  }, [categories]);
+  }, [safeCategories]);
 
   const computed = useMemo(() => {
     let income = 0;
@@ -179,7 +189,7 @@ const Dashboard: React.FC<DashboardProps> = ({ transactions, categories }) => {
     let want = 0;
     let other = 0;
 
-    for (const t of transactions) {
+    for (const t of safeTransactions) {
       if (t.type === "income") {
         income += t.amount;
         continue;
@@ -188,8 +198,9 @@ const Dashboard: React.FC<DashboardProps> = ({ transactions, categories }) => {
       expenseTotal += t.amount;
 
       const cat = categoryMap.get(t.categoryId);
-      const cls = (cat?.defaultClassification ??
-        null) as SpendingClassification | null;
+      const cls = (cat?.defaultClassification ?? null) as
+        | SpendingClassification
+        | null;
 
       if (cls === "need") need += t.amount;
       else if (cls === "want") want += t.amount;
@@ -199,7 +210,7 @@ const Dashboard: React.FC<DashboardProps> = ({ transactions, categories }) => {
     const save = Math.max(0, income - expenseTotal);
     const net = income - expenseTotal;
 
-    const recent = [...transactions]
+    const recent = [...safeTransactions]
       .sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : 0))
       .slice(0, 8)
       .map((t) => {
@@ -211,7 +222,7 @@ const Dashboard: React.FC<DashboardProps> = ({ transactions, categories }) => {
       });
 
     return { income, expenseTotal, need, want, other, save, net, recent };
-  }, [transactions, categoryMap]);
+  }, [safeTransactions, categoryMap]);
 
   return (
     <div className="w-full">

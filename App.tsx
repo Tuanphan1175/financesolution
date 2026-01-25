@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import type { View } from "./types";
+import type { View, Transaction, Category } from "./types";
 
 // ================= ICONS =================
 import {
@@ -41,7 +41,7 @@ interface SidebarProps {
   setCurrentView: (view: View) => void;
   isPremium: boolean;
   setIsPremium: (isPremium: boolean) => void;
-  className?: string; // ✅ thêm để nhận className
+  className?: string;
 }
 
 // ================= NAV ITEM =================
@@ -102,75 +102,21 @@ export const Sidebar: React.FC<SidebarProps> = ({
     setIsEditing(false);
   };
 
-  const navItems = useMemo<
-    { view: View; label: string; icon: React.ReactNode }[]
-  >(
+  const navItems = useMemo<{ view: View; label: string; icon: React.ReactNode }[]>(
     () => [
-      {
-        view: "dashboard",
-        label: "Bảng điều khiển",
-        icon: <ChartPieIcon className="h-5 w-5" />,
-      },
-      {
-        view: "ai-coach",
-        label: "AI Coach",
-        icon: <SparklesIcon className="h-5 w-5" />,
-      },
-      {
-        view: "playbook",
-        label: "Chiến lược",
-        icon: <BookOpenIcon className="h-5 w-5" />,
-      },
-      {
-        view: "30-day-journey",
-        label: "Hành trình 30 ngày",
-        icon: <CalendarIcon className="h-5 w-5" />,
-      },
-      {
-        view: "journey",
-        label: "Tháp tài chính",
-        icon: <TrendingUpIcon className="h-5 w-5" />,
-      },
-      {
-        view: "transactions",
-        label: "Giao dịch",
-        icon: <CollectionIcon className="h-5 w-5" />,
-      },
-      {
-        view: "budgets",
-        label: "Ngân sách",
-        icon: <ClipboardListIcon className="h-5 w-5" />,
-      },
-      {
-        view: "rules",
-        label: "Nguyên tắc vàng",
-        icon: <ShieldCheckIcon className="h-5 w-5" />,
-      },
-      {
-        view: "net-worth",
-        label: "Tài sản ròng",
-        icon: <ScaleIcon className="h-5 w-5" />,
-      },
-      {
-        view: "income-ladder",
-        label: "Cấp độ kiếm tiền",
-        icon: <CurrencyDollarIcon className="h-5 w-5" />,
-      },
-      {
-        view: "reports",
-        label: "Báo cáo",
-        icon: <DocumentReportIcon className="h-5 w-5" />,
-      },
-      {
-        view: "category-settings",
-        label: "Quản lý danh mục",
-        icon: <PencilIcon className="h-5 w-5" />,
-      },
-      {
-        view: "upgrade-plan",
-        label: "Nâng cấp gói",
-        icon: <SparklesIcon className="h-5 w-5" />,
-      },
+      { view: "dashboard", label: "Bảng điều khiển", icon: <ChartPieIcon className="h-5 w-5" /> },
+      { view: "ai-coach", label: "AI Coach", icon: <SparklesIcon className="h-5 w-5" /> },
+      { view: "playbook", label: "Chiến lược", icon: <BookOpenIcon className="h-5 w-5" /> },
+      { view: "30-day-journey", label: "Hành trình 30 ngày", icon: <CalendarIcon className="h-5 w-5" /> },
+      { view: "journey", label: "Tháp tài chính", icon: <TrendingUpIcon className="h-5 w-5" /> },
+      { view: "transactions", label: "Giao dịch", icon: <CollectionIcon className="h-5 w-5" /> },
+      { view: "budgets", label: "Ngân sách", icon: <ClipboardListIcon className="h-5 w-5" /> },
+      { view: "rules", label: "Nguyên tắc vàng", icon: <ShieldCheckIcon className="h-5 w-5" /> },
+      { view: "net-worth", label: "Tài sản ròng", icon: <ScaleIcon className="h-5 w-5" /> },
+      { view: "income-ladder", label: "Cấp độ kiếm tiền", icon: <CurrencyDollarIcon className="h-5 w-5" /> },
+      { view: "reports", label: "Báo cáo", icon: <DocumentReportIcon className="h-5 w-5" /> },
+      { view: "category-settings", label: "Quản lý danh mục", icon: <PencilIcon className="h-5 w-5" /> },
+      { view: "upgrade-plan", label: "Nâng cấp gói", icon: <SparklesIcon className="h-5 w-5" /> },
     ],
     []
   );
@@ -224,7 +170,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
       {/* FOOTER */}
       <div className="mt-auto shrink-0 pt-8 border-t border-slate-800">
-        {/* DEV ONLY */}
         {import.meta.env.DEV && (
           <button
             onClick={() => setIsPremium(!isPremium)}
@@ -236,7 +181,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
           </button>
         )}
 
-        {/* USER PROFILE */}
         <div className="p-4 rounded-[1.8rem] bg-slate-900 border border-slate-800 shadow-inner">
           <div className="flex items-center">
             <div className="relative shrink-0">
@@ -279,7 +223,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
             </div>
           </div>
 
-          {/* LOGOUT BUTTON */}
           <div className="mt-4 px-1">
             <button
               onClick={logout}
@@ -295,18 +238,74 @@ export const Sidebar: React.FC<SidebarProps> = ({
   );
 };
 
+// ================= HELPERS =================
+function safeParseArray<T>(raw: string | null, fallback: T[] = []): T[] {
+  if (!raw) return fallback;
+  try {
+    const v = JSON.parse(raw);
+    return Array.isArray(v) ? (v as T[]) : fallback;
+  } catch {
+    return fallback;
+  }
+}
+
 // ================= APP ROOT =================
 export default function App() {
   const [currentView, setCurrentView] = useState<View>("dashboard");
   const [isPremium, setIsPremium] = useState(false);
 
+  // ✅ App-level states để truyền props cho các view
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
+
+  // ✅ Load localStorage (an toàn)
+  useEffect(() => {
+    const cats = safeParseArray<Category>(localStorage.getItem("smartfinance_categories"), []);
+    const trans = safeParseArray<Transaction>(localStorage.getItem("smartfinance_transactions"), []);
+    setCategories(cats);
+    setTransactions(trans);
+  }, []);
+
+  // ✅ Persist localStorage
+  useEffect(() => {
+    localStorage.setItem("smartfinance_categories", JSON.stringify(categories ?? []));
+  }, [categories]);
+
+  useEffect(() => {
+    localStorage.setItem("smartfinance_transactions", JSON.stringify(transactions ?? []));
+  }, [transactions]);
+
+  const onAddCategory = (cat: Category) => {
+    setCategories((prev) => {
+      const base = Array.isArray(prev) ? prev : [];
+      // chống trùng id
+      if (base.some((c) => c.id === cat.id)) return base;
+      return [cat, ...base];
+    });
+  };
+
+  const onUpdateCategory = (cat: Category) => {
+    setCategories((prev) => {
+      const base = Array.isArray(prev) ? prev : [];
+      return base.map((c) => (c.id === cat.id ? cat : c));
+    });
+  };
+
   const renderView = () => {
     switch (currentView) {
       case "dashboard":
-        return <Dashboard />;
+        return <Dashboard transactions={transactions} categories={categories} />;
 
       case "transactions":
-        return <Transactions />;
+        return (
+          <Transactions
+            transactions={transactions}
+            setTransactions={setTransactions}
+            categories={categories}
+            onAddCategory={onAddCategory}
+            onUpdateCategory={onUpdateCategory}
+          />
+        );
 
       case "budgets":
         return <Budgets />;
@@ -341,19 +340,16 @@ export default function App() {
       case "category-settings":
         return (
           <div className="p-6 rounded-2xl bg-slate-900/40 border border-slate-800">
-            <h2 className="text-xl font-black mb-2">Quản lý danh mục</h2>
+            <h2 className="text-xl font-black mb-2 text-white">Quản lý danh mục</h2>
             <p className="text-slate-400">
-              Màn hình này chưa được gắn component. Nếu Bác Sĩ có file{" "}
-              <span className="font-semibold text-slate-200">
-                components/CategorySettings.tsx
-              </span>{" "}
-              thì em sẽ nối ngay.
+              Màn hình này hiện chưa gắn component riêng. Em có thể làm luôn 1 màn hình
+              Category Settings (CRUD + defaultClassification need/want) dựa trên state hiện tại.
             </p>
           </div>
         );
 
       default:
-        return <Dashboard />;
+        return <Dashboard transactions={transactions} categories={categories} />;
     }
   };
 
