@@ -1,4 +1,3 @@
-// components/Icons.tsx
 import React from "react";
 
 export type IconProps = React.SVGProps<SVGSVGElement>;
@@ -178,93 +177,60 @@ export const RefreshIcon: React.FC<IconProps> = (props) => (
 
 export const MenuIcon: React.FC<IconProps> = (props) => (
   <Svg {...props}>
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth={2}
-      d="M4 6h16M4 12h16M4 18h16"
-    />
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
   </Svg>
 );
 
 export const XIcon: React.FC<IconProps> = (props) => (
   <Svg {...props}>
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth={2}
-      d="M6 18L18 6M6 6l12 12"
-    />
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
   </Svg>
 );
 
 export const ArrowUpIcon: React.FC<IconProps> = (props) => (
   <Svg {...props}>
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth={2}
-      d="M5 10l7-7m0 0l7 7m-7-7v18"
-    />
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 10l7-7m0 0l7 7m-7-7v18" />
   </Svg>
 );
 
 export const ArrowDownIcon: React.FC<IconProps> = (props) => (
   <Svg {...props}>
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth={2}
-      d="M19 14l-7 7m0 0l-7-7m7 7V3"
-    />
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
   </Svg>
 );
 
 export const ArrowRightIcon: React.FC<IconProps> = (props) => (
   <Svg {...props}>
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth={2}
-      d="M9 5l7 7-7 7"
-    />
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
   </Svg>
 );
 
 export const CheckIcon: React.FC<IconProps> = (props) => (
   <Svg {...props}>
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth={2}
-      d="M5 13l4 4L19 7"
-    />
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+  </Svg>
+);
+
+export const DownloadIcon: React.FC<IconProps> = (props) => (
+  <Svg {...props}>
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v10m0 0l-4-4m4 4l4-4" />
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 17v3a1 1 0 001 1h14a1 1 0 001-1v-3" />
   </Svg>
 );
 
 /* =========================
-   FORM / TOOL ICONS (Transactions, Budgets, etc.)
+   FORM / TOOL ICONS
 ========================= */
 
 export const PlusIcon: React.FC<IconProps> = (props) => (
   <Svg {...props}>
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth={2}
-      d="M12 4v16m8-8H4"
-    />
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
   </Svg>
 );
 
 export const FilterIcon: React.FC<IconProps> = (props) => (
   <Svg {...props}>
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth={2}
-      d="M3 5h18l-7 8v6l-4 2v-8L3 5z"
-    />
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5h18l-7 8v6l-4 2v-8L3 5z" />
   </Svg>
 );
 
@@ -276,57 +242,30 @@ export const CogIcon: React.FC<IconProps> = (props) => (
       strokeWidth={2}
       d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35.51-.124.93-.47 1.066-1.066.136-.595-.003-1.158-.32-1.506-.94-1.543.826-3.31 2.37-2.37.348.317.91.456 1.506.32.596-.136.942-.556 1.066-1.066z"
     />
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth={2}
-      d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-    />
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
   </Svg>
 );
 
 export const CashIcon: React.FC<IconProps> = (props) => (
   <Svg {...props}>
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth={2}
-      d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-2"
-    />
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth={2}
-      d="M21 12h-8m0 0l3-3m-3 3l3 3"
-    />
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-2" />
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12h-8m0 0l3-3m-3 3l3 3" />
   </Svg>
 );
 
 export const SaveDiskIcon: React.FC<IconProps> = (props) => (
   <Svg {...props}>
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth={2}
-      d="M5 3h11l3 3v15a1 1 0 01-1 1H5a1 1 0 01-1-1V4a1 1 0 011-1z"
-    />
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth={2}
-      d="M7 3v6h8V3M8 21v-7h8v7"
-    />
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3h11l3 3v15a1 1 0 01-1 1H5a1 1 0 01-1-1V4a1 1 0 011-1z" />
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 3v6h8V3M8 21v-7h8v7" />
   </Svg>
 );
 
+// Budgets.tsx từng báo "ExclamationIcon" không export.
+// Nhiều codebase lại dùng "ExclamationCircleIcon".
+// Em export cả 2 để Bác khỏi phải dò.
 export const ExclamationIcon: React.FC<IconProps> = (props) => (
   <Svg {...props}>
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth={2}
-      d="M12 9v4m0 4h.01"
-    />
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v4m0 4h.01" />
     <path
       strokeLinecap="round"
       strokeLinejoin="round"
@@ -336,92 +275,44 @@ export const ExclamationIcon: React.FC<IconProps> = (props) => (
   </Svg>
 );
 
+export const ExclamationCircleIcon = ExclamationIcon;
+
 /* =========================
    CATEGORY ICONS + ICON MAP
 ========================= */
 
 export const DefaultCategoryIcon: React.FC<IconProps> = (props) => (
   <Svg {...props}>
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth={2}
-      d="M12 6v6l4 2"
-    />
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth={2}
-      d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-    />
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6l4 2" />
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
   </Svg>
 );
 
 export const FoodIcon: React.FC<IconProps> = (props) => (
   <Svg {...props}>
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth={2}
-      d="M4 3v7a4 4 0 004 4v7M8 3v7M12 3v18M16 3v7a4 4 0 01-4 4"
-    />
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 3v7a4 4 0 004 4v7M8 3v7M12 3v18M16 3v7a4 4 0 01-4 4" />
   </Svg>
 );
 
 export const HomeIcon: React.FC<IconProps> = (props) => (
   <Svg {...props}>
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth={2}
-      d="M3 10l9-7 9 7v10a1 1 0 01-1 1h-5v-7H9v7H4a1 1 0 01-1-1V10z"
-    />
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10l9-7 9 7v10a1 1 0 01-1 1h-5v-7H9v7H4a1 1 0 01-1-1V10z" />
   </Svg>
 );
 
 export const ShoppingBagIcon: React.FC<IconProps> = (props) => (
   <Svg {...props}>
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth={2}
-      d="M6 7l1-3h10l1 3"
-    />
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth={2}
-      d="M5 7h14l-1 14H6L5 7z"
-    />
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth={2}
-      d="M9 10a3 3 0 006 0"
-    />
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 7l1-3h10l1 3" />
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 7h14l-1 14H6L5 7z" />
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 10a3 3 0 006 0" />
   </Svg>
 );
 
 export const CarIcon: React.FC<IconProps> = (props) => (
   <Svg {...props}>
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth={2}
-      d="M3 13l2-6a2 2 0 012-1h10a2 2 0 012 1l2 6"
-    />
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth={2}
-      d="M5 13h14v6H5v-6z"
-    />
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth={2}
-      d="M7.5 19a1.5 1.5 0 100-3 1.5 1.5 0 000 3zM16.5 19a1.5 1.5 0 100-3 1.5 1.5 0 000 3z"
-    />
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 13l2-6a2 2 0 012-1h10a2 2 0 012 1l2 6" />
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13h14v6H5v-6z" />
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7.5 19a1.5 1.5 0 100-3 1.5 1.5 0 000 3zM16.5 19a1.5 1.5 0 100-3 1.5 1.5 0 000 3z" />
   </Svg>
 );
 
@@ -438,47 +329,17 @@ export const HeartIcon: React.FC<IconProps> = (props) => (
 
 export const GraduationCapIcon: React.FC<IconProps> = (props) => (
   <Svg {...props}>
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth={2}
-      d="M12 3L2 8l10 5 10-5-10-5z"
-    />
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth={2}
-      d="M6 10v6c0 1.5 3 3 6 3s6-1.5 6-3v-6"
-    />
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3L2 8l10 5 10-5-10-5z" />
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 10v6c0 1.5 3 3 6 3s6-1.5 6-3v-6" />
   </Svg>
 );
 
 export const GiftIcon: React.FC<IconProps> = (props) => (
   <Svg {...props}>
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth={2}
-      d="M20 12v9a1 1 0 01-1 1H5a1 1 0 01-1-1v-9"
-    />
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth={2}
-      d="M22 7H2v5h20V7z"
-    />
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth={2}
-      d="M12 22V7"
-    />
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth={2}
-      d="M12 7c-1.5 0-3-1.5-3-3 0-1.5 1-2 2-2 2 0 4 5 4 5s-2 0-3 0z"
-    />
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12v9a1 1 0 01-1 1H5a1 1 0 01-1-1v-9" />
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M22 7H2v5h20V7z" />
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 22V7" />
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 7c-1.5 0-3-1.5-3-3 0-1.5 1-2 2-2 2 0 4 5 4 5s-2 0-3 0z" />
   </Svg>
 );
 
