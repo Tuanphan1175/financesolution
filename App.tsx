@@ -26,7 +26,7 @@ import { logout } from "./lib/logout";
 
 // ================= VIEWS (CONTENT PANELS) =================
 // Nếu component nào đang export named, chỉnh đúng import ở đây 1 lần.
-import { Dashboard }  from "./components/Dashboard";
+import Dashboard from "./components/Dashboard";
 import { Transactions } from "./components/Transactions";
 import { Budgets } from "./components/Budgets";
 import Reports from "./components/Reports";
