@@ -177,78 +177,43 @@ export const RefreshIcon: React.FC<IconProps> = (props) => (
 
 export const MenuIcon: React.FC<IconProps> = (props) => (
   <Svg {...props}>
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth={2}
-      d="M4 6h16M4 12h16M4 18h16"
-    />
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
   </Svg>
 );
 
 export const XIcon: React.FC<IconProps> = (props) => (
   <Svg {...props}>
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth={2}
-      d="M6 18L18 6M6 6l12 12"
-    />
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
   </Svg>
 );
 
 export const ArrowUpIcon: React.FC<IconProps> = (props) => (
   <Svg {...props}>
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth={2}
-      d="M5 10l7-7m0 0l7 7m-7-7v18"
-    />
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 10l7-7m0 0l7 7m-7-7v18" />
   </Svg>
 );
 
 export const ArrowDownIcon: React.FC<IconProps> = (props) => (
   <Svg {...props}>
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth={2}
-      d="M19 14l-7 7m0 0l-7-7m7 7V3"
-    />
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
   </Svg>
 );
 
 export const PlusIcon: React.FC<IconProps> = (props) => (
   <Svg {...props}>
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth={2}
-      d="M12 5v14M5 12h14"
-    />
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 5v14M5 12h14" />
   </Svg>
 );
 
 export const FilterIcon: React.FC<IconProps> = (props) => (
   <Svg {...props}>
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth={2}
-      d="M3 5h18l-7 8v6l-4-2v-4L3 5z"
-    />
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5h18l-7 8v6l-4-2v-4L3 5z" />
   </Svg>
 );
 
 export const CogIcon: React.FC<IconProps> = (props) => (
   <Svg {...props}>
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth={2}
-      d="M12 15.5a3.5 3.5 0 100-7 3.5 3.5 0 000 7z"
-    />
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15.5a3.5 3.5 0 100-7 3.5 3.5 0 000 7z" />
     <path
       strokeLinecap="round"
       strokeLinejoin="round"
@@ -260,22 +225,11 @@ export const CogIcon: React.FC<IconProps> = (props) => (
 
 export const CashIcon: React.FC<IconProps> = (props) => (
   <Svg {...props}>
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth={2}
-      d="M3 7h18v10H3V7z"
-    />
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth={2}
-      d="M7 10h.01M17 14h.01M12 15a3 3 0 100-6 3 3 0 000 6z"
-    />
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7h18v10H3V7z" />
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 10h.01M17 14h.01M12 15a3 3 0 100-6 3 3 0 000 6z" />
   </Svg>
 );
 
-/* SaveDiskIcon: dùng cho nút lưu (Transactions.tsx đang import) */
 export const SaveDiskIcon: React.FC<IconProps> = (props) => (
   <Svg {...props}>
     <path
@@ -284,96 +238,43 @@ export const SaveDiskIcon: React.FC<IconProps> = (props) => (
       strokeWidth={2}
       d="M5 4h11l3 3v13a1 1 0 01-1 1H6a1 1 0 01-1-1V4z"
     />
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 4v6h8V4M8 21v-7h8v7" />
+  </Svg>
+);
+
+export const CheckIcon: React.FC<IconProps> = (props) => (
+  <Svg {...props}>
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+  </Svg>
+);
+
+export const TrashIcon: React.FC<IconProps> = (props) => (
+  <Svg {...props}>
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 7h12" />
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 7V5a1 1 0 011-1h4a1 1 0 011 1v2" />
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7l1 14h6l1-14" />
+  </Svg>
+);
+
+export const EditIcon: React.FC<IconProps> = (props) => (
+  <Svg {...props}>
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536M4 20h4l10.5-10.5a2.5 2.5 0 00-3.536-3.536L4 16v4z" />
+  </Svg>
+);
+
+/* ✅ FIX LỖI BÁC SĨ ĐANG GẶP: Budgets.tsx import ExclamationIcon */
+export const ExclamationIcon: React.FC<IconProps> = (props) => (
+  <Svg {...props}>
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v4m0 4h.01" />
     <path
       strokeLinecap="round"
       strokeLinejoin="round"
       strokeWidth={2}
-      d="M8 4v6h8V4M8 21v-7h8v7"
+      d="M10.29 3.86l-8.02 14A1.5 1.5 0 003.6 20h16.8a1.5 1.5 0 001.33-2.14l-8.02-14a1.5 1.5 0 00-2.62 0z"
     />
   </Svg>
 );
 
 /* =========================
    CATEGORY ICONS + ICON MAP
-   (Transactions/AddTransactionForm hay dùng IconMap[name])
-========================= */
-
-export const FoodIcon: React.FC<IconProps> = (props) => (
-  <Svg {...props}>
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 3v8M7 11a3 3 0 006 0V3M17 3v8a3 3 0 01-3 3" />
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 21h14" />
-  </Svg>
-);
-
-export const HomeIcon: React.FC<IconProps> = (props) => (
-  <Svg {...props}>
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10.5L12 3l9 7.5V21a1 1 0 01-1 1h-5v-7H9v7H4a1 1 0 01-1-1V10.5z" />
-  </Svg>
-);
-
-export const CarIcon: React.FC<IconProps> = (props) => (
-  <Svg {...props}>
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16l-1 2m12-2l1 2M6 10l1-3h10l1 3" />
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 16h14a1 1 0 001-1v-3a2 2 0 00-2-2H6a2 2 0 00-2 2v3a1 1 0 001 1z" />
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7.5 16a1.5 1.5 0 103 0m6 0a1.5 1.5 0 10-3 0" />
-  </Svg>
-);
-
-export const HealthIcon: React.FC<IconProps> = (props) => (
-  <Svg {...props}>
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 21s-7-4.35-9.5-8.5C.5 8 3 5 6 5c2 0 3.5 1.2 6 4 2.5-2.8 4-4 6-4 3 0 5.5 3 3.5 7.5C19 16.65 12 21 12 21z" />
-  </Svg>
-);
-
-export const GiftIcon: React.FC<IconProps> = (props) => (
-  <Svg {...props}>
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12v9H4v-9" />
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2 7h20v5H2V7z" />
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 7v14" />
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 7h4a2 2 0 000-4c-2 0-3 2-4 4zM12 7H8a2 2 0 010-4c2 0 3 2 4 4z" />
-  </Svg>
-);
-
-export const ShoppingBagIcon: React.FC<IconProps> = (props) => (
-  <Svg {...props}>
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 7l1-3h10l1 3" />
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 7h14l-1 14H6L5 7z" />
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 10a3 3 0 006 0" />
-  </Svg>
-);
-
-export const WalletIcon: React.FC<IconProps> = (props) => (
-  <Svg {...props}>
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 7h16a2 2 0 012 2v8a2 2 0 01-2 2H4a2 2 0 01-2-2V9a2 2 0 012-2z" />
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 13h.01" />
-  </Svg>
-);
-
-/**
- * IconMap:
- * - Transactions.tsx / AddTransactionForm.tsx hay dùng IconMap[iconName]
- * - Nếu iconName không khớp, fallback sẽ dùng WalletIcon hoặc CashIcon.
- */
-export const IconMap: Record<string, React.FC<IconProps>> = {
-  // payment / money
-  cash: CashIcon,
-  money: CashIcon,
-  wallet: WalletIcon,
-  income: CurrencyDollarIcon,
-  expense: WalletIcon,
-
-  // categories phổ biến
-  food: FoodIcon,
-  home: HomeIcon,
-  rent: HomeIcon,
-  car: CarIcon,
-  travel: CarIcon,
-  health: HealthIcon,
-  medical: HealthIcon,
-  gift: GiftIcon,
-  shopping: ShoppingBagIcon,
-  groceries: ShoppingBagIcon,
-
-  // UI fallbacks
-  default: WalletIcon,
-};
+===
