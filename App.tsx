@@ -1,6 +1,24 @@
 // App.tsx
-import React, { useEffect, useMemo, useState } from 'react';
-import { View } from '../types';
+// App.tsx
+import React, { useEffect, useMemo, useState } from "react";
+import type { View } from "./types";
+
+// Views (đúng theo cây thư mục Bác Sĩ chụp)
+import Dashboard from "./components/Dashboard";
+import { Transactions } from "./components/Transactions";
+import { Budgets } from "./components/Budgets";
+import { Reports } from "./components/Reports";
+import { Journey } from "./components/Journey";
+import { GoldenRules } from "./components/GoldenRules";
+import { IncomeLadder } from "./components/IncomeLadder";
+import { NetWorth } from "./components/NetWorth";
+import { ThirtyDayJourney } from "./components/ThirtyDayJourney";
+import { AICoach } from "./components/AICoach";
+import { WealthPlaybookPanel } from "./components/WealthPlaybookPanel";
+import { UpgradePlan } from "./components/UpgradePlan";
+import { logout } from "./lib/logout";
+
+// Icons: App.tsx nằm ngoài components => phải import "./components/Icons"
 import {
   ChartPieIcon,
   CollectionIcon,
@@ -15,15 +33,9 @@ import {
   BookOpenIcon,
   PencilIcon,
   RefreshIcon,
-} from './Icons';
-import { logout } from '../lib/logout';
-
-interface SidebarProps {
-  currentView: View;
-  setCurrentView: (view: View) => void;
-  isPremium: boolean;
-  setIsPremium: (isPremium: boolean) => void;
-}
+  MenuIcon,
+  XIcon,
+} from "./components/Icons";
 
 /* =========================
    NAV ITEM
@@ -41,16 +53,16 @@ const NavItem: React.FC<{
       type="button"
       className={`w-full flex items-center px-8 py-4 text-[11px] font-black uppercase tracking-[0.2em] rounded-2xl transition-all duration-500 group relative mb-1 ${
         isActive
-          ? 'bg-gradient-to-r from-luxury-gold to-amber-600 text-black shadow-luxury'
-          : 'text-slate-500 hover:text-white hover:bg-slate-800/50'
+          ? "bg-gradient-to-r from-luxury-gold to-amber-600 text-black shadow-luxury"
+          : "text-slate-500 hover:text-white hover:bg-slate-800/50"
       }`}
     >
       <div
         className={`transition-all duration-500 group-hover:scale-110 ${
-          isActive ? 'text-black' : 'text-slate-600 group-hover:text-luxury-gold'
+          isActive ? "text-black" : "text-slate-600 group-hover:text-luxury-gold"
         }`}
       >
-        {React.cloneElement(icon as React.ReactElement, { className: 'h-6 w-6' })}
+        {React.cloneElement(icon as React.ReactElement, { className: "h-6 w-6" })}
       </div>
 
       <span className="ml-5 truncate">{label}</span>
@@ -65,55 +77,55 @@ const NavItem: React.FC<{
 /* =========================
    SIDEBAR
 ========================= */
-export const Sidebar: React.FC<SidebarProps> = ({
-  currentView,
-  setCurrentView,
-  isPremium,
-  setIsPremium,
-}) => {
-  const [userName, setUserName] = useState('Người dùng');
+const Sidebar: React.FC<{
+  currentView: View;
+  setCurrentView: (view: View) => void;
+  isPremium: boolean;
+  setIsPremium: (isPremium: boolean) => void;
+}> = ({ currentView, setCurrentView, isPremium, setIsPremium }) => {
+  const [userName, setUserName] = useState("Người dùng");
   const [isEditing, setIsEditing] = useState(false);
 
   useEffect(() => {
-    const stored = localStorage.getItem('smartfinance_username');
+    const stored = localStorage.getItem("smartfinance_username");
     if (stored) setUserName(stored);
   }, []);
 
   const handleSaveName = () => {
-    const nameToSave = userName.trim() || 'Người dùng';
+    const nameToSave = userName.trim() || "Người dùng";
     setUserName(nameToSave);
-    localStorage.setItem('smartfinance_username', nameToSave);
+    localStorage.setItem("smartfinance_username", nameToSave);
     setIsEditing(false);
   };
 
   const navItems: { view: View; label: string; icon: React.ReactNode }[] =
     useMemo(
       () => [
-        { view: 'dashboard', label: 'Bảng điều khiển', icon: <ChartPieIcon /> },
-        { view: 'ai-coach', label: 'AI Coach', icon: <SparklesIcon /> },
-        { view: 'playbook', label: 'Chiến lược', icon: <BookOpenIcon /> },
-        { view: '30-day-journey', label: 'Hành trình 30 ngày', icon: <CalendarIcon /> },
-        { view: 'journey', label: 'Tháp tài chính', icon: <TrendingUpIcon /> },
-        { view: 'transactions', label: 'Giao dịch', icon: <CollectionIcon /> },
-        { view: 'budgets', label: 'Ngân sách', icon: <ClipboardListIcon /> },
-        { view: 'rules', label: 'Nguyên tắc vàng', icon: <ShieldCheckIcon /> },
-        { view: 'net-worth', label: 'Tài sản ròng', icon: <ScaleIcon /> },
-        { view: 'income-ladder', label: 'Cấp độ kiếm tiền', icon: <CurrencyDollarIcon /> },
-        { view: 'reports', label: 'Báo cáo', icon: <DocumentReportIcon /> },
-        { view: 'category-settings', label: 'Quản lý danh mục', icon: <PencilIcon /> },
-        { view: 'upgrade-plan', label: 'Nâng cấp gói', icon: <SparklesIcon /> },
+        { view: "dashboard", label: "Bảng điều khiển", icon: <ChartPieIcon /> },
+        { view: "ai-coach", label: "AI Coach", icon: <SparklesIcon /> },
+        { view: "playbook", label: "Chiến lược", icon: <BookOpenIcon /> },
+        { view: "30-day-journey", label: "Hành trình 30 ngày", icon: <CalendarIcon /> },
+        { view: "journey", label: "Tháp tài chính", icon: <TrendingUpIcon /> },
+        { view: "transactions", label: "Giao dịch", icon: <CollectionIcon /> },
+        { view: "budgets", label: "Ngân sách", icon: <ClipboardListIcon /> },
+        { view: "rules", label: "Nguyên tắc vàng", icon: <ShieldCheckIcon /> },
+        { view: "net-worth", label: "Tài sản ròng", icon: <ScaleIcon /> },
+        { view: "income-ladder", label: "Cấp độ kiếm tiền", icon: <CurrencyDollarIcon /> },
+        { view: "reports", label: "Báo cáo", icon: <DocumentReportIcon /> },
+        { view: "category-settings", label: "Quản lý danh mục", icon: <PencilIcon /> },
+        { view: "upgrade-plan", label: "Nâng cấp gói", icon: <SparklesIcon /> },
       ],
       []
     );
 
-  const membershipLabel = isPremium ? 'Elite Member' : 'Member';
+  const membershipLabel = isPremium ? "Elite Member" : "Member";
 
   return (
     <div className="flex flex-col w-full h-screen px-6 py-12 bg-luxury-obsidian overflow-y-auto">
       {/* LOGO */}
       <div
         className="flex items-center mb-16 px-4 shrink-0 group cursor-pointer"
-        onClick={() => setCurrentView('dashboard')}
+        onClick={() => setCurrentView("dashboard")}
       >
         <div className="bg-luxury-gold p-3 rounded-[1.4rem] shadow-luxury transition-all duration-700 group-hover:rotate-[360deg] border border-white/20 shrink-0">
           <CurrencyDollarIcon className="h-8 w-8 text-black" />
@@ -155,7 +167,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             className="w-full flex items-center px-8 py-3 text-[10px] font-black uppercase tracking-[0.2em] rounded-2xl transition-all duration-500 text-slate-500 hover:text-white hover:bg-slate-800/50 mb-4"
           >
             <RefreshIcon className="h-5 w-5 mr-4 text-slate-600" />
-            Dev: Toggle VIP ({isPremium ? 'ON' : 'OFF'})
+            Dev: Toggle VIP ({isPremium ? "ON" : "OFF"})
           </button>
         )}
 
@@ -179,7 +191,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   value={userName}
                   onChange={(e) => setUserName(e.target.value)}
                   onBlur={handleSaveName}
-                  onKeyDown={(e) => e.key === 'Enter' && handleSaveName()}
+                  onKeyDown={(e) => e.key === "Enter" && handleSaveName()}
                   className="w-full text-sm font-black text-white bg-transparent border-b-2 border-luxury-gold focus:outline-none py-1"
                   autoFocus
                 />
@@ -202,7 +214,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             </div>
           </div>
 
-          {/* LOGOUT BUTTON (NGAY DƯỚI PROFILE) */}
+          {/* LOGOUT */}
           <div className="mt-4 px-1">
             <button
               onClick={logout}
@@ -217,3 +229,141 @@ export const Sidebar: React.FC<SidebarProps> = ({
     </div>
   );
 };
+
+/* =========================
+   APP SHELL
+========================= */
+const App: React.FC = () => {
+  const [currentView, setCurrentView] = useState<View>("dashboard");
+  const [isPremium, setIsPremium] = useState<boolean>(() => {
+    const stored = localStorage.getItem("smartfinance_isPremium");
+    return stored ? stored === "true" : false;
+  });
+
+  // persist premium flag
+  useEffect(() => {
+    localStorage.setItem("smartfinance_isPremium", String(isPremium));
+  }, [isPremium]);
+
+  const renderView = () => {
+    switch (currentView) {
+      case "dashboard":
+        return <Dashboard isPremium={isPremium} />;
+      case "transactions":
+        return <Transactions isPremium={isPremium} />;
+      case "budgets":
+        return <Budgets isPremium={isPremium} />;
+      case "reports":
+        return <Reports isPremium={isPremium} />;
+      case "journey":
+        return <Journey isPremium={isPremium} />;
+      case "rules":
+        return <GoldenRules isPremium={isPremium} />;
+      case "income-ladder":
+        return <IncomeLadder isPremium={isPremium} />;
+      case "net-worth":
+        return <NetWorth isPremium={isPremium} />;
+      case "30-day-journey":
+        return <ThirtyDayJourney isPremium={isPremium} />;
+      case "ai-coach":
+        return <AICoach isPremium={isPremium} />;
+      case "playbook":
+        return <WealthPlaybookPanel isPremium={isPremium} />;
+      case "upgrade-plan":
+        return <UpgradePlan isPremium={isPremium} setIsPremium={setIsPremium} />;
+      case "category-settings":
+        // Nếu Bác Sĩ có component riêng, thay vào đây.
+        return (
+          <div className="p-10">
+            <h2 className="text-2xl font-black text-white mb-2">Quản lý danh mục</h2>
+            <p className="text-slate-400">
+              Chưa có component Category Settings. Nếu Bác Sĩ có file riêng, em sẽ nối đúng vào đây.
+            </p>
+          </div>
+        );
+      default:
+        return <Dashboard isPremium={isPremium} />;
+    }
+  };
+
+  // Mobile sidebar
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
+  return (
+    <div className="min-h-screen bg-[#070b12]">
+      {/* Mobile Top Bar */}
+      <div className="lg:hidden sticky top-0 z-40 flex items-center justify-between px-4 py-3 bg-black/30 backdrop-blur border-b border-white/10">
+        <button
+          type="button"
+          onClick={() => setIsSidebarOpen(true)}
+          className="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-white/5 border border-white/10"
+          aria-label="Open menu"
+        >
+          <MenuIcon className="w-5 h-5 text-white" />
+        </button>
+
+        <div className="text-sm font-black tracking-[0.2em] text-white">
+          TÀI CHÍNH
+        </div>
+
+        <div className="inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-luxury-gold">
+          <span className="w-2 h-2 rounded-full bg-luxury-gold/80" />
+          {isPremium ? "VIP" : "FREE"}
+        </div>
+      </div>
+
+      <div className="flex">
+        {/* Desktop Sidebar */}
+        <div className="hidden lg:block w-[360px] shrink-0">
+          <Sidebar
+            currentView={currentView}
+            setCurrentView={(v) => {
+              setCurrentView(v);
+            }}
+            isPremium={isPremium}
+            setIsPremium={setIsPremium}
+          />
+        </div>
+
+        {/* Mobile Sidebar Drawer */}
+        {isSidebarOpen && (
+          <div className="lg:hidden fixed inset-0 z-50">
+            <div
+              className="absolute inset-0 bg-black/60"
+              onClick={() => setIsSidebarOpen(false)}
+            />
+            <div className="absolute left-0 top-0 bottom-0 w-[88%] max-w-[360px]">
+              <div className="absolute right-3 top-3 z-10">
+                <button
+                  type="button"
+                  onClick={() => setIsSidebarOpen(false)}
+                  className="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-white/5 border border-white/10"
+                  aria-label="Close menu"
+                >
+                  <XIcon className="w-5 h-5 text-white" />
+                </button>
+              </div>
+
+              <Sidebar
+                currentView={currentView}
+                setCurrentView={(v) => {
+                  setCurrentView(v);
+                  setIsSidebarOpen(false);
+                }}
+                isPremium={isPremium}
+                setIsPremium={setIsPremium}
+              />
+            </div>
+          </div>
+        )}
+
+        {/* Main Content */}
+        <main className="flex-1 min-w-0">
+          {renderView()}
+        </main>
+      </div>
+    </div>
+  );
+};
+
+export default App;
