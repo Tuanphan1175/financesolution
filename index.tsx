@@ -1,15 +1,21 @@
-import React from 'react';
-import ReactDOM from 'react-dom/client';
-import App from './App';
-import { AuthGate } from './AuthGate';
+// index.tsx (ROOT ENTRY)
+import React from "react";
+import ReactDOM from "react-dom/client";
 
-const rootElement = document.getElementById('root');
-if (!rootElement) {
-  throw new Error('Could not find root element to mount to');
+import App from "./App";
+import { AuthGate } from "./AuthGate";
+
+// ====== LẤY ROOT ELEMENT ======
+const container = document.getElementById("root");
+
+if (!container) {
+  throw new Error("Root element #root not found in index.html");
 }
 
-const root = ReactDOM.createRoot(rootElement);
+// ====== CREATE ROOT (REACT 18) ======
+const root = ReactDOM.createRoot(container);
 
+// ====== RENDER APP ======
 root.render(
   <React.StrictMode>
     <AuthGate>
