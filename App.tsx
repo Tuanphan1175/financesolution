@@ -1,4 +1,3 @@
-// App.tsx (ROOT)
 import React, { useEffect, useMemo, useState } from "react";
 import type { View } from "./types";
 

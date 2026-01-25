@@ -1,4 +1,3 @@
-// components/Dashboard.tsx
 import React, { useMemo } from "react";
 import type { Category, Transaction, SpendingClassification } from "../types";
 import { ScaleIcon } from "./Icons";
