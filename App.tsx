@@ -11,6 +11,8 @@ import {
   CurrencyDollarIcon,
   ShieldCheckIcon,
   TrendingUpIcon,
+  // Lưu ý: nếu Icons.tsx của Bác Sĩ không export ScaleIcon/CalendarIcon/SparklesIcon/BookOpenIcon
+  // thì đổi sang đúng tên icon đang có trong file Icons.tsx.
   ScaleIcon,
   CalendarIcon,
   SparklesIcon,
@@ -23,8 +25,7 @@ import {
 import { logout } from "./lib/logout";
 
 // ================= VIEWS (CONTENT PANELS) =================
-// Lưu ý: Tuỳ project Bác Sĩ export default hay named export.
-// Nếu file của Bác Sĩ đang export khác, chỉ cần chỉnh lại 1 lần ở đây.
+// Nếu component nào đang export named, chỉnh đúng import ở đây 1 lần.
 import Dashboard from "./components/Dashboard";
 import Transactions from "./components/Transactions";
 import Budgets from "./components/Budgets";
@@ -260,43 +261,55 @@ export default function App() {
     switch (currentView) {
       case "dashboard":
         return <Dashboard />;
+
       case "transactions":
         return <Transactions />;
+
       case "budgets":
         return <Budgets />;
+
       case "reports":
         return <Reports />;
+
       case "journey":
         return <Journey />;
+
       case "rules":
         return <GoldenRules />;
+
       case "income-ladder":
         return <IncomeLadder />;
+
       case "net-worth":
         return <NetWorth />;
+
       case "30-day-journey":
         return <ThirtyDayJourney />;
+
       case "ai-coach":
         return <AICoach />;
+
       case "playbook":
         return <WealthPlaybookPanel />;
+
       case "upgrade-plan":
         return <UpgradePlan />;
+
       case "category-settings":
-        // Nếu Bác Sĩ có màn hình quản lý danh mục riêng thì import & render ở đây.
+        // Nếu có màn hình riêng: import CategorySettings và render tại đây.
         return (
           <div className="p-6 rounded-2xl bg-slate-900/40 border border-slate-800">
             <h2 className="text-xl font-black mb-2">Quản lý danh mục</h2>
             <p className="text-slate-400">
-              Màn hình này chưa được gắn component. Nếu đã có file
+              Màn hình này chưa được gắn component. Nếu Bác Sĩ có file{" "}
               <span className="font-semibold text-slate-200">
-                {" "}
-                components/CategorySettings.tsx{" "}
-              </span>
+                components/CategorySettings.tsx
+              </span>{" "}
               thì em sẽ nối ngay.
             </p>
           </div>
         );
+
       default:
         return <Dashboard />;
     }
