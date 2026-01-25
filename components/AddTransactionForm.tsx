@@ -7,7 +7,7 @@ import {
   SpendingClassification,
   Category,
 } from '../types';
-import { IconMap, PlusIcon, XIcon, CogIcon, SparklesIcon, ArrowUpIcon } from './Icons';
+import { PlusIcon, XIcon, CogIcon, SparklesIcon, ArrowUpIcon } from "./Icons";
 
 interface AddTransactionFormProps {
   initialTransaction?: Transaction | null;
