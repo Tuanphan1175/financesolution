@@ -48,39 +48,37 @@ interface SidebarProps {
 }
 
 // ================= NAV ITEM =================
-const NavItem: React.FC<{
-  view: View;
+type NavItemProps = {
   label: string;
-  icon: React.ReactNode;
-  isActive: boolean;
-  onClick: () => void;
-}> = ({ label, icon, isActive, onClick }) => (
-  <button
-    onClick={onClick}
-    type="button"
-    className={`w-full flex items-center px-8 py-4 text-[11px] font-black uppercase tracking-[0.2em] rounded-2xl transition-all duration-500 group relative mb-1 ${
-      isActive
-        ? "bg-gradient-to-r from-luxury-gold to-amber-600 text-black shadow-luxury"
-        : "text-slate-500 hover:text-white hover:bg-slate-800/50"
-    }`}
-  >
-    <div
-      className={`transition-all duration-500 group-hover:scale-110 ${
-        isActive ? "text-black" : "text-slate-600 group-hover:text-luxury-gold"
-      }`}
+  icon?: React.ReactNode;
+  isActive?: boolean;
+  onClick?: () => void;
+  className?: string;
+};
+
+const NavItem: React.FC<NavItemProps> = ({
+  label,
+  icon,
+  isActive = false,
+  onClick,
+  className = "",
+}) => {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={
+        "w-full flex items-center gap-3 rounded-2xl px-4 py-3 text-left transition " +
+        (isActive ? "bg-slate-800 text-white" : "text-slate-300 hover:bg-slate-800/60") +
+        " " +
+        className
+      }
     >
-      {React.cloneElement(icon as React.ReactElement, {
-        className: "h-6 w-6",
-      })}
-    </div>
-
-    <span className="ml-5 truncate">{label}</span>
-
-    {isActive && (
-      <div className="absolute right-4 w-1.5 h-1.5 rounded-full bg-black/40" />
-    )}
-  </button>
-);
+      {icon ? <span className="shrink-0">{icon}</span> : null}
+      <span className="truncate">{label}</span>
+    </button>
+  );
+};
 
 // ================= SIDEBAR =================
 export const Sidebar: React.FC<SidebarProps> = ({
