@@ -1,192 +1,373 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { GoogleGenerativeAI } from "@google/generative-ai";
-import { Transaction, Asset, Liability, JourneyProgress, GoldenRule } from '../types';
-import { SparklesIcon, ArrowUpIcon } from './Icons';
-import { JOURNEY_30_DAYS } from '../constants';
-import { calculatePyramidStatus } from '../lib/pyramidLogic';
+import type { Transaction, Asset, Liability, JourneyProgress, GoldenRule } from "../types";
+import { SparklesIcon, ArrowUpIcon } from "./Icons";
 
-interface AICoachProps {
-    transactions: Transaction[];
-    assets: Asset[];
-    liabilities: Liability[];
-    journeyProgress: JourneyProgress;
-    goldenRules: GoldenRule[];
-}
+// =========================
+// TYPES
+// =========================
+type Role = "user" | "model";
 
 interface Message {
-    id: string;
-    role: 'user' | 'model';
-    text: string;
+  id: string;
+  role: Role;
+  text: string;
+  ts: number;
 }
 
-export const AICoach: React.FC<AICoachProps> = ({ transactions, assets, liabilities, journeyProgress, goldenRules }) => {
-    const [messages, setMessages] = useState<Message[]>([]);
-    const [input, setInput] = useState('');
-    const [isLoading, setIsLoading] = useState(false);
-    const messagesEndRef = useRef<HTMLDivElement>(null);
-    const hasInitialized = useRef(false);
+export interface AICoachProps {
+  transactions?: Transaction[];
+  assets?: Asset[];
+  liabilities?: Liability[];
+  journeyProgress?: JourneyProgress;
+  goldenRules?: GoldenRule[];
+}
 
-    // --- 1. TÍNH TOÁN DỮ LIỆU TÀI CHÍNH ---
-    const calculateFinancialContext = () => {
-        const pyramidStatus = calculatePyramidStatus(transactions, assets, liabilities, goldenRules);
-        const { currentLevel, metrics } = pyramidStatus;
-        const totalAssets = assets.reduce((sum, a) => sum + a.value, 0);
-        const totalLiabilities = liabilities.reduce((sum, l) => sum + l.amount, 0);
-        
-        // Tính dòng tiền (Cashflow)
-        const income = transactions.filter(t => t.type === 'income').reduce((sum, t) => sum + t.amount, 0);
-        const expense = transactions.filter(t => t.type === 'expense').reduce((sum, t) => sum + t.amount, 0);
-        const cashflow = income - expense;
+// =========================
+// HELPERS
+// =========================
+const fmtMoney = (v: number) => (Number.isFinite(v) ? Math.round(v) : 0).toLocaleString("vi-VN");
 
-        return `
-        DỮ LIỆU TÀI CHÍNH HIỆN TẠI:
-        - Cấp độ tháp tài sản: ${currentLevel.name}
-        - Tổng Tài sản: ${totalAssets.toLocaleString('vi-VN')} đ
-        - Tổng Nợ: ${totalLiabilities.toLocaleString('vi-VN')} đ
-        - Dòng tiền ròng (Cashflow): ${cashflow.toLocaleString('vi-VN')} đ
-        - Thu nhập: ${income.toLocaleString('vi-VN')} đ
-        - Chi tiêu: ${expense.toLocaleString('vi-VN')} đ
-        `;
-    };
+function safeSum(nums: number[]) {
+  return nums.reduce((a, b) => a + (Number.isFinite(b) ? b : 0), 0);
+}
 
-    const financialContext = calculateFinancialContext();
+function toShortDateISO(d: Date) {
+  return d.toISOString().split("T")[0];
+}
 
-    // --- 2. KHO KIẾN THỨC CHUYÊN GIA (TỪ FILE PDF CỦA DR. TUẤN) ---
-    const SYSTEM_PROMPT = `
-    BẠN LÀ AI FINANCIAL COACH ĐỘC QUYỀN CỦA DR. TUẤN.
-    Nhiệm vụ: Tư vấn tài chính dựa trên dữ liệu người dùng và KHO KIẾN THỨC CHUYÊN GIA dưới đây.
+function monthRangeISO(now = new Date()) {
+  const start = new Date(now.getFullYear(), now.getMonth(), 1);
+  const end = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+  return { start: toShortDateISO(start), end: toShortDateISO(end) };
+}
 
-    --- KHO KIẾN THỨC TỪ TÀI LIỆU CỦA DR. TUẤN ---
+function isWithinISO(dateISO: string, startISO: string, endISO: string) {
+  return dateISO >= startISO && dateISO < endISO;
+}
 
-    **PHẦN 1: QUẢN LÝ TÀI CHÍNH CÁ NHÂN**
-    1. **Quy tắc cốt tử:** "Không quan trọng bạn kiếm bao nhiêu, quan trọng bạn giữ được bao nhiêu."
-    2. **Phương pháp 6 Chiếc Lọ (JARS):** Phân bổ thu nhập chuẩn:
-       - 55% Nhu cầu thiết yếu (Ăn uống, sinh hoạt).
-       - 10% Tiết kiệm dài hạn/Tự do tài chính (Pay yourself first).
-       - 10% Giáo dục.
-       - 10% Hưởng thụ (Play) - Cần tiêu hết để cân bằng não bộ.
-       - 10% Quỹ dự phòng khẩn cấp.
-       - 5% Cho đi.
-    3. **Tư duy Dòng tiền:** Luôn ưu tiên dòng tiền dương (+). Kiểm soát chi phí nhỏ lẻ (Latte factor).
+function buildFinancialContext(
+  transactions: Transaction[],
+  assets: Asset[],
+  liabilities: Liability[],
+  goldenRules: GoldenRule[]
+) {
+  const { start, end } = monthRangeISO(new Date());
 
-    **PHẦN 2: ĐẦU TƯ - NHÂN TIỀN & GIỮ TIỀN**
-    1. **Tài sản vs Tiêu sản (Cực kỳ quan trọng):**
-       - Tài sản: Những thứ bỏ tiền vào túi bạn (BĐS dòng tiền, Cổ phiếu giá trị, Vàng).
-       - Tiêu sản: Những thứ lấy tiền ra khỏi túi bạn (Xe cộ, Điện thoại đời mới, Nợ tiêu dùng).
-       - -> Lời khuyên: Mua Tài sản trước. Chỉ mua Tiêu sản bằng lãi sinh ra từ Tài sản.
-    2. **Lãi kép & Tâm lý:**
-       - Kiên trì là chìa khóa. Tránh bẫy làm giàu nhanh.
-       - Kiểm soát cảm xúc: Không FOMO khi thị trường xanh, không hoảng loạn khi đỏ.
-    3. **Nguyên tắc Giữ tiền:**
-       - Không bỏ trứng một giỏ (Đa dạng hóa).
-       - Không đầu tư vào lĩnh vực không hiểu rõ.
+  const txThisMonth = transactions.filter((t) => {
+    const d = String(t.date || "");
+    return d && isWithinISO(d, start, end);
+  });
 
-    **PHONG CÁCH TƯ VẤN:**
-    - Nếu người dùng định mua Tiêu sản (Xe, điện thoại...) khi dòng tiền yếu -> CAN NGĂN QUYẾT LIỆT.
-    - Luôn trích dẫn nguyên tắc (Ví dụ: "Theo nguyên tắc 6 chiếc lọ...", "Đây là tiêu sản vì...").
-    - Ngắn gọn, súc tích, thực chiến.
+  const incomeThisMonth = safeSum(txThisMonth.filter((t) => t.type === "income").map((t) => t.amount));
+  const expenseThisMonth = safeSum(txThisMonth.filter((t) => t.type === "expense").map((t) => t.amount));
+  const cashflowThisMonth = incomeThisMonth - expenseThisMonth;
 
-    **DỮ LIỆU NGƯỜI DÙNG:**
-    ${financialContext}
-    `;
+  const totalAssets = safeSum(assets.map((a) => a.value));
+  const totalLiabilities = safeSum(liabilities.map((l) => l.amount));
+  const netWorth = totalAssets - totalLiabilities;
 
-    const scrollToBottom = () => {
-        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-    };
+  const ccDebt = safeSum(liabilities.filter((l) => l.type === "credit_card").map((l) => l.amount));
+  const loanDebt = safeSum(liabilities.filter((l) => l.type === "loan" || l.type === "mortgage").map((l) => l.amount));
 
-    useEffect(() => {
-        scrollToBottom();
-    }, [messages]);
+  const rulesTotal = goldenRules.length;
+  const rulesOk = goldenRules.filter((r) => r.isCompliant).length;
+  const rulesRate = rulesTotal > 0 ? Math.round((rulesOk / rulesTotal) * 100) : null;
 
-    const handleSendMessage = async (userText: string) => {
-        if (!userText.trim()) return;
-
-        const newUserMsg: Message = { id: Date.now().toString(), role: 'user', text: userText };
-        setMessages(prev => [...prev, newUserMsg]);
-        setInput('');
-        setIsLoading(true);
-
-        try {
-            // --- QUAN TRỌNG: DÁN API KEY CỦA ANH VÀO DƯỚI ĐÂY ---
-            const API_KEY_DIRECT = "AIzaSyBU_lRanTSgme-fwI3qKCdKzfoTzLgdqRg"; 
-            
-            if (!API_KEY_DIRECT || API_KEY_DIRECT.includes("DÁN_MÃ")) {
-                throw new Error("⚠️ Anh chưa dán API Key! Hãy sửa trong code components/AICoach.tsx");
-            }
-
-            const genAI = new GoogleGenerativeAI(API_KEY_DIRECT);
-            const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-exp" });
-
-            const chat = model.startChat({
-                history: [
-                    { role: "user", parts: [{ text: SYSTEM_PROMPT }] },
-                    ...messages.map(m => ({
-                        role: m.role === 'user' ? 'user' : 'model',
-                        parts: [{ text: m.text }],
-                    }))
-                ],
-            });
-
-            const result = await chat.sendMessage(userText);
-            const response = result.response.text();
-
-            setMessages(prev => [...prev, { id: Date.now().toString(), role: 'model', text: response }]);
-        } catch (error: any) {
-            console.error("AI Error:", error);
-            setMessages(prev => [...prev, { 
-                id: Date.now().toString(), 
-                role: 'model', 
-                text: `⚠️ Lỗi kết nối: ${error.message}. Anh hãy kiểm tra lại API Key nhé.`
-            }]);
-        } finally {
-            setIsLoading(false);
+  // “6 chiếc lọ” gợi ý theo thu nhập tháng này (nếu có)
+  const jars =
+    incomeThisMonth > 0
+      ? {
+          needs55: Math.round(incomeThisMonth * 0.55),
+          freedom10: Math.round(incomeThisMonth * 0.1),
+          edu10: Math.round(incomeThisMonth * 0.1),
+          play10: Math.round(incomeThisMonth * 0.1),
+          emergency10: Math.round(incomeThisMonth * 0.1),
+          give5: Math.round(incomeThisMonth * 0.05),
         }
+      : null;
+
+  const context = [
+    `DỮ LIỆU TÀI CHÍNH (tháng ${new Date().getMonth() + 1}/${new Date().getFullYear()}):`,
+    `- Thu nhập tháng: ${fmtMoney(incomeThisMonth)} đ`,
+    `- Chi tiêu tháng: ${fmtMoney(expenseThisMonth)} đ`,
+    `- Dòng tiền ròng (cashflow): ${fmtMoney(cashflowThisMonth)} đ`,
+    ``,
+    `TÀI SẢN & NỢ:`,
+    `- Tổng tài sản: ${fmtMoney(totalAssets)} đ`,
+    `- Tổng nợ: ${fmtMoney(totalLiabilities)} đ`,
+    `- Tài sản ròng: ${fmtMoney(netWorth)} đ`,
+    `- Nợ thẻ tín dụng: ${fmtMoney(ccDebt)} đ`,
+    `- Nợ vay/ thế chấp: ${fmtMoney(loanDebt)} đ`,
+    ``,
+    `KỶ LUẬT (Golden Rules): ${rulesTotal > 0 ? `${rulesOk}/${rulesTotal} (${rulesRate}%)` : "chưa có dữ liệu"}`,
+    jars
+      ? [
+          ``,
+          `GỢI Ý PHÂN BỔ 6 CHIẾC LỌ (theo thu nhập tháng hiện tại):`,
+          `- 45% Nhu cầu: ${fmtMoney(jars.needs55)} đ`,
+          `- 20% Tự do tài chính: ${fmtMoney(jars.freedom10)} đ`,
+          `- 10% Giáo dục: ${fmtMoney(jars.edu10)} đ`,
+          `- 10% Hưởng thụ: ${fmtMoney(jars.play10)} đ`,
+          `- 10% Khẩn cấp: ${fmtMoney(jars.emergency10)} đ`,
+          `- 5% Cho đi: ${fmtMoney(jars.give5)} đ`,
+        ].join("\n")
+      : "",
+  ]
+    .filter(Boolean)
+    .join("\n");
+
+  return context;
+}
+
+function buildSystemPrompt(financialContext: string) {
+  return `
+BẠN LÀ AI FINANCIAL COACH CỦA DR. TUẤN.
+Mục tiêu: trả lời NGẮN GỌN – THỰC CHIẾN – CÓ BƯỚC HÀNH ĐỘNG, dựa trên dữ liệu người dùng.
+
+NGUYÊN TẮC TƯ VẤN (bắt buộc):
+1) Ưu tiên DÒNG TIỀN DƯƠNG (+). Nếu cashflow âm → ưu tiên giảm chi + tăng thu + chặn nợ xấu.
+2) Phân biệt TÀI SẢN vs TIÊU SẢN:
+   - Tài sản: tạo dòng tiền/ tăng giá trị dài hạn.
+   - Tiêu sản: tiêu tiền, hao mòn, rủi ro nợ tiêu dùng.
+   → Nếu người dùng muốn mua tiêu sản khi cashflow yếu: CAN NGĂN QUYẾT LIỆT và đưa phương án thay thế.
+3) “6 chiếc lọ” là khung kỷ luật: hướng dẫn áp dụng theo thu nhập thực tế.
+4) Không hứa hẹn làm giàu nhanh. Không khuyến nghị lĩnh vực người dùng không hiểu.
+5) Kết thúc câu trả lời luôn có:
+   - 1 câu chốt (kết luận)
+   - 3 việc làm ngay trong 7 ngày
+   - 1 câu hỏi ngược để chẩn đoán tiếp.
+
+DỮ LIỆU NGƯỜI DÙNG:
+${financialContext}
+`.trim();
+}
+
+function buildDemoReply(financialContext: string, userText: string) {
+  // Demo mode: trả lời logic, không cần gọi API
+  const lines: string[] = [];
+
+  lines.push(`Em đã đọc câu hỏi: "${userText}"`);
+  lines.push("");
+  lines.push("Chốt 1 câu:");
+  lines.push("- Ưu tiên đưa dòng tiền về dương và khóa các khoản “tiêu sản” trước khi nghĩ đến tối ưu đầu tư.");
+  lines.push("");
+  lines.push("3 việc làm ngay trong 7 ngày:");
+  lines.push("1) Ghi lại 10 khoản chi nhỏ lẻ gần nhất → cắt 2 khoản không tạo giá trị (Latte factor).");
+  lines.push("2) Áp quy tắc 6 chiếc lọ tối thiểu: trích 10% “Pay yourself first” ngay khi có thu nhập.");
+  lines.push("3) Nếu đang có nợ tiêu dùng/lãi cao: lập kế hoạch trả nợ theo thứ tự lãi suất (cao → thấp).");
+  lines.push("");
+  lines.push("Câu hỏi ngược để chốt hướng đi:");
+  lines.push("- Mục tiêu 90 ngày tới của bạn là: “tăng thu nhập” hay “giảm chi + trả nợ”?");
+  lines.push("");
+  lines.push("Dữ liệu em đang dựa vào:");
+  lines.push(financialContext);
+
+  return lines.join("\n");
+}
+
+function friendlyErrorMessage(err: unknown) {
+  const msg = err instanceof Error ? err.message : String(err ?? "Unknown error");
+  const lower = msg.toLowerCase();
+
+  if (lower.includes("429") || lower.includes("quota") || lower.includes("resource_exhausted")) {
+    return "Hiện đang bị giới hạn quota (429). Bác Sĩ thử lại sau hoặc nâng hạn mức API. Tạm thời em chuyển sang chế độ Demo để vẫn tư vấn được.";
+  }
+  if (lower.includes("api key") || lower.includes("key") || lower.includes("permission")) {
+    return "Em không gọi được AI vì API key/ quyền truy cập chưa đúng. Bác Sĩ kiểm tra VITE_GEMINI_API_KEY trong .env.local nhé.";
+  }
+  return `Lỗi kết nối AI: ${msg}`;
+}
+
+// =========================
+// COMPONENT
+// =========================
+export const AICoach: React.FC<AICoachProps> = ({
+  transactions = [],
+  assets = [],
+  liabilities = [],
+  journeyProgress = {},
+  goldenRules = [],
+}) => {
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [input, setInput] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [booted, setBooted] = useState(false);
+
+  const listRef = useRef<HTMLDivElement | null>(null);
+  const hasInitialized = useRef(false);
+
+  const financialContext = useMemo(
+    () => buildFinancialContext(transactions, assets, liabilities, goldenRules),
+    [transactions, assets, liabilities, goldenRules]
+  );
+
+  const SYSTEM_PROMPT = useMemo(() => buildSystemPrompt(financialContext), [financialContext]);
+
+  const apiKey = (import.meta as any).env?.VITE_GEMINI_API_KEY as string | undefined;
+  const hasKey = Boolean(apiKey && String(apiKey).trim().length > 10);
+
+  useEffect(() => {
+    // Auto “welcome” 1 lần
+    if (hasInitialized.current) return;
+    hasInitialized.current = true;
+
+    const hello: Message = {
+      id: `m_${Date.now()}`,
+      role: "model",
+      ts: Date.now(),
+      text:
+        "Chào Bác Sĩ. Em là AI Financial Coach.\n\nBác Sĩ cứ hỏi về: dòng tiền, kỷ luật chi tiêu, trả nợ, tích lũy, hoặc chiến lược tài sản.\nEm sẽ trả lời theo nguyên tắc thực chiến và có bước hành động.",
     };
+    setMessages([hello]);
+    setBooted(true);
+  }, []);
 
-    return (
-        <div className="flex flex-col h-full bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
-            <div className="bg-gradient-to-r from-primary-600 to-teal-500 p-4 flex items-center shadow-sm shrink-0">
-                <SparklesIcon className="h-6 w-6 text-white mr-2" />
-                <div>
-                    <h3 className="text-white font-bold text-lg">AI Financial Coach</h3>
-                    <p className="text-white/80 text-xs">Powered by Dr. Tuan's Knowledge</p>
-                </div>
-            </div>
+  useEffect(() => {
+    // autoscroll
+    listRef.current?.scrollTo({ top: listRef.current.scrollHeight, behavior: "smooth" });
+  }, [messages, isLoading]);
 
-            <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50 dark:bg-gray-900/50">
-                {messages.length === 0 && (
-                    <div className="text-center text-gray-500 mt-10">
-                        <p>Chào bạn, tôi là trợ lý tài chính của Dr. Tuấn.</p>
-                        <p className="text-sm mt-2">Tôi có thể giúp gì cho dòng tiền của bạn hôm nay?</p>
-                    </div>
-                )}
-                {messages.map((msg) => (
-                    <div key={msg.id} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                        <div className={`max-w-[85%] rounded-2xl p-3 text-sm shadow-sm ${msg.role === 'user' ? 'bg-primary-600 text-white' : 'bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 border dark:border-gray-600'}`}>
-                            {msg.text}
-                        </div>
-                    </div>
-                ))}
-                {isLoading && <div className="text-gray-500 text-sm ml-4 animate-pulse">Đang phân tích dữ liệu...</div>}
-                <div ref={messagesEndRef} />
-            </div>
+  async function callGemini(userText: string, history: Message[]) {
+    if (!hasKey) {
+      return buildDemoReply(financialContext, userText);
+    }
 
-            <div className="p-3 border-t dark:border-gray-700 bg-white dark:bg-gray-800">
-                <div className="flex space-x-2">
-                    <input
-                        type="text"
-                        value={input}
-                        onChange={(e) => setInput(e.target.value)}
-                        onKeyPress={(e) => e.key === 'Enter' && handleSendMessage(input)}
-                        placeholder="Hỏi về đầu tư, chi tiêu, nợ..."
-                        className="flex-1 border rounded-full px-4 py-2 focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 dark:text-white dark:border-gray-600"
-                        disabled={isLoading}
-                    />
-                    <button onClick={() => handleSendMessage(input)} disabled={isLoading} className="bg-primary-600 hover:bg-primary-700 text-white p-2 rounded-full transition-colors">
-                        <ArrowUpIcon className="h-6 w-6 transform rotate-90" />
-                    </button>
-                </div>
-            </div>
+    const genAI = new GoogleGenerativeAI(String(apiKey));
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+
+    // Gemini chat history format
+    const geminiHistory = [
+      { role: "user" as const, parts: [{ text: SYSTEM_PROMPT }] },
+      ...history
+        .filter((m) => m.role === "user" || m.role === "model")
+        .map((m) => ({
+          role: (m.role === "user" ? "user" : "model") as const,
+          parts: [{ text: m.text }],
+        })),
+    ];
+
+    const chat = model.startChat({ history: geminiHistory });
+
+    const result = await chat.sendMessage(userText);
+    const text = result.response.text();
+    return text?.trim() || "Em chưa nhận được nội dung trả lời. Bác Sĩ hỏi lại giúp em 1 câu ngắn hơn.";
+  }
+
+  async function handleSend() {
+    const userText = input.trim();
+    if (!userText || isLoading) return;
+
+    const userMsg: Message = { id: `u_${Date.now()}`, role: "user", text: userText, ts: Date.now() };
+    setMessages((prev) => [...prev, userMsg]);
+    setInput("");
+    setIsLoading(true);
+
+    try {
+      const reply = await callGemini(userText, [...messages, userMsg]);
+
+      const modelMsg: Message = { id: `a_${Date.now()}`, role: "model", text: reply, ts: Date.now() };
+      setMessages((prev) => [...prev, modelMsg]);
+    } catch (err) {
+      const note = friendlyErrorMessage(err);
+      const fallback = buildDemoReply(financialContext, userText);
+
+      const modelMsg: Message = {
+        id: `e_${Date.now()}`,
+        role: "model",
+        ts: Date.now(),
+        text: `${note}\n\n-----\nDEMO COACH (fallback):\n${fallback}`,
+      };
+      setMessages((prev) => [...prev, modelMsg]);
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  const headerSub = hasKey ? "Gemini đang hoạt động" : "Demo mode (chưa có API key)";
+
+  return (
+    <div className="flex flex-col h-[calc(100vh-64px)] min-h-[600px] rounded-3xl border border-slate-800 bg-slate-950/40 overflow-hidden shadow-premium">
+      {/* HEADER */}
+      <div className="shrink-0 px-6 py-4 border-b border-slate-800 bg-slate-950/60">
+        <div className="flex items-center gap-3">
+          <div className="h-10 w-10 rounded-2xl bg-luxury-gold/90 flex items-center justify-center">
+            <SparklesIcon className="h-6 w-6 text-black" />
+          </div>
+          <div className="min-w-0">
+            <div className="text-white font-black tracking-tight text-lg truncate">AI Financial Coach</div>
+            <div className="text-slate-400 text-xs">{headerSub}</div>
+          </div>
         </div>
-    );
+      </div>
+
+      {/* BODY */}
+      <div ref={listRef} className="flex-1 overflow-y-auto px-6 py-5 space-y-3">
+        {!booted ? null : (
+          <>
+            {/* quick context card */}
+            <div className="rounded-2xl border border-slate-800 bg-slate-900/40 p-4 text-slate-200 text-sm whitespace-pre-wrap">
+              <div className="text-slate-400 text-[11px] font-black uppercase tracking-[0.25em] mb-2">
+                Context (tự động)
+              </div>
+              {financialContext}
+              {Object.keys(journeyProgress || {}).length > 0 ? (
+                <div className="mt-3 text-slate-400 text-xs">
+                  Ghi chú: JourneyProgress đang có dữ liệu, em có thể dùng để nhắc “thói quen tài chính hằng ngày” nếu Bác Sĩ muốn.
+                </div>
+              ) : null}
+            </div>
+
+            {messages.map((m) => (
+              <div key={m.id} className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}>
+                <div
+                  className={[
+                    "max-w-[88%] rounded-2xl px-4 py-3 text-sm whitespace-pre-wrap leading-relaxed",
+                    m.role === "user"
+                      ? "bg-luxury-gold text-black font-semibold"
+                      : "bg-slate-900/70 border border-slate-800 text-slate-100",
+                  ].join(" ")}
+                >
+                  {m.text}
+                </div>
+              </div>
+            ))}
+
+            {isLoading ? (
+              <div className="text-slate-400 text-sm animate-pulse">Đang phân tích dữ liệu và lập khuyến nghị...</div>
+            ) : null}
+          </>
+        )}
+      </div>
+
+      {/* INPUT */}
+      <div className="shrink-0 px-5 py-4 border-t border-slate-800 bg-slate-950/60">
+        <div className="flex items-center gap-3">
+          <input
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && handleSend()}
+            placeholder='Ví dụ: "Tháng này chi vượt, nên cắt gì trước?"'
+            className="flex-1 rounded-2xl bg-slate-900/70 border border-slate-800 px-4 py-3 text-sm text-white placeholder:text-slate-500 outline-none focus:ring-2 focus:ring-luxury-gold/40"
+            disabled={isLoading}
+          />
+          <button
+            type="button"
+            onClick={handleSend}
+            disabled={isLoading || !input.trim()}
+            className="h-12 w-12 rounded-2xl bg-luxury-gold text-black flex items-center justify-center disabled:opacity-40"
+            aria-label="Gửi"
+          >
+            <ArrowUpIcon className="h-6 w-6 rotate-90" />
+          </button>
+        </div>
+
+        {!hasKey ? (
+          <div className="mt-3 text-xs text-slate-500">
+            Bác Sĩ tạo file <b>.env.local</b> ở root và thêm: <b>VITE_GEMINI_API_KEY=xxxxx</b> rồi restart dev server.
+          </div>
+        ) : null}
+      </div>
+    </div>
+  );
 };
