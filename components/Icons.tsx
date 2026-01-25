@@ -40,9 +40,6 @@ export const ChartPieIcon: React.FC<IconProps> = (props) => (
   </Svg>
 );
 
-// Alias để tương thích import cũ (nếu có chỗ dùng BusIcon)
-export const BusIcon = BriefcaseIcon;
-
 export const BriefcaseIcon: React.FC<IconProps> = (props) => (
   <Svg {...props}>
     <path
@@ -66,6 +63,9 @@ export const BriefcaseIcon: React.FC<IconProps> = (props) => (
     />
   </Svg>
 );
+
+// Alias để tương thích import cũ (nếu chỗ nào đang import BusIcon)
+export const BusIcon = BriefcaseIcon;
 
 export const CollectionIcon: React.FC<IconProps> = (props) => (
   <Svg {...props}>
@@ -392,26 +392,53 @@ export const ExclamationIcon: React.FC<IconProps> = (props) => (
   </Svg>
 );
 
-// Alias để nếu chỗ nào đang import nhầm
+// Alias để nếu chỗ nào đang import ExclamationIcon theo tên khác
 export const ExclamationIconIcon = ExclamationIcon;
 
 // =========================
-// EXTRA ICONS (để không vỡ build nếu nơi khác import)
+// EXTRA ICONS (để đúng import ThirtyDayJourney.tsx)
 // =========================
 
-export const HomeSimpleIcon: React.FC<IconProps> = (props) => (
+export const LockClosedIcon: React.FC<IconProps> = (props) => (
   <Svg {...props}>
     <path
       strokeLinecap="round"
       strokeLinejoin="round"
       strokeWidth={2}
-      d="M3 11l9-8 9 8"
+      d="M12 11c1.105 0 2 .895 2 2v2a2 2 0 11-4 0v-2c0-1.105.895-2 2-2z"
     />
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 10v10h14V10" />
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth={2}
+      d="M7 11V8a5 5 0 0110 0v3"
+    />
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth={2}
+      d="M6 11h12a2 2 0 012 2v6a2 2 0 01-2 2H6a2 2 0 01-2-2v-6a2 2 0 012-2z"
+    />
   </Svg>
 );
 
-// Nhiều nơi hay import CreditCardIcon (trong ảnh lỗi)
+export const FlagIcon: React.FC<IconProps> = (props) => (
+  <Svg {...props}>
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth={2}
+      d="M5 3v18"
+    />
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth={2}
+      d="M5 4h10l-1.5 3L15 10H5V4z"
+    />
+  </Svg>
+);
+
 export const CreditCardIcon: React.FC<IconProps> = (props) => (
   <Svg {...props}>
     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7h18v10H3V7z" />
