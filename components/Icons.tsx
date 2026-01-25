@@ -39,6 +39,35 @@ export const ChartPieIcon: React.FC<IconProps> = (props) => (
   </Svg>
 );
 
+export const BriefcaseIcon: React.FC<IconProps> = (props) => (
+  <Svg {...props}>
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth={2}
+      d="M9 6V5a2 2 0 012-2h2a2 2 0 012 2v1"
+    />
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth={2}
+      d="M3 10h18"
+    />
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth={2}
+      d="M5 10v9a2 2 0 002 2h10a2 2 0 002-2v-9"
+    />
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth={2}
+      d="M9 10v2a1 1 0 001 1h4a1 1 0 001-1v-2"
+    />
+  </Svg>
+);
+
 export const CollectionIcon: React.FC<IconProps> = (props) => (
   <Svg {...props}>
     <path
