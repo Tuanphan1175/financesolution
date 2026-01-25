@@ -31,13 +31,13 @@ import { Transactions } from "./components/Transactions";
 import { Budgets } from "./components/Budgets";
 import { Reports } from "./components/Reports";
 import { Journey } from "./components/Journey";
-import GoldenRules from "./components/GoldenRules";
-import IncomeLadder from "./components/IncomeLadder";
-import NetWorth from "./components/NetWorth";
-import ThirtyDayJourney from "./components/ThirtyDayJourney";
-import AICoach from "./components/AICoach";
-import WealthPlaybookPanel from "./components/WealthPlaybookPanel";
-import UpgradePlan from "./components/UpgradePlan";
+import { GoldenRules } from "./components/GoldenRules";
+import { IncomeLadder } from "./components/IncomeLadder";
+import { NetWorth } from "./components/NetWorth";
+import { ThirtyDayJourney } from "./components/ThirtyDayJourney";
+import { AICoach } from "./components/AICoach";
+import { WealthPlaybookPanel } from "./components/WealthPlaybookPanel";
+import { UpgradePlan } from "./components/UpgradePlan";
 
 // ================= TYPES =================
 interface SidebarProps {
