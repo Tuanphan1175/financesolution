@@ -26,6 +26,7 @@ interface SidebarProps {
   setCurrentView: (view: View) => void;
   isPremium: boolean;
   setIsPremium: (isPremium: boolean) => void;
+  className?: string;
 }
 
 /* =========================
