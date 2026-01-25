@@ -2,7 +2,6 @@
 import React, { useMemo } from "react";
 import type { Category, Transaction, SpendingClassification } from "../types";
 import { ScaleIcon } from "./Icons";
-import { Dashboard } from './components/Dashboard';
 
 type DashboardProps = {
   transactions: Transaction[];
@@ -42,7 +41,131 @@ const StatCard: React.FC<{
   );
 };
 
-export const Dashboard: React.FC<DashboardProps> = ({ transactions, categories }) => {
+const BudgetRuleCard: React.FC<{
+  need: number;
+  want: number;
+  save: number;
+  income: number;
+}> = ({ need, want, save, income }) => {
+  const hasIncome = income > 0;
+
+  const calcPct = (value: number) => {
+    if (!hasIncome) return 0;
+    return Math.round((value / income) * 100);
+  };
+
+  const clamp01_100 = (pct: number) => Math.max(0, Math.min(100, pct));
+  const displayPct = (pct: number) => (hasIncome ? `${pct}%` : "—");
+
+  const needPct = calcPct(need);
+  const wantPct = calcPct(want);
+  const savePct = calcPct(save);
+
+  return (
+    <div className="bg-slate-900/90 p-10 rounded-[2.5rem] shadow-premium h-full border border-slate-800">
+      <h3 className="text-[14px] font-black uppercase tracking-[0.3em] mb-12 text-white flex items-center">
+        <ScaleIcon className="w-6 h-6 mr-4 text-luxury-gold" />
+        Quy tắc 50/30/20
+        <span className="ml-auto text-[10px] font-black text-luxury-gold bg-luxury-gold/10 px-4 py-1.5 rounded-full tracking-[0.2em] border border-luxury-gold/20">
+          LIVE
+        </span>
+      </h3>
+
+      {!hasIncome && (
+        <div className="mb-10 p-5 rounded-2xl bg-black/30 border border-slate-800">
+          <p className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-400">
+            Chưa có thu nhập trong bộ lọc hiện tại, nên % tạm thời không tính.
+          </p>
+        </div>
+      )}
+
+      <div className="space-y-10">
+        {/* Needs */}
+        <div className="group">
+          <div className="flex justify-between items-end mb-4">
+            <span className="text-slate-400 text-[11px] font-black uppercase tracking-[0.2em]">
+              Cần thiết (Need)
+            </span>
+            <div className="text-right">
+              <span className="font-black text-2xl text-white tracking-tighter">
+                {displayPct(needPct)}
+              </span>
+              <span className="text-[12px] text-slate-500 font-bold ml-2">
+                / 50%
+              </span>
+            </div>
+          </div>
+          <div className="w-full bg-black/40 rounded-full h-2.5 border border-slate-800 shadow-inner overflow-hidden">
+            <div
+              className={`h-full transition-all duration-1000 ${
+                hasIncome && needPct > 55
+                  ? "bg-rose-500 shadow-glow"
+                  : "bg-primary-500 shadow-glow"
+              }`}
+              style={{ width: `${clamp01_100(needPct)}%` }}
+            />
+          </div>
+        </div>
+
+        {/* Wants */}
+        <div className="group">
+          <div className="flex justify-between items-end mb-4">
+            <span className="text-slate-400 text-[11px] font-black uppercase tracking-[0.2em]">
+              Mong muốn (Want)
+            </span>
+            <div className="text-right">
+              <span className="font-black text-2xl text-white tracking-tighter">
+                {displayPct(wantPct)}
+              </span>
+              <span className="text-[12px] text-slate-500 font-bold ml-2">
+                / 30%
+              </span>
+            </div>
+          </div>
+          <div className="w-full bg-black/40 rounded-full h-2.5 border border-slate-800 shadow-inner overflow-hidden">
+            <div
+              className={`h-full transition-all duration-1000 ${
+                hasIncome && wantPct > 35
+                  ? "bg-rose-500"
+                  : "bg-amber-500 shadow-glow"
+              }`}
+              style={{ width: `${clamp01_100(wantPct)}%` }}
+            />
+          </div>
+        </div>
+
+        {/* Savings */}
+        <div className="group">
+          <div className="flex justify-between items-end mb-4">
+            <span className="text-slate-400 text-[11px] font-black uppercase tracking-[0.2em]">
+              Tiết kiệm (Save)
+            </span>
+            <div className="text-right">
+              <span className="font-black text-2xl text-emerald-400 tracking-tighter">
+                {displayPct(savePct)}
+              </span>
+              <span className="text-[12px] text-slate-500 font-bold ml-2">
+                / 20%
+              </span>
+            </div>
+          </div>
+          <div className="w-full bg-black/40 rounded-full h-2.5 border border-slate-800 shadow-inner overflow-hidden">
+            <div
+              className={`h-full transition-all duration-1000 ${
+                hasIncome && savePct < 15
+                  ? "bg-rose-500"
+                  : "bg-emerald-500 shadow-glow"
+              }`}
+              style={{ width: `${clamp01_100(savePct)}%` }}
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const Dashboard: React.FC<DashboardProps> = ({ transactions, categories }) => {
   const categoryMap = useMemo(() => {
     const m = new Map<string, Category>();
     for (const c of categories) m.set(c.id, c);
@@ -66,7 +189,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ transactions, categories }
       expenseTotal += t.amount;
 
       const cat = categoryMap.get(t.categoryId);
-      const cls = (cat?.defaultClassification ?? null) as SpendingClassification | null;
+      const cls = (cat?.defaultClassification ??
+        null) as SpendingClassification | null;
 
       if (cls === "need") need += t.amount;
       else if (cls === "want") want += t.amount;
@@ -101,14 +225,23 @@ export const Dashboard: React.FC<DashboardProps> = ({ transactions, categories }
           Dashboard tài chính
         </div>
         <div className="mt-2 text-[13px] font-bold text-slate-500">
-          Dữ liệu được tổng hợp theo bộ lọc hiện tại (nếu anh đang lọc theo thời gian/tài khoản ở App).
+          Dữ liệu được tổng hợp theo bộ lọc hiện tại (nếu Bác Sĩ đang lọc theo
+          thời gian/tài khoản ở App).
         </div>
       </div>
 
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-8">
-        <StatCard label="Thu nhập" value={`${formatMoney(computed.income)} ₫`} tone="good" />
-        <StatCard label="Chi tiêu" value={`${formatMoney(computed.expenseTotal)} ₫`} tone="bad" />
+        <StatCard
+          label="Thu nhập"
+          value={`${formatMoney(computed.income)} ₫`}
+          tone="good"
+        />
+        <StatCard
+          label="Chi tiêu"
+          value={`${formatMoney(computed.expenseTotal)} ₫`}
+          tone="bad"
+        />
         <StatCard
           label="Dòng tiền ròng"
           value={`${formatMoney(computed.net)} ₫`}
@@ -130,9 +263,18 @@ export const Dashboard: React.FC<DashboardProps> = ({ transactions, categories }
 
           {/* Breakdown */}
           <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-5">
-            <StatCard label="Need (Cần thiết)" value={`${formatMoney(computed.need)} ₫`} />
-            <StatCard label="Want (Mong muốn)" value={`${formatMoney(computed.want)} ₫`} />
-            <StatCard label="Khác (Chưa phân loại)" value={`${formatMoney(computed.other)} ₫`} />
+            <StatCard
+              label="Need (Cần thiết)"
+              value={`${formatMoney(computed.need)} ₫`}
+            />
+            <StatCard
+              label="Want (Mong muốn)"
+              value={`${formatMoney(computed.want)} ₫`}
+            />
+            <StatCard
+              label="Khác (Chưa phân loại)"
+              value={`${formatMoney(computed.other)} ₫`}
+            />
           </div>
         </div>
 
@@ -157,7 +299,10 @@ export const Dashboard: React.FC<DashboardProps> = ({ transactions, categories }
                     <div className="text-[12px] font-black text-white truncate">
                       {t.categoryName}
                       {t.description ? (
-                        <span className="text-slate-500 font-bold"> • {t.description}</span>
+                        <span className="text-slate-500 font-bold">
+                          {" "}
+                          • {t.description}
+                        </span>
                       ) : null}
                     </div>
                     <div className="mt-1 text-[11px] font-black uppercase tracking-[0.22em] text-slate-500">
@@ -167,7 +312,9 @@ export const Dashboard: React.FC<DashboardProps> = ({ transactions, categories }
 
                   <div
                     className={`ml-4 text-right text-[13px] font-black ${
-                      t.type === "income" ? "text-emerald-300" : "text-rose-300"
+                      t.type === "income"
+                        ? "text-emerald-300"
+                        : "text-rose-300"
                     }`}
                   >
                     {t.type === "income" ? "+" : "-"}
@@ -180,7 +327,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ transactions, categories }
 
           <div className="mt-5 text-[11px] font-bold text-slate-500">
             Gợi ý: để % 50/30/20 chạy đúng, hãy đặt{" "}
-            <span className="text-slate-300">defaultClassification</span> cho Category (need/want).
+            <span className="text-slate-300">defaultClassification</span> cho
+            Category (need/want).
           </div>
         </div>
       </div>
@@ -188,118 +336,4 @@ export const Dashboard: React.FC<DashboardProps> = ({ transactions, categories }
   );
 };
 
-const BudgetRuleCard: React.FC<{
-  need: number;
-  want: number;
-  save: number;
-  income: number;
-}> = ({ need, want, save, income }) => {
-  const hasIncome = income > 0;
-
-  const calcPct = (value: number) => {
-    if (!hasIncome) return 0;
-    return Math.round((value / income) * 100);
-  };
-
-  const clamp01_100 = (pct: number) => Math.max(0, Math.min(100, pct));
-
-  const needPct = calcPct(need);
-  const wantPct = calcPct(want);
-  const savePct = calcPct(save);
-
-  const displayPct = (pct: number) => (hasIncome ? `${pct}%` : "—");
-
-  return (
-    <div className="bg-slate-900/90 p-10 rounded-[2.5rem] shadow-premium h-full border border-slate-800">
-      <h3 className="text-[14px] font-black uppercase tracking-[0.3em] mb-12 text-white flex items-center">
-        <ScaleIcon className="w-6 h-6 mr-4 text-luxury-gold" />
-        Quy tắc 50/30/20
-        <span className="ml-auto text-[10px] font-black text-luxury-gold bg-luxury-gold/10 px-4 py-1.5 rounded-full tracking-[0.2em] border border-luxury-gold/20">
-          LIVE
-        </span>
-      </h3>
-
-      {!hasIncome && (
-        <div className="mb-10 p-5 rounded-2xl bg-black/30 border border-slate-800">
-          <p className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-400">
-            Chưa có thu nhập trong bộ lọc hiện tại, nên % tạm thời không tính.
-          </p>
-        </div>
-      )}
-
-      <div className="space-y-10">
-        {/* Needs */}
-        <div className="group">
-          <div className="flex justify-between items-end mb-4">
-            <span className="text-slate-400 text-[11px] font-black uppercase tracking-[0.2em]">
-              Cần thiết (Need)
-            </span>
-            <div className="text-right">
-              <span className="font-black text-2xl text-white tracking-tighter">
-                {displayPct(needPct)}
-              </span>
-              <span className="text-[12px] text-slate-500 font-bold ml-2">/ 50%</span>
-            </div>
-          </div>
-          <div className="w-full bg-black/40 rounded-full h-2.5 border border-slate-800 shadow-inner overflow-hidden">
-            <div
-              className={`h-full transition-all duration-1000 ${
-                hasIncome && needPct > 55 ? "bg-rose-500 shadow-glow" : "bg-primary-500 shadow-glow"
-              }`}
-              style={{ width: `${clamp01_100(needPct)}%` }}
-            />
-          </div>
-        </div>
-
-        {/* Wants */}
-        <div className="group">
-          <div className="flex justify-between items-end mb-4">
-            <span className="text-slate-400 text-[11px] font-black uppercase tracking-[0.2em]">
-              Mong muốn (Want)
-            </span>
-            <div className="text-right">
-              <span className="font-black text-2xl text-white tracking-tighter">
-                {displayPct(wantPct)}
-              </span>
-              <span className="text-[12px] text-slate-500 font-bold ml-2">/ 30%</span>
-            </div>
-          </div>
-          <div className="w-full bg-black/40 rounded-full h-2.5 border border-slate-800 shadow-inner overflow-hidden">
-            <div
-              className={`h-full transition-all duration-1000 ${
-                hasIncome && wantPct > 35 ? "bg-rose-500" : "bg-amber-500 shadow-glow"
-              }`}
-              style={{ width: `${clamp01_100(wantPct)}%` }}
-            />
-          </div>
-        </div>
-
-        {/* Savings */}
-        <div className="group">
-          <div className="flex justify-between items-end mb-4">
-            <span className="text-slate-400 text-[11px] font-black uppercase tracking-[0.2em]">
-              Tiết kiệm (Save)
-            </span>
-            <div className="text-right">
-              <span className="font-black text-2xl text-emerald-400 tracking-tighter">
-                {displayPct(savePct)}
-              </span>
-              <span className="text-[12px] text-slate-500 font-bold ml-2">/ 20%</span>
-            </div>
-          </div>
-          <div className="w-full bg-black/40 rounded-full h-2.5 border border-slate-800 shadow-inner overflow-hidden">
-            <div
-              className={`h-full transition-all duration-1000 ${
-                hasIncome && savePct < 15 ? "bg-rose-500" : "bg-emerald-500 shadow-glow"
-              }`}
-              style={{ width: `${clamp01_100(savePct)}%` }}
-            />
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-// ✅ Export default để App.tsx có thể import Dashboard dạng default trên Vercel
 export default Dashboard;
