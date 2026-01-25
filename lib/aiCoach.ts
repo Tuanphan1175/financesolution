@@ -52,6 +52,70 @@ export interface AiCoachSendResult {
 }
 
 // =========================
+// SMART MODEL ROUTER (Option B)
+// =========================
+export type GeminiModel = "gemini-1.5-flash" | "gemini-1.5-pro";
+
+export type ModelRoutingMode = "auto" | "flash" | "pro";
+
+export interface ModelRouterOptions {
+  mode?: ModelRoutingMode;              // default: "auto"
+  flashModel?: GeminiModel;             // default: "gemini-1.5-flash"
+  proModel?: GeminiModel;               // default: "gemini-1.5-pro"
+  // ước lượng token theo ký tự (4 chars ~ 1 token là heuristic)
+  longPromptTokenThreshold?: number;    // default: 1400
+  veryLongPromptTokenThreshold?: number;// default: 2400
+  maxModelSwitches?: number;            // default: 1
+}
+
+function estimateTokensFromText(s: string): number {
+  const text = (s ?? "").trim();
+  if (!text) return 0;
+  return Math.ceil(text.length / 4);
+}
+
+function looksComplexUserQuery(userText: string): boolean {
+  const t = (userText ?? "").toLowerCase();
+  const keywords = [
+    "chiến lược", "kế hoạch", "phân tích", "tối ưu", "đầu tư", "danh mục",
+    "dòng tiền", "tài sản", "nợ", "thuế", "lãi suất", "kịch bản", "mô phỏng",
+    "so sánh", "tổng hợp", "lộ trình", "90 ngày", "30 ngày", "hệ thống",
+    "tự động", "mục tiêu", "cân bằng", "tối ưu hoá", "xây dựng"
+  ];
+  return keywords.some(k => t.includes(k));
+}
+
+function pickModelsByRouter(
+  input: { financialContextText: string; userText: string },
+  router?: ModelRouterOptions
+): GeminiModel[] {
+  const mode = router?.mode ?? "auto";
+  const flash = router?.flashModel ?? "gemini-1.5-flash";
+  const pro = router?.proModel ?? "gemini-1.5-pro";
+
+  if (mode === "flash") return [flash, pro];
+  if (mode === "pro") return [pro, flash];
+
+  const ctxTok = estimateTokensFromText(input.financialContextText);
+  const userTok = estimateTokensFromText(input.userText);
+  const totalTok = ctxTok + userTok;
+
+  const longTh = router?.longPromptTokenThreshold ?? 1400;
+  const veryLongTh = router?.veryLongPromptTokenThreshold ?? 2400;
+
+  const complex = looksComplexUserQuery(input.userText);
+
+  // Heuristic:
+  // - Rất dài => ưu tiên Pro
+  // - Dài + câu hỏi “nặng” => Pro
+  // - Còn lại => Flash
+  if (totalTok >= veryLongTh) return [pro, flash];
+  if (totalTok >= longTh && complex) return [pro, flash];
+
+  return [flash, pro];
+}
+
+// =========================
 // MONEY + DATE HELPERS
 // =========================
 const fmtMoney = (v: number, locale = "vi-VN") =>
@@ -308,15 +372,26 @@ export async function aiCoachSend(
   }
 
   // chuẩn hoá history cho Gemini
-  const geminiHistory = [
-    { role: "user" as const, parts: [{ text: systemPrompt }] },
-    ...history
-      .filter((m) => m && (m.role === "user" || m.role === "model") && String(m.text ?? "").trim())
-      .map((m) => ({
-        role: (m.role === "user" ? "user" : "model") as const,
-        parts: [{ text: m.text }],
-      })),
-  ];
+  const safeHistory = Array.isArray(history) ? history : [];
+
+const geminiHistory = [
+  { role: "user" as const, parts: [{ text: systemPrompt }] },
+
+  ...safeHistory
+    .filter((m): m is AiCoachMessage => {
+      return (
+        !!m &&
+        (m.role === "user" || m.role === "model") &&
+        typeof m.text === "string" &&
+        m.text.trim().length > 0
+      );
+    })
+    .map((m) => ({
+      role: m.role as "user" | "model",
+      parts: [{ text: m.text }],
+    })),
+];
+
 
   let attempt = 0;
   let backoff = initialBackoffMs;
