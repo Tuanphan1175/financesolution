@@ -11,8 +11,6 @@ import {
   CurrencyDollarIcon,
   ShieldCheckIcon,
   TrendingUpIcon,
-  // Lưu ý: nếu Icons.tsx của Bác Sĩ không export ScaleIcon/CalendarIcon/SparklesIcon/BookOpenIcon
-  // thì đổi sang đúng tên icon đang có trong file Icons.tsx.
   ScaleIcon,
   CalendarIcon,
   SparklesIcon,
@@ -25,7 +23,6 @@ import {
 import { logout } from "./lib/logout";
 
 // ================= VIEWS (CONTENT PANELS) =================
-// Nếu component nào đang export named, chỉnh đúng import ở đây 1 lần.
 import Dashboard from "./components/Dashboard";
 import { Transactions } from "./components/Transactions";
 import { Budgets } from "./components/Budgets";
@@ -45,6 +42,7 @@ interface SidebarProps {
   setCurrentView: (view: View) => void;
   isPremium: boolean;
   setIsPremium: (isPremium: boolean) => void;
+  className?: string; // ✅ thêm để nhận className
 }
 
 // ================= NAV ITEM =================
@@ -69,7 +67,9 @@ const NavItem: React.FC<NavItemProps> = ({
       onClick={onClick}
       className={
         "w-full flex items-center gap-3 rounded-2xl px-4 py-3 text-left transition " +
-        (isActive ? "bg-slate-800 text-white" : "text-slate-300 hover:bg-slate-800/60") +
+        (isActive
+          ? "bg-slate-800 text-white"
+          : "text-slate-300 hover:bg-slate-800/60") +
         " " +
         className
       }
@@ -103,42 +103,88 @@ export const Sidebar: React.FC<SidebarProps> = ({
     setIsEditing(false);
   };
 
-  const navItems: { view: View; label: string; icon: React.ReactNode }[] =
-    useMemo(
-      () => [
-        { view: "dashboard", label: "Bảng điều khiển", icon: <ChartPieIcon /> },
-        { view: "ai-coach", label: "AI Coach", icon: <SparklesIcon /> },
-        { view: "playbook", label: "Chiến lược", icon: <BookOpenIcon /> },
-        {
-          view: "30-day-journey",
-          label: "Hành trình 30 ngày",
-          icon: <CalendarIcon />,
-        },
-        { view: "journey", label: "Tháp tài chính", icon: <TrendingUpIcon /> },
-        { view: "transactions", label: "Giao dịch", icon: <CollectionIcon /> },
-        { view: "budgets", label: "Ngân sách", icon: <ClipboardListIcon /> },
-        { view: "rules", label: "Nguyên tắc vàng", icon: <ShieldCheckIcon /> },
-        { view: "net-worth", label: "Tài sản ròng", icon: <ScaleIcon /> },
-        {
-          view: "income-ladder",
-          label: "Cấp độ kiếm tiền",
-          icon: <CurrencyDollarIcon />,
-        },
-        { view: "reports", label: "Báo cáo", icon: <DocumentReportIcon /> },
-        {
-          view: "category-settings",
-          label: "Quản lý danh mục",
-          icon: <PencilIcon />,
-        },
-        { view: "upgrade-plan", label: "Nâng cấp gói", icon: <SparklesIcon /> },
-      ],
-      []
-    );
+  const navItems = useMemo<
+    { view: View; label: string; icon: React.ReactNode }[]
+  >(
+    () => [
+      {
+        view: "dashboard",
+        label: "Bảng điều khiển",
+        icon: <ChartPieIcon className="h-5 w-5" />,
+      },
+      {
+        view: "ai-coach",
+        label: "AI Coach",
+        icon: <SparklesIcon className="h-5 w-5" />,
+      },
+      {
+        view: "playbook",
+        label: "Chiến lược",
+        icon: <BookOpenIcon className="h-5 w-5" />,
+      },
+      {
+        view: "30-day-journey",
+        label: "Hành trình 30 ngày",
+        icon: <CalendarIcon className="h-5 w-5" />,
+      },
+      {
+        view: "journey",
+        label: "Tháp tài chính",
+        icon: <TrendingUpIcon className="h-5 w-5" />,
+      },
+      {
+        view: "transactions",
+        label: "Giao dịch",
+        icon: <CollectionIcon className="h-5 w-5" />,
+      },
+      {
+        view: "budgets",
+        label: "Ngân sách",
+        icon: <ClipboardListIcon className="h-5 w-5" />,
+      },
+      {
+        view: "rules",
+        label: "Nguyên tắc vàng",
+        icon: <ShieldCheckIcon className="h-5 w-5" />,
+      },
+      {
+        view: "net-worth",
+        label: "Tài sản ròng",
+        icon: <ScaleIcon className="h-5 w-5" />,
+      },
+      {
+        view: "income-ladder",
+        label: "Cấp độ kiếm tiền",
+        icon: <CurrencyDollarIcon className="h-5 w-5" />,
+      },
+      {
+        view: "reports",
+        label: "Báo cáo",
+        icon: <DocumentReportIcon className="h-5 w-5" />,
+      },
+      {
+        view: "category-settings",
+        label: "Quản lý danh mục",
+        icon: <PencilIcon className="h-5 w-5" />,
+      },
+      {
+        view: "upgrade-plan",
+        label: "Nâng cấp gói",
+        icon: <SparklesIcon className="h-5 w-5" />,
+      },
+    ],
+    []
+  );
 
   const membershipLabel = isPremium ? "Elite Member" : "Member";
 
   return (
-    <div className="flex flex-col w-full h-screen px-6 py-12 bg-luxury-obsidian overflow-y-auto">
+    <div
+      className={
+        "flex flex-col w-full h-screen px-6 py-12 bg-luxury-obsidian overflow-y-auto " +
+        className
+      }
+    >
       {/* LOGO */}
       <div
         className="flex items-center mb-16 px-4 cursor-pointer select-none"
@@ -169,7 +215,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
         {navItems.map((item) => (
           <NavItem
             key={item.view}
-            view={item.view}
             label={item.label}
             icon={item.icon}
             isActive={currentView === item.view}
@@ -295,7 +340,6 @@ export default function App() {
         return <UpgradePlan />;
 
       case "category-settings":
-        // Nếu có màn hình riêng: import CategorySettings và render tại đây.
         return (
           <div className="p-6 rounded-2xl bg-slate-900/40 border border-slate-800">
             <h2 className="text-xl font-black mb-2">Quản lý danh mục</h2>
