@@ -86,6 +86,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   setCurrentView,
   isPremium,
   setIsPremium,
+  className = "",
 }) => {
   const [userName, setUserName] = useState("Người dùng");
   const [isEditing, setIsEditing] = useState(false);
