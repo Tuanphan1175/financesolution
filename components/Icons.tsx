@@ -275,6 +275,6 @@ export const ExclamationIcon: React.FC<IconProps> = (props) => (
   </Svg>
 );
 
-/* =========================
-   CATEGORY ICONS + ICON MAP
-===
+// =========================
+// CATEGORY ICONS + ICON MAP
+// =========================
