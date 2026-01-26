@@ -21,7 +21,7 @@ export interface AiCoachContextInput {
 
 export interface AiCoachSendOptions {
   apiKey?: string; // default: import.meta.env.VITE_GEMINI_API_KEY
-  model?: string; // default: "gemini-1.5-flash"
+  model?: string; // default: "models/gemini-1.5-pro"
   maxOutputTokens?: number; // default: 700
   temperature?: number; // default: 0.6
   topP?: number; // default: 0.9
@@ -54,7 +54,7 @@ export interface AiCoachSendResult {
 // =========================
 // SMART MODEL ROUTER (Option B)
 // =========================
-export type GeminiModel = "gemini-1.5-flash" | "gemini-1.5-pro";
+export type GeminiModel = "models/gemini-1.5-pro";
 
 export type ModelRoutingMode = "auto" | "flash" | "pro";
 
@@ -90,7 +90,7 @@ function pickModelsByRouter(
   router?: ModelRouterOptions
 ): GeminiModel[] {
   const mode = router?.mode ?? "auto";
-  const flash = router?.flashModel ?? "gemini-1.5-flash";
+  const flash = router?.flashModel ?? "models/gemini-1.5-pro";
   const pro = router?.proModel ?? "gemini-1.5-pro";
 
   if (mode === "flash") return [flash, pro];
