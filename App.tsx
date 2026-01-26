@@ -48,6 +48,124 @@ interface SidebarProps {
   className?: string;
 }
 
+// ================= PREMIUM POPUP CONTENT (NEW) =================
+type LockKey = "ai_coach" | "forecast" | "community" | "generic";
+
+const LOCK_CONTENT: Record<
+  LockKey,
+  { title: string; lines: [string, string, string]; cta: string }
+> = {
+  ai_coach: {
+    title: "AI Coach là tính năng Premium",
+    lines: [
+      "1) Bạn đang ở gói Free – chỉ để nhận thức dòng tiền.",
+      "2) AI Coach giúp nhắc kỷ luật, soi thói quen chi tiêu và điều chỉnh hằng ngày.",
+      "3) Nâng cấp để bắt đầu hành trình kỷ luật 90 ngày cùng AI.",
+    ],
+    cta: "Mở khóa AI Coach",
+  },
+  forecast: {
+    title: "Dự báo dòng tiền là tính năng Premium",
+    lines: [
+      "1) Gói Free chỉ xem hiện tại – chưa có dự báo tương lai.",
+      "2) Dự báo giúp bạn biết trước tháng tới thiếu hay dư để ra quyết định sớm.",
+      "3) Nâng cấp để kiểm soát dòng tiền theo kế hoạch 30–90 ngày.",
+    ],
+    cta: "Mở khóa Dự báo",
+  },
+  community: {
+    title: "Cộng đồng kỷ luật là đặc quyền Premium",
+    lines: [
+      "1) Một mình rất dễ bỏ cuộc – Free chỉ giúp bạn bắt đầu.",
+      "2) Premium có cộng đồng kín: kỷ luật, nhắc nhau làm và theo dõi tiến bộ.",
+      "3) Nâng cấp để tham gia kỷ luật 90 ngày và có người đồng hành.",
+    ],
+    cta: "Tham gia Cộng đồng",
+  },
+  generic: {
+    title: "Tính năng dành cho người cam kết",
+    lines: [
+      "1) Bạn đang dùng gói Free – chỉ để nhận thức dòng tiền.",
+      "2) Tính năng này cần kỷ luật & AI đồng hành.",
+      "3) Nâng cấp để bắt đầu hành trình kỷ luật 90 ngày.",
+    ],
+    cta: "Nâng cấp ngay",
+  },
+};
+
+// ================= PREMIUM LOCK MODAL (NEW) =================
+function PremiumLockModal(props: {
+  open: boolean;
+  lockKey: LockKey;
+  onClose: () => void;
+  onUpgrade: () => void;
+}) {
+  const { open, lockKey, onClose, onUpgrade } = props;
+  if (!open) return null;
+
+  const content = LOCK_CONTENT[lockKey] ?? LOCK_CONTENT.generic;
+
+  return (
+    <div className="fixed inset-0 z-[9999]">
+      {/* overlay */}
+      <button
+        type="button"
+        onClick={onClose}
+        className="absolute inset-0 bg-black/60"
+        aria-label="Đóng"
+      />
+
+      {/* modal */}
+      <div className="absolute inset-x-0 bottom-0 sm:inset-0 sm:flex sm:items-center sm:justify-center p-4">
+        <div className="w-full max-w-md rounded-3xl border border-white/10 bg-slate-950/85 backdrop-blur-xl shadow-[0_25px_80px_rgba(0,0,0,0.6)] overflow-hidden">
+          <div className="p-6">
+            <div className="flex items-start gap-3">
+              <div className="h-11 w-11 rounded-2xl bg-white/10 border border-white/10 grid place-items-center">
+                <span className="text-lg font-black">🔒</span>
+              </div>
+              <div className="min-w-0">
+                <div className="text-lg font-black text-white">{content.title}</div>
+                <div className="mt-1 text-xs text-white/60">
+                  Premium không chỉ là tính năng — đó là cam kết kỷ luật.
+                </div>
+              </div>
+            </div>
+
+            {/* 3 dòng nội dung */}
+            <div className="mt-4 space-y-2 text-sm text-white/85 leading-relaxed">
+              <div>{content.lines[0]}</div>
+              <div>{content.lines[1]}</div>
+              <div>{content.lines[2]}</div>
+            </div>
+
+            <div className="mt-6 grid grid-cols-2 gap-3">
+              <button
+                type="button"
+                onClick={onClose}
+                className="rounded-2xl border border-white/15 bg-white/5 py-3 text-sm font-semibold text-white/80 hover:bg-white/10"
+              >
+                Để sau
+              </button>
+
+              <button
+                type="button"
+                onClick={onUpgrade}
+                className="rounded-2xl bg-luxury-gold py-3 text-sm font-black text-black hover:opacity-95 active:opacity-90"
+              >
+                {content.cta}
+              </button>
+            </div>
+
+            <div className="mt-4 text-xs text-white/55">
+              Gợi ý: Nâng cấp xong, hệ thống sẽ mở khóa ngay sau khi xác nhận gói.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ================= NAV ITEM =================
 type NavItemProps = {
   label: string;
@@ -257,15 +375,19 @@ function safeParseArray<T>(raw: string | null, fallback: T[] = []): T[] {
 export default function App() {
   const [currentView, setCurrentView] = useState<View>("dashboard");
 
-  // ✅ Premium state (NOW driven by Supabase profiles)
+  // ✅ Premium state (driven by Supabase profiles)
   const [isPremium, setIsPremium] = useState(false);
   const [planLoading, setPlanLoading] = useState(true);
 
-  // ✅ App-level states để truyền props cho các view
+  // ✅ Popup lock state (NEW)
+  const [lockOpen, setLockOpen] = useState(false);
+  const [lockKey, setLockKey] = useState<LockKey>("generic");
+
+  // ✅ App-level states
   const [categories, setCategories] = useState<Category[]>([]);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
 
-  // ✅ Load localStorage (an toàn)
+  // ✅ Load localStorage
   useEffect(() => {
     const cats = safeParseArray<Category>(localStorage.getItem("smartfinance_categories"), []);
     const trans = safeParseArray<Transaction>(localStorage.getItem("smartfinance_transactions"), []);
@@ -297,7 +419,7 @@ export default function App() {
     });
   };
 
-  // ================= PLAN LOAD (NEW) =================
+  // ================= PLAN LOAD =================
   async function refreshPlan() {
     try {
       setPlanLoading(true);
@@ -311,26 +433,43 @@ export default function App() {
   }
 
   useEffect(() => {
-    // 1) Lần đầu vào App: đọc plan
     refreshPlan();
-
-    // 2) Mỗi khi auth thay đổi (login/logout/refresh token): đọc lại plan
-    const unsub = subscribeAuth(() => {
-      refreshPlan();
-    });
-
+    const unsub = subscribeAuth(() => refreshPlan());
     return () => unsub();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // ================= PREMIUM GUARD (NEW) =================
-  const premiumViews = useMemo<View[]>(
-    () => ["ai-coach", "playbook", "30-day-journey"],
+  // ================= PREMIUM MAP (NEW) =================
+  // Mapping menu view -> popup copy theo tính năng
+  const premiumMap = useMemo(
+    () =>
+      new Map<View, LockKey>([
+        ["ai-coach", "ai_coach"],
+        // "playbook" em gán vào forecast (dự báo) vì nằm nhóm chiến lược/dòng tiền tương lai
+        ["playbook", "forecast"],
+        // "30-day-journey" em gán vào community vì đúng tinh thần kỷ luật/đồng hành
+        ["30-day-journey", "community"],
+      ]),
     []
   );
 
+  const premiumViews = useMemo<View[]>(
+    () => Array.from(premiumMap.keys()),
+    [premiumMap]
+  );
+
+  // ================= NAVIGATE WRAPPER (NEW) =================
+  const handleNavigate = (view: View) => {
+    if (!planLoading && !isPremium && premiumMap.has(view)) {
+      setLockKey(premiumMap.get(view) ?? "generic");
+      setLockOpen(true);
+      return;
+    }
+    setCurrentView(view);
+  };
+
+  // Fallback guard: nếu user vào trực tiếp premium view bằng cách khác
   useEffect(() => {
-    // Nếu user không premium mà đang cố mở view premium => đẩy qua upgrade-plan
     if (!planLoading && !isPremium && premiumViews.includes(currentView)) {
       setCurrentView("upgrade-plan");
     }
@@ -349,7 +488,6 @@ export default function App() {
   );
 
   const renderView = () => {
-    // Nếu đang load plan thì cho UX ổn định
     if (planLoading) {
       return (
         <div className="p-6 rounded-2xl bg-slate-900/40 border border-slate-800">
@@ -423,11 +561,22 @@ export default function App() {
 
   return (
     <div className="flex w-screen h-screen bg-luxury-obsidian text-white overflow-hidden">
+      {/* PREMIUM POPUP (NEW) */}
+      <PremiumLockModal
+        open={lockOpen}
+        lockKey={lockKey}
+        onClose={() => setLockOpen(false)}
+        onUpgrade={() => {
+          setLockOpen(false);
+          setCurrentView("upgrade-plan");
+        }}
+      />
+
       {/* SIDEBAR */}
       <aside className="w-[340px] shrink-0">
         <Sidebar
           currentView={currentView}
-          setCurrentView={setCurrentView}
+          setCurrentView={handleNavigate} // ✅ intercept click để hiện popup
           isPremium={isPremium}
           setIsPremium={setIsPremium}
         />
