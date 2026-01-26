@@ -2,7 +2,7 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 
 import App from "./App";
-import { AuthGate } from "./AuthGate";
+import AuthGate from "./AuthGate";
 
 // ====== LẤY ROOT ELEMENT ======
 const container = document.getElementById("root");
