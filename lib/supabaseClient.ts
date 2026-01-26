@@ -1,4 +1,5 @@
 // lib/supabaseClient.ts
+// ⚠️ SINGLE SUPABASE CLIENT – DO NOT DUPLICATE
 import { createClient } from '@supabase/supabase-js';
 
 // Vite env (Vercel đã set: VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY)
