@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import App from "./App";
-import { supabase } from "./lib/supabase";
+import { supabase } from "./lib/supabaseClient";
 import { LoginCard } from "./components/LoginCard";
 
 function viAuthError(message?: string) {
