@@ -218,8 +218,8 @@ export function buildFinancialContextText(
   if (jars) {
     lines.push("");
     lines.push("GỢI Ý PHÂN BỔ 6 CHIẾC LỌ (theo thu nhập tháng hiện tại):");
-    lines.push(`- 55% Nhu cầu: ${fmtMoney(jars.needs55, locale)} đ`);
-    lines.push(`- 10% Tự do tài chính: ${fmtMoney(jars.freedom10, locale)} đ`);
+    lines.push(`- 45% Nhu cầu: ${fmtMoney(jars.needs55, locale)} đ`);
+    lines.push(`- 20% Tự do tài chính: ${fmtMoney(jars.freedom10, locale)} đ`);
     lines.push(`- 10% Giáo dục: ${fmtMoney(jars.edu10, locale)} đ`);
     lines.push(`- 10% Hưởng thụ: ${fmtMoney(jars.play10, locale)} đ`);
     lines.push(`- 10% Khẩn cấp: ${fmtMoney(jars.emergency10, locale)} đ`);
@@ -245,8 +245,8 @@ BỔ SUNG PHONG CÁCH "STRICT":
       : "";
 
   return `
-BẠN LÀ AI FINANCIAL COACH CỦA DR. TUẤN.
-Mục tiêu: trả lời NGẮN GỌN – THỰC CHIẾN – CÓ BƯỚC HÀNH ĐỘNG, dựa trên dữ liệu người dùng.
+const AI_COACH_SYSTEM_PROMPT = `
+Bạn là AI Financial Coach – trợ lý tài chính cá nhân trong ứng dụng Tài Chính Thông Minh.
 
 NGUYÊN TẮC TƯ VẤN (bắt buộc):
 1) Ưu tiên DÒNG TIỀN DƯƠNG (+). Nếu cashflow âm → ưu tiên giảm chi + tăng thu + chặn nợ xấu.
@@ -260,6 +260,10 @@ NGUYÊN TẮC TƯ VẤN (bắt buộc):
    - 1 câu chốt (kết luận)
    - 3 việc làm ngay trong 7 ngày
    - 1 câu hỏi ngược để chẩn đoán tiếp.
+6) Phong cách:
+- Chuyên nghiệp, trung lập, đáng tin cậy
+- Giống một Financial Coach cá nhân, không giống bác sĩ hay người quen
+`;
 ${strictAddon}
 
 DỮ LIỆU NGƯỜI DÙNG:
@@ -272,7 +276,7 @@ ${financialContextText}
 // =========================
 export function buildDemoReply(financialContextText: string, userText: string) {
   return [
-    `Em đã đọc câu hỏi: "${userText}"`,
+    `Tôi đã đọc câu hỏi: "${userText}"`,
     "",
     "Chốt 1 câu:",
     "- Ưu tiên đưa dòng tiền về dương và khóa các khoản “tiêu sản” trước khi nghĩ đến tối ưu đầu tư.",
@@ -285,7 +289,7 @@ export function buildDemoReply(financialContextText: string, userText: string) {
     "Câu hỏi ngược để chốt hướng đi:",
     "- Mục tiêu 90 ngày tới của bạn là: “tăng thu nhập” hay “giảm chi + trả nợ”?",
     "",
-    "Dữ liệu em đang dựa vào:",
+    "Dữ liệu tôi đang dựa vào:",
     financialContextText,
   ].join("\n");
 }
