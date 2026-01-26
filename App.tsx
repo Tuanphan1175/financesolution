@@ -6,6 +6,7 @@ import {
   ChartPieIcon,
   CollectionIcon,
   ClipboardListIcon,
+  ClipboardListIcon as ClipboardListIcon2,
   DocumentReportIcon,
   CurrencyDollarIcon,
   ShieldCheckIcon,
@@ -20,6 +21,9 @@ import {
 
 // ================= LOGOUT =================
 import { logout } from "./lib/logout";
+
+// ================= SUPABASE PLAN (NEW) =================
+import { loadMyPlan, subscribeAuth } from "./lib/supabaseClient";
 
 // ================= VIEWS (CONTENT PANELS) =================
 import Dashboard from "./components/Dashboard";
@@ -252,7 +256,10 @@ function safeParseArray<T>(raw: string | null, fallback: T[] = []): T[] {
 // ================= APP ROOT =================
 export default function App() {
   const [currentView, setCurrentView] = useState<View>("dashboard");
+
+  // ✅ Premium state (NOW driven by Supabase profiles)
   const [isPremium, setIsPremium] = useState(false);
+  const [planLoading, setPlanLoading] = useState(true);
 
   // ✅ App-level states để truyền props cho các view
   const [categories, setCategories] = useState<Category[]>([]);
@@ -278,7 +285,6 @@ export default function App() {
   const onAddCategory = (cat: Category) => {
     setCategories((prev) => {
       const base = Array.isArray(prev) ? prev : [];
-      // chống trùng id
       if (base.some((c) => c.id === cat.id)) return base;
       return [cat, ...base];
     });
@@ -291,7 +297,68 @@ export default function App() {
     });
   };
 
+  // ================= PLAN LOAD (NEW) =================
+  async function refreshPlan() {
+    try {
+      setPlanLoading(true);
+      const { isPremium: vip } = await loadMyPlan();
+      setIsPremium(vip);
+    } catch {
+      setIsPremium(false);
+    } finally {
+      setPlanLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    // 1) Lần đầu vào App: đọc plan
+    refreshPlan();
+
+    // 2) Mỗi khi auth thay đổi (login/logout/refresh token): đọc lại plan
+    const unsub = subscribeAuth(() => {
+      refreshPlan();
+    });
+
+    return () => unsub();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // ================= PREMIUM GUARD (NEW) =================
+  const premiumViews = useMemo<View[]>(
+    () => ["ai-coach", "playbook", "30-day-journey"],
+    []
+  );
+
+  useEffect(() => {
+    // Nếu user không premium mà đang cố mở view premium => đẩy qua upgrade-plan
+    if (!planLoading && !isPremium && premiumViews.includes(currentView)) {
+      setCurrentView("upgrade-plan");
+    }
+  }, [currentView, isPremium, planLoading, premiumViews]);
+
+  const renderPremiumBlocked = () => (
+    <div className="space-y-4">
+      <div className="p-6 rounded-2xl bg-slate-900/40 border border-slate-800">
+        <h2 className="text-xl font-black mb-2 text-white">Tính năng Premium</h2>
+        <p className="text-slate-300">
+          Tài khoản của bạn đang ở gói <b>Free</b>. Vui lòng nâng cấp để mở khóa tính năng này.
+        </p>
+      </div>
+      <UpgradePlan />
+    </div>
+  );
+
   const renderView = () => {
+    // Nếu đang load plan thì cho UX ổn định
+    if (planLoading) {
+      return (
+        <div className="p-6 rounded-2xl bg-slate-900/40 border border-slate-800">
+          <div className="text-white font-black text-lg">Đang kiểm tra gói tài khoản...</div>
+          <div className="text-slate-400 mt-1">Vui lòng chờ trong giây lát.</div>
+        </div>
+      );
+    }
+
     switch (currentView) {
       case "dashboard":
         return <Dashboard transactions={transactions} categories={categories} />;
@@ -325,14 +392,15 @@ export default function App() {
       case "net-worth":
         return <NetWorth />;
 
+      // ===== Premium gated =====
       case "30-day-journey":
-        return <ThirtyDayJourney />;
+        return isPremium ? <ThirtyDayJourney /> : renderPremiumBlocked();
 
       case "ai-coach":
-        return <AICoach />;
+        return isPremium ? <AICoach /> : renderPremiumBlocked();
 
       case "playbook":
-        return <WealthPlaybookPanel />;
+        return isPremium ? <WealthPlaybookPanel /> : renderPremiumBlocked();
 
       case "upgrade-plan":
         return <UpgradePlan />;
