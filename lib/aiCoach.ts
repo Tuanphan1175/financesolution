@@ -1,3 +1,4 @@
+// lib/aiCoach.ts
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import type { Transaction, Asset, Liability, JourneyProgress, GoldenRule } from "../types";
 
@@ -29,15 +30,15 @@ export interface AiCoachSendOptions {
   initialBackoffMs?: number; // default: 900
   timeoutMs?: number; // default: 20000
   useDemoFallback?: boolean; // default: true
-  systemStyle?: "default" | "strict"; // override systemStyle trong input nếu muốn
+  systemStyle?: "default" | "strict";
 }
 
 export interface AiCoachSendInput {
   userText: string;
-  history?: AiCoachMessage[]; // các message trước đó (user/model)
-  context?: AiCoachContextInput; // dữ liệu tài chính
-  systemStyle?: "default" | "strict"; // strict: can ngăn tiêu sản mạnh hơn
-  userLocale?: "vi-VN" | string; // default vi-VN
+  history?: AiCoachMessage[];
+  context?: AiCoachContextInput;
+  systemStyle?: "default" | "strict";
+  userLocale?: "vi-VN" | string;
 }
 
 export interface AiCoachSendResult {
@@ -49,70 +50,6 @@ export interface AiCoachSendResult {
     retries: number;
     reason?: string;
   };
-}
-
-// =========================
-// SMART MODEL ROUTER (Option B)
-// =========================
-export type GeminiModel = "models/gemini-1.5-pro";
-
-export type ModelRoutingMode = "auto" | "flash" | "pro";
-
-export interface ModelRouterOptions {
-  mode?: ModelRoutingMode;              // default: "auto"
-  flashModel?: GeminiModel;             // default: "gemini-1.5-flash"
-  proModel?: GeminiModel;               // default: "gemini-1.5-pro"
-  // ước lượng token theo ký tự (4 chars ~ 1 token là heuristic)
-  longPromptTokenThreshold?: number;    // default: 1400
-  veryLongPromptTokenThreshold?: number;// default: 2400
-  maxModelSwitches?: number;            // default: 1
-}
-
-function estimateTokensFromText(s: string): number {
-  const text = (s ?? "").trim();
-  if (!text) return 0;
-  return Math.ceil(text.length / 4);
-}
-
-function looksComplexUserQuery(userText: string): boolean {
-  const t = (userText ?? "").toLowerCase();
-  const keywords = [
-    "chiến lược", "kế hoạch", "phân tích", "tối ưu", "đầu tư", "danh mục",
-    "dòng tiền", "tài sản", "nợ", "thuế", "lãi suất", "kịch bản", "mô phỏng",
-    "so sánh", "tổng hợp", "lộ trình", "90 ngày", "30 ngày", "hệ thống",
-    "tự động", "mục tiêu", "cân bằng", "tối ưu hoá", "xây dựng"
-  ];
-  return keywords.some(k => t.includes(k));
-}
-
-function pickModelsByRouter(
-  input: { financialContextText: string; userText: string },
-  router?: ModelRouterOptions
-): GeminiModel[] {
-  const mode = router?.mode ?? "auto";
-  const flash = router?.flashModel ?? "models/gemini-1.5-pro";
-  const pro = router?.proModel ?? "gemini-1.5-pro";
-
-  if (mode === "flash") return [flash, pro];
-  if (mode === "pro") return [pro, flash];
-
-  const ctxTok = estimateTokensFromText(input.financialContextText);
-  const userTok = estimateTokensFromText(input.userText);
-  const totalTok = ctxTok + userTok;
-
-  const longTh = router?.longPromptTokenThreshold ?? 1400;
-  const veryLongTh = router?.veryLongPromptTokenThreshold ?? 2400;
-
-  const complex = looksComplexUserQuery(input.userText);
-
-  // Heuristic:
-  // - Rất dài => ưu tiên Pro
-  // - Dài + câu hỏi “nặng” => Pro
-  // - Còn lại => Flash
-  if (totalTok >= veryLongTh) return [pro, flash];
-  if (totalTok >= longTh && complex) return [pro, flash];
-
-  return [flash, pro];
 }
 
 // =========================
@@ -151,7 +88,8 @@ export function buildFinancialContextText(
   const liabilities = input.liabilities ?? [];
   const goldenRules = input.goldenRules ?? [];
 
-  const { start, end } = monthRangeISO(new Date());
+  const now = new Date();
+  const { start, end } = monthRangeISO(now);
 
   const txThisMonth = transactions.filter((t) => {
     const d = String((t as any).date || "");
@@ -186,11 +124,12 @@ export function buildFinancialContextText(
   const rulesOk = goldenRules.filter((r) => (r as any).isCompliant).length;
   const rulesRate = rulesTotal > 0 ? Math.round((rulesOk / rulesTotal) * 100) : null;
 
+  // 6 jars demo (có thể chỉnh sau)
   const jars =
     incomeThisMonth > 0
       ? {
-          needs55: Math.round(incomeThisMonth * 0.55),
-          freedom10: Math.round(incomeThisMonth * 0.1),
+          needs45: Math.round(incomeThisMonth * 0.45),
+          freedom20: Math.round(incomeThisMonth * 0.2),
           edu10: Math.round(incomeThisMonth * 0.1),
           play10: Math.round(incomeThisMonth * 0.1),
           emergency10: Math.round(incomeThisMonth * 0.1),
@@ -199,7 +138,7 @@ export function buildFinancialContextText(
       : null;
 
   const lines: string[] = [];
-  lines.push(`DỮ LIỆU TÀI CHÍNH (tháng ${new Date().getMonth() + 1}/${new Date().getFullYear()}):`);
+  lines.push(`DỮ LIỆU TÀI CHÍNH (tháng ${now.getMonth() + 1}/${now.getFullYear()}):`);
   lines.push(`- Thu nhập tháng: ${fmtMoney(incomeThisMonth, locale)} đ`);
   lines.push(`- Chi tiêu tháng: ${fmtMoney(expenseThisMonth, locale)} đ`);
   lines.push(`- Dòng tiền ròng (cashflow): ${fmtMoney(cashflowThisMonth, locale)} đ`);
@@ -212,14 +151,16 @@ export function buildFinancialContextText(
   lines.push(`- Nợ vay/ thế chấp: ${fmtMoney(loanDebt, locale)} đ`);
   lines.push("");
   lines.push(
-    `KỶ LUẬT (Golden Rules): ${rulesTotal > 0 ? `${rulesOk}/${rulesTotal} (${rulesRate}%)` : "chưa có dữ liệu"}`
+    `KỶ LUẬT (Golden Rules): ${
+      rulesTotal > 0 ? `${rulesOk}/${rulesTotal} (${rulesRate}%)` : "chưa có dữ liệu"
+    }`
   );
 
   if (jars) {
     lines.push("");
     lines.push("GỢI Ý PHÂN BỔ 6 CHIẾC LỌ (theo thu nhập tháng hiện tại):");
-    lines.push(`- 45% Nhu cầu: ${fmtMoney(jars.needs55, locale)} đ`);
-    lines.push(`- 20% Tự do tài chính: ${fmtMoney(jars.freedom10, locale)} đ`);
+    lines.push(`- 45% Nhu cầu: ${fmtMoney(jars.needs45, locale)} đ`);
+    lines.push(`- 20% Tự do tài chính: ${fmtMoney(jars.freedom20, locale)} đ`);
     lines.push(`- 10% Giáo dục: ${fmtMoney(jars.edu10, locale)} đ`);
     lines.push(`- 10% Hưởng thụ: ${fmtMoney(jars.play10, locale)} đ`);
     lines.push(`- 10% Khẩn cấp: ${fmtMoney(jars.emergency10, locale)} đ`);
@@ -230,68 +171,71 @@ export function buildFinancialContextText(
 }
 
 // =========================
-// PROMPT BUILDER
+// PROMPT BUILDER (systemInstruction)
 // =========================
 export function buildSystemPrompt(
   financialContextText: string,
   style: "default" | "strict" = "default"
 ) {
-  const strictAddon =
-    style === "strict"
-      ? `
-BỔ SUNG PHONG CÁCH "STRICT":
-- Nếu người dùng muốn mua TIÊU SẢN khi cashflow âm/ yếu hoặc đang nợ thẻ: phản biện mạnh, đưa giới hạn cụ thể (VD: hoãn 30-90 ngày), kèm 2 phương án thay thế rẻ hơn.
-`
-      : "";
+  const base: string[] = [];
 
-  return `
-const AI_COACH_SYSTEM_PROMPT = `
-Bạn là AI Financial Coach – trợ lý tài chính cá nhân trong ứng dụng Tài Chính Thông Minh.
+  base.push("Bạn là AI Financial Coach – trợ lý tài chính cá nhân trong ứng dụng Tài Chính Thông Minh.");
+  base.push("");
+  base.push("Cách xưng hô (bắt buộc):");
+  base.push("- Gọi người dùng là “bạn”");
+  base.push("- Xưng là “tôi”");
+  base.push("");
+  base.push("Nguyên tắc tư vấn (bắt buộc):");
+  base.push("1) Ưu tiên DÒNG TIỀN DƯƠNG. Nếu cashflow âm → giảm chi + tăng thu + chặn nợ xấu.");
+  base.push("2) Phân biệt TÀI SẢN vs TIÊU SẢN:");
+  base.push("   - Tài sản: tạo dòng tiền/ tăng giá trị dài hạn.");
+  base.push("   - Tiêu sản: tiêu tiền, hao mòn, rủi ro nợ tiêu dùng.");
+  base.push("3) Khung kỷ luật “6 chiếc lọ” là công cụ hướng dẫn; dùng con số thực tế theo thu nhập.");
+  base.push("4) Không hứa hẹn làm giàu nhanh. Không khuyến nghị lĩnh vực người dùng không hiểu.");
+  base.push("5) Kết thúc câu trả lời luôn có:");
+  base.push("   - 1 câu chốt");
+  base.push("   - 3 việc làm ngay trong 7 ngày");
+  base.push("   - 1 câu hỏi ngược để chẩn đoán tiếp");
+  base.push("");
+  base.push("Phong cách:");
+  base.push("- Chuyên nghiệp, trung lập, đáng tin cậy (giọng SaaS thương mại).");
+  base.push("- Không giống bác sĩ hay người quen.");
+  base.push("");
 
-NGUYÊN TẮC TƯ VẤN (bắt buộc):
-1) Ưu tiên DÒNG TIỀN DƯƠNG (+). Nếu cashflow âm → ưu tiên giảm chi + tăng thu + chặn nợ xấu.
-2) Phân biệt TÀI SẢN vs TIÊU SẢN:
-   - Tài sản: tạo dòng tiền/ tăng giá trị dài hạn.
-   - Tiêu sản: tiêu tiền, hao mòn, rủi ro nợ tiêu dùng.
-   → Nếu người dùng muốn mua tiêu sản khi dòng tiền yếu: CAN NGĂN QUYẾT LIỆT và đưa phương án thay thế.
-3) “6 chiếc lọ” là khung kỷ luật: hướng dẫn áp dụng theo thu nhập thực tế.
-4) Không hứa hẹn làm giàu nhanh. Không khuyến nghị lĩnh vực người dùng không hiểu.
-5) Kết thúc câu trả lời luôn có:
-   - 1 câu chốt (kết luận)
-   - 3 việc làm ngay trong 7 ngày
-   - 1 câu hỏi ngược để chẩn đoán tiếp.
-6) Phong cách:
-- Chuyên nghiệp, trung lập, đáng tin cậy
-- Giống một Financial Coach cá nhân, không giống bác sĩ hay người quen
-`;
-${strictAddon}
+  if (style === "strict") {
+    base.push("Bổ sung phong cách STRICT:");
+    base.push("- Nếu bạn muốn mua TIÊU SẢN khi cashflow âm/yếu hoặc đang nợ thẻ: phản biện mạnh.");
+    base.push("- Đưa giới hạn cụ thể (ví dụ: hoãn 30–90 ngày) + 2 phương án thay thế rẻ hơn.");
+    base.push("");
+  }
 
-DỮ LIỆU NGƯỜI DÙNG:
-${financialContextText}
-`.trim();
+  base.push("Dữ liệu người dùng (để bạn dựa vào khi trả lời):");
+  base.push(financialContextText);
+
+  return base.join("\n").trim();
 }
 
 // =========================
-// DEMO FALLBACK
+// DEMO FALLBACK (bạn – tôi)
 // =========================
 export function buildDemoReply(financialContextText: string, userText: string) {
-  return [
-    `Tôi đã đọc câu hỏi: "${userText}"`,
-    "",
-    "Chốt 1 câu:",
-    "- Ưu tiên đưa dòng tiền về dương và khóa các khoản “tiêu sản” trước khi nghĩ đến tối ưu đầu tư.",
-    "",
-    "3 việc làm ngay trong 7 ngày:",
-    "1) Ghi lại 10 khoản chi nhỏ lẻ gần nhất → cắt 2 khoản không tạo giá trị (Latte factor).",
-    "2) Áp quy tắc 6 chiếc lọ tối thiểu: trích 10% “Pay yourself first” ngay khi có thu nhập.",
-    "3) Nếu đang có nợ tiêu dùng/lãi cao: lập kế hoạch trả nợ theo thứ tự lãi suất (cao → thấp).",
-    "",
-    "Câu hỏi ngược để chốt hướng đi:",
-    "- Mục tiêu 90 ngày tới của bạn là: “tăng thu nhập” hay “giảm chi + trả nợ”?",
-    "",
-    "Dữ liệu tôi đang dựa vào:",
-    financialContextText,
-  ].join("\n");
+  const lines: string[] = [];
+  lines.push(`Tôi đã nhận được câu hỏi của bạn: "${userText}"`);
+  lines.push("");
+  lines.push("Chốt 1 câu:");
+  lines.push("- Ưu tiên đưa dòng tiền về dương và khóa các khoản “tiêu sản” trước khi nghĩ đến tối ưu đầu tư.");
+  lines.push("");
+  lines.push("3 việc làm ngay trong 7 ngày:");
+  lines.push("1) Ghi lại 10 khoản chi nhỏ lẻ gần nhất → cắt 2 khoản không tạo giá trị (Latte factor).");
+  lines.push("2) Trích trước 10% thu nhập để tích lũy (pay yourself first), dù số tiền nhỏ.");
+  lines.push("3) Nếu có nợ lãi cao: lập kế hoạch trả nợ theo lãi suất (cao → thấp) hoặc theo “tuyết lăn” (nhỏ → lớn).");
+  lines.push("");
+  lines.push("Câu hỏi ngược để chẩn đoán tiếp:");
+  lines.push("- Mục tiêu 90 ngày tới của bạn là: tăng thu nhập hay giảm chi + trả nợ?");
+  lines.push("");
+  lines.push("Dữ liệu tôi đang dựa vào:");
+  lines.push(financialContextText);
+  return lines.join("\n");
 }
 
 // =========================
@@ -349,7 +293,7 @@ export async function aiCoachSend(
   } = input;
 
   const apiKey = opts.apiKey ?? (import.meta as any).env?.VITE_GEMINI_API_KEY;
-  const modelName = opts.model ?? "gemini-1.5-flash";
+  const modelName = opts.model ?? "models/gemini-1.5-pro";
 
   const maxOutputTokens = Number.isFinite(opts.maxOutputTokens) ? (opts.maxOutputTokens as number) : 700;
   const temperature = Number.isFinite(opts.temperature) ? (opts.temperature as number) : 0.6;
@@ -364,7 +308,7 @@ export async function aiCoachSend(
   const financialContextText = buildFinancialContextText(context, userLocale);
   const systemPrompt = buildSystemPrompt(financialContextText, systemStyle);
 
-  // thiếu key → demo
+  // Missing key => Demo
   const hasKey = Boolean(apiKey && String(apiKey).trim().length > 10);
   if (!hasKey) {
     return {
@@ -375,13 +319,9 @@ export async function aiCoachSend(
     };
   }
 
-  // chuẩn hoá history cho Gemini
+  // Normalize history for Gemini (user/model)
   const safeHistory = Array.isArray(history) ? history : [];
-
-const geminiHistory = [
-  { role: "user" as const, parts: [{ text: systemPrompt }] },
-
-  ...safeHistory
+  const geminiHistory = safeHistory
     .filter((m): m is AiCoachMessage => {
       return (
         !!m &&
@@ -393,9 +333,7 @@ const geminiHistory = [
     .map((m) => ({
       role: m.role as "user" | "model",
       parts: [{ text: m.text }],
-    })),
-];
-
+    }));
 
   let attempt = 0;
   let backoff = initialBackoffMs;
@@ -403,9 +341,12 @@ const geminiHistory = [
   while (attempt <= maxRetries) {
     try {
       const genAI = new GoogleGenerativeAI(String(apiKey));
+
       const model = genAI.getGenerativeModel({
         model: modelName,
         generationConfig: { maxOutputTokens, temperature, topP },
+        // Quan trọng: systemInstruction đúng chuẩn, không nhét vào history
+        systemInstruction: systemPrompt,
       });
 
       const chat = model.startChat({ history: geminiHistory });
@@ -416,9 +357,9 @@ const geminiHistory = [
       if (!text) {
         return {
           ok: true,
-          text: "Em chưa nhận được nội dung trả lời. Bác Sĩ hỏi lại giúp em 1 câu ngắn hơn.",
+          text: "Tôi chưa nhận được nội dung trả lời. Bạn thử hỏi lại ngắn gọn hơn giúp tôi.",
           usedDemo: false,
-          meta: { model: modelName, retries: attempt },
+          meta: { model: modelName, retries: attempt, reason: "empty_response" },
         };
       }
 
@@ -431,13 +372,12 @@ const geminiHistory = [
     } catch (err) {
       const quota = isQuota429(err);
 
-      // lỗi auth → không retry nhiều
       if (isAuthError(err)) {
         if (useDemoFallback) {
           return {
             ok: true,
             text:
-              "Em không gọi được AI do API key/ quyền truy cập chưa đúng. Tạm thời em trả lời theo chế độ Demo.\n\n" +
+              "Tôi không gọi được AI do API key/quyền truy cập chưa đúng. Tạm thời tôi trả lời theo chế độ Demo.\n\n" +
               buildDemoReply(financialContextText, userText),
             usedDemo: true,
             meta: { model: modelName, retries: attempt, reason: "auth_error" },
@@ -445,13 +385,12 @@ const geminiHistory = [
         }
         return {
           ok: false,
-          text: "API key/ quyền truy cập chưa đúng. Kiểm tra VITE_GEMINI_API_KEY.",
+          text: "API key/quyền truy cập chưa đúng. Kiểm tra VITE_GEMINI_API_KEY.",
           usedDemo: false,
           meta: { model: modelName, retries: attempt, reason: "auth_error" },
         };
       }
 
-      // retry khi 429/quota
       if (quota && attempt < maxRetries) {
         await sleep(backoff);
         backoff = Math.min(backoff * 2, 8000);
@@ -459,15 +398,14 @@ const geminiHistory = [
         continue;
       }
 
-      // hết retry hoặc lỗi khác → fallback
       if (useDemoFallback) {
         const reason = quota ? "quota_429" : "runtime_error";
         return {
           ok: true,
           text:
             (quota
-              ? "Hiện đang bị giới hạn quota (429). Em chuyển sang chế độ Demo để vẫn tư vấn được.\n\n"
-              : "Em gặp lỗi khi gọi AI. Em chuyển sang chế độ Demo để vẫn tư vấn được.\n\n") +
+              ? "Hiện đang bị giới hạn quota (429). Tôi chuyển sang chế độ Demo để vẫn tư vấn được.\n\n"
+              : "Tôi gặp lỗi khi gọi AI. Tôi chuyển sang chế độ Demo để vẫn tư vấn được.\n\n") +
             buildDemoReply(financialContextText, userText),
           usedDemo: true,
           meta: { model: modelName, retries: attempt, reason },
