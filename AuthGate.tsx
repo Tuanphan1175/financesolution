@@ -1,3 +1,4 @@
+// AuthGate.tsx
 import { useEffect, useMemo, useState } from "react";
 import App from "./App";
 import { supabase } from "./lib/supabaseClient";
@@ -7,7 +8,8 @@ function viAuthError(message?: string) {
   const m = (message || "").toLowerCase();
 
   if (m.includes("invalid login credentials")) return "Email hoặc mật khẩu không đúng.";
-  if (m.includes("email not confirmed")) return "Email chưa được xác minh. Vui lòng kiểm tra hộp thư để xác nhận.";
+  if (m.includes("email not confirmed"))
+    return "Email chưa được xác minh. Vui lòng kiểm tra hộp thư để xác nhận.";
   if (m.includes("user not found")) return "Không tìm thấy tài khoản. Vui lòng kiểm tra lại email.";
   if (m.includes("too many requests")) return "Bạn thao tác quá nhanh. Vui lòng thử lại sau ít phút.";
   if (m.includes("password")) return "Mật khẩu không hợp lệ. Vui lòng kiểm tra lại.";
@@ -27,7 +29,30 @@ const inputClass =
 function hasRecoveryInUrl() {
   const h = (window.location.hash || "").toLowerCase();
   const s = window.location.search || "";
-  return h.includes("type=recovery") || h.includes("recovery") || s.toLowerCase().includes("type=recovery");
+  return (
+    h.includes("type=recovery") ||
+    h.includes("recovery") ||
+    s.toLowerCase().includes("type=recovery")
+  );
+}
+
+/**
+ * ✅ Detect confirm-email / magic-link callback
+ * - Hash flow: #access_token=...&type=signup (hoặc magiclink)
+ * - PKCE flow: ?code=...
+ */
+function hasAuthCallbackInUrl() {
+  const h = (window.location.hash || "").toLowerCase();
+  const s = (window.location.search || "").toLowerCase();
+  return (
+    h.includes("access_token=") ||
+    h.includes("refresh_token=") ||
+    h.includes("type=signup") ||
+    h.includes("type=magiclink") ||
+    s.includes("code=") ||
+    s.includes("type=signup") ||
+    s.includes("type=magiclink")
+  );
 }
 
 function clearUrlHashAndQuery() {
@@ -71,7 +96,46 @@ export default function AuthGate() {
     // If URL already indicates recovery, switch mode immediately
     if (hasRecoveryInUrl()) setMode("recovery");
 
-    // Get initial session (Supabase can parse recovery tokens from URL)
+    // ✅ 1) Handle confirm email / magic link callback (hash or PKCE)
+    const runAuthCallback = async () => {
+      if (!hasAuthCallbackInUrl()) return;
+
+      try {
+        setLoading(true);
+        setError("");
+        setInfo("Đang xác nhận phiên đăng nhập...");
+
+        // PKCE flow uses ?code=
+        const url = new URL(window.location.href);
+        const code = url.searchParams.get("code");
+        if (code) {
+          const { error } = await supabase.auth.exchangeCodeForSession(code);
+          if (error) throw error;
+        }
+
+        // Hash flow: Supabase will parse tokens; getSession() will reflect it
+        const { data, error } = await supabase.auth.getSession();
+        if (error) throw error;
+
+        if (data?.session) {
+          setSession(data.session);
+          setInfo("Xác nhận email thành công. Bạn đã được đăng nhập.");
+          setMode("login");
+        } else {
+          setInfo("Đã xác nhận. Vui lòng đăng nhập để tiếp tục.");
+          setMode("login");
+        }
+      } catch (e: any) {
+        setError(viAuthError(e?.message || "Xác nhận email thất bại."));
+      } finally {
+        clearUrlHashAndQuery();
+        setLoading(false);
+      }
+    };
+
+    runAuthCallback();
+
+    // ✅ 2) Get initial session (Supabase can parse tokens from URL as well)
     supabase.auth.getSession().then(({ data }) => {
       setSession(data.session);
     });
@@ -162,7 +226,8 @@ export default function AuthGate() {
 
     setLoading(true);
 
-    // redirectTo: quay lại đúng origin để confirm/recovery đều hoạt động
+    // ✅ redirectTo: quay lại đúng domain hiện tại (Vercel/Local đều đúng)
+    // Dùng / để AuthGate bắt callback theo hash/code ở cùng trang.
     const redirectTo = window.location.origin;
 
     const { data, error } = await supabase.auth.signUp({
@@ -300,7 +365,7 @@ export default function AuthGate() {
             <div className="mt-4 rounded-2xl border border-white/10 bg-white/[0.05] p-4 backdrop-blur-xl">
               <div className="text-sm font-semibold text-white/90">Người mới?</div>
               <div className="mt-1 text-xs text-white/70">
-                Tạo tài khoản miễn phí để vào hệ thống. Sau đó Bác Sĩ sẽ duyệt nâng cấp Premium nếu bạn đăng ký gói.
+                Tạo tài khoản miễn phí để dùng bản Free. Premium sẽ được duyệt khi đăng ký gói.
               </div>
               <button
                 type="button"
@@ -324,7 +389,7 @@ export default function AuthGate() {
               </div>
               <h1 className="text-2xl font-bold">Tạo tài khoản miễn phí</h1>
               <p className="mt-1 text-sm text-white/70">
-                Tạo tài khoản xong bạn có thể dùng Free ngay. Premium sẽ được duyệt khi đăng ký gói.
+                Tạo tài khoản xong bạn dùng Free ngay. Premium sẽ mở khi nâng cấp gói.
               </p>
             </div>
 
@@ -409,19 +474,18 @@ export default function AuthGate() {
             </button>
 
             <p className="mt-4 text-center text-xs text-white/60">
-              Nếu hệ thống yêu cầu xác minh email, hãy mở hộp thư (kể cả Spam) rồi bấm xác nhận, sau đó quay lại đăng nhập.
+              Nếu hệ thống yêu cầu xác minh email, hãy mở hộp thư (kể cả Spam) và bấm xác nhận.
+              Sau đó quay lại đây để đăng nhập.
             </p>
           </div>
         ) : (
           <div className="w-full max-w-md rounded-3xl border border-white/10 bg-white/[0.06] p-8 shadow-[0_20px_60px_rgba(0,0,0,0.45)] backdrop-blur-xl">
             <div className="mb-6 text-center">
               <div className="mx-auto mb-3 h-12 w-12 rounded-2xl bg-white/10 grid place-items-center border border-white/10">
-                <span className="text-lg font-bold">🔒</span>
+                <span className="text-lg font-bold">PW</span>
               </div>
               <h1 className="text-2xl font-bold">Đặt mật khẩu mới</h1>
-              <p className="mt-1 text-sm text-white/70">
-                Vui lòng đặt mật khẩu mới để hoàn tất khôi phục.
-              </p>
+              <p className="mt-1 text-sm text-white/70">Vui lòng đặt mật khẩu mới để hoàn tất khôi phục.</p>
             </div>
 
             <label className="block text-sm font-semibold text-white/90">Mật khẩu mới</label>
