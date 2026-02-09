@@ -12,7 +12,6 @@
     "check": "pnpm run typecheck && pnpm run lint && pnpm run build"
   },
   "dependencies": {
-    "@google/genai": "^1.38.0",
     "@google/generative-ai": "^0.24.1",
     "@supabase/supabase-js": "^2.91.0",
     "react": "^19.2.0",

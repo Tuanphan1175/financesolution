@@ -1,5 +1,5 @@
 
-import { Transaction, Asset, Liability, GoldenRule } from '../types';
+import type { Transaction, Asset, Liability, GoldenRule } from '../types';
 
 export interface PyramidLevelConfig {
     id: number;

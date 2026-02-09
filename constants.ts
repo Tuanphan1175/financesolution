@@ -1,4 +1,14 @@
-import { Category, Transaction, Budget, Asset, Liability, GoldenRule, JourneyTask } from './types';
+import type {
+  Category,
+  Transaction,
+  Budget,
+  Asset,
+  Liability,
+  GoldenRule,
+  JourneyTask,
+  TaskPillar,
+  JourneyDay,
+} from './types';
 
 export const CATEGORIES: Category[] = [
   { id: 'cat-1', name: 'Lương', type: 'income', icon: 'Briefcase', color: '#10b981', defaultClassification: 'need' },
