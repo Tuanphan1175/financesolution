@@ -1,10 +1,11 @@
 import React, { useMemo } from "react";
 import type { Category, Transaction, SpendingClassification } from "../types";
-import { ScaleIcon, TrendingUpIcon, HomeIcon, CashIcon, ShoppingCartIcon } from "./Icons";
+import { ScaleIcon, TrendingUpIcon, HomeIcon, CashIcon, ShoppingCartIcon, MenuIcon } from "./Icons";
 
 type DashboardProps = {
   transactions: Transaction[];
   categories: Category[];
+  onMenuClick?: () => void;
 };
 
 const formatMoney = (v: number) =>
@@ -187,7 +188,7 @@ const SavingAnalysisChart = () => (
   </div>
 );
 
-const Dashboard: React.FC<DashboardProps> = ({ transactions, categories }) => {
+const Dashboard: React.FC<DashboardProps> = ({ transactions, categories, onMenuClick }) => {
   const safeTransactions = useMemo(() => (Array.isArray(transactions) ? transactions : []), [transactions]);
   const safeCategories = useMemo(() => (Array.isArray(categories) ? categories : []), [categories]);
 
@@ -231,12 +232,15 @@ const Dashboard: React.FC<DashboardProps> = ({ transactions, categories }) => {
       {/* 1. Header Section */}
       <div className="pt-8 px-6 pb-6">
         <div className="flex justify-between items-start mb-6">
-          <button className="p-2 rounded-full bg-white/50 hover:bg-white transition">
-            {/* Back/Menu Icon mimic */}
-            <svg className="w-6 h-6 text-slate-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" /></svg>
+          <button
+            onClick={onMenuClick}
+            className="p-2 rounded-full bg-white/50 hover:bg-white transition"
+          >
+            {/* Menu Icon */}
+            <MenuIcon className="w-6 h-6 text-slate-700" />
           </button>
           <div className="text-center">
-            <span className="text-xs font-black uppercase tracking-widest text-slate-500">Total Spendings</span>
+            <span className="text-xs font-black uppercase tracking-widest text-slate-500">Tổng quan tài chính</span>
           </div>
           <button className="p-2 rounded-full bg-white/50 hover:bg-white transition">
             {/* Profile/Settings Icon */}
@@ -252,14 +256,14 @@ const Dashboard: React.FC<DashboardProps> = ({ transactions, categories }) => {
             <div className="text-5xl md:text-7xl font-black text-slate-900 tracking-tighter leading-none">
               {formatCompact(computed.expenseTotal)}
             </div>
-            <div className="text-sm font-bold text-slate-400 mt-2 ml-1">VNĐ • Month Total</div>
+            <div className="text-sm font-bold text-slate-400 mt-2 ml-1">VNĐ • Tổng chi tiêu tháng</div>
           </div>
 
           <div className="flex flex-col gap-2">
             <div className="w-12 h-12 rounded-2xl bg-slate-900 text-white flex items-center justify-center shadow-lg">
               <TrendingUpIcon className="w-6 h-6" />
             </div>
-            <span className="text-[10px] font-bold text-center text-slate-500">Report</span>
+            <span className="text-[10px] font-bold text-center text-slate-500">Báo cáo</span>
           </div>
         </div>
 
@@ -267,10 +271,10 @@ const Dashboard: React.FC<DashboardProps> = ({ transactions, categories }) => {
         <div className="flex gap-4">
           <button className="flex-1 bg-white py-4 rounded-2xl font-black text-slate-700 shadow-sm border border-slate-100 flex items-center justify-center gap-2 active:scale-95 transition-transform">
             <ScaleIcon className="w-4 h-4" />
-            <span>Overview</span>
+            <span>Tổng hợp</span>
           </button>
           <button className="flex-1 bg-slate-900 py-4 rounded-2xl font-black text-white shadow-lg flex items-center justify-center gap-2 active:scale-95 transition-transform">
-            <span>Sort by date</span>
+            <span>Mới nhất</span>
           </button>
         </div>
       </div>
@@ -278,8 +282,8 @@ const Dashboard: React.FC<DashboardProps> = ({ transactions, categories }) => {
       {/* 2. Categories Horizontal Scroll */}
       <div className="pl-6 mb-8 overflow-x-auto no-scrollbar">
         <div className="flex items-center justify-between pr-6 mb-4">
-          <h3 className="font-bold text-slate-800 text-lg">Categories</h3>
-          <button className="text-slate-400 text-xs font-bold">See all</button>
+          <h3 className="font-bold text-slate-800 text-lg">Danh mục</h3>
+          <button className="text-slate-400 text-xs font-bold">Xem tất cả</button>
         </div>
         <div className="flex gap-4 min-w-max pr-6">
           <CategoryIconCard icon={<HomeIcon className="w-6 h-6" />} label="Nhà Cửa" color="text-rose-500" bgColor="bg-rose-100" />
@@ -302,11 +306,11 @@ const Dashboard: React.FC<DashboardProps> = ({ transactions, categories }) => {
         <div className="bg-white rounded-[2.5rem] p-6 shadow-xl border border-slate-100">
           <div className="flex justify-between items-center mb-6">
             <div>
-              <h3 className="font-black text-slate-800 text-lg">Recent</h3>
-              <p className="text-xs text-slate-400 font-bold">€3.50 Daily Avg</p>
+              <h3 className="font-black text-slate-800 text-lg">Giao dịch gần đây</h3>
+              <p className="text-xs text-slate-400 font-bold">Trung bình ngày: --</p>
             </div>
             <button className="bg-teal-50 text-teal-600 px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider">
-              Options
+              Tùy chọn
             </button>
           </div>
 
@@ -331,9 +335,7 @@ const Dashboard: React.FC<DashboardProps> = ({ transactions, categories }) => {
           </div>
         </div>
       </div>
-
     </div>
   );
 };
-
 export default Dashboard;

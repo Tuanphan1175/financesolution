@@ -543,7 +543,13 @@ export default function App() {
 
     switch (currentView) {
       case "dashboard":
-        return <Dashboard transactions={transactions} categories={categories} />;
+        return (
+          <Dashboard
+            transactions={transactions}
+            categories={categories}
+            onMenuClick={() => setIsSidebarOpen(true)}
+          />
+        );
 
       case "transactions":
         return (
@@ -609,30 +615,38 @@ export default function App() {
         );
 
       default:
-        return <Dashboard transactions={transactions} categories={categories} />;
+        return (
+          <Dashboard
+            transactions={transactions}
+            categories={categories}
+            onMenuClick={() => setIsSidebarOpen(true)}
+          />
+        );
     }
   };
 
   return (
     <div className="flex w-screen h-screen bg-luxury-obsidian text-white overflow-hidden relative">
-      {/* MOBILE HEADER */}
-      <div className="lg:hidden fixed top-0 left-0 right-0 h-16 bg-luxury-obsidian/60 backdrop-blur-xl border-b border-white/5 z-40 flex items-center justify-between px-6">
-        <div className="flex items-center group" onClick={() => setCurrentView('dashboard')}>
-          <div className="bg-luxury-gold p-2 rounded-lg mr-3 shadow-luxury active:scale-90 transition-transform">
-            <CurrencyDollarIcon className="h-5 w-5 text-black" />
+      {/* MOBILE HEADER - Hidden on Dashboard because Dashboard has its own header */}
+      {currentView !== 'dashboard' && (
+        <div className="lg:hidden fixed top-0 left-0 right-0 h-16 bg-luxury-obsidian/60 backdrop-blur-xl border-b border-white/5 z-40 flex items-center justify-between px-6">
+          <div className="flex items-center group" onClick={() => setCurrentView('dashboard')}>
+            <div className="bg-luxury-gold p-2 rounded-lg mr-3 shadow-luxury active:scale-90 transition-transform">
+              <CurrencyDollarIcon className="h-5 w-5 text-black" />
+            </div>
+            <div className="flex flex-col">
+              <span className="font-black tracking-[0.15em] text-xs text-white leading-none">TÀI CHÍNH</span>
+              <span className="text-[8px] font-black text-luxury-gold tracking-[0.3em] mt-1">PREMIUM</span>
+            </div>
           </div>
-          <div className="flex flex-col">
-            <span className="font-black tracking-[0.15em] text-xs text-white leading-none">TÀI CHÍNH</span>
-            <span className="text-[8px] font-black text-luxury-gold tracking-[0.3em] mt-1">PREMIUM</span>
-          </div>
+          <button
+            onClick={() => setIsSidebarOpen(true)}
+            className="p-2.5 text-white/70 hover:text-white hover:bg-white/5 rounded-xl transition-all active:scale-95 border border-white/5"
+          >
+            <MenuIcon className="h-6 w-6" />
+          </button>
         </div>
-        <button
-          onClick={() => setIsSidebarOpen(true)}
-          className="p-2.5 text-white/70 hover:text-white hover:bg-white/5 rounded-xl transition-all active:scale-95 border border-white/5"
-        >
-          <MenuIcon className="h-6 w-6" />
-        </button>
-      </div>
+      )}
 
       {/* SIDEBAR OVERLAY (Mobile) */}
       {isSidebarOpen && (
