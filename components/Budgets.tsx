@@ -26,30 +26,30 @@ const BudgetCard: React.FC<{
     const isOverBudget = spent > budget.amount;
     const isWarningThreshold = progressRaw >= 80;
 
-    let progressBarColor = 'bg-primary-500';
-    if (progressRaw > 75) progressBarColor = 'bg-yellow-500';
-    if (isWarningThreshold) progressBarColor = 'bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.3)]';
+    let progressBarColor = 'bg-primary-500 shadow-glow';
+    if (progressRaw > 75) progressBarColor = 'bg-amber-500 shadow-glow';
+    if (isWarningThreshold) progressBarColor = 'bg-rose-500 shadow-glow';
 
     const IconComponent = category ? IconMap[category.icon] : null;
 
     return (
         <div className={`
-            bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-md border transition-all hover:shadow-xl group relative
+            bg-slate-900/80 backdrop-blur-md p-6 rounded-[2rem] border transition-all hover:border-luxury-gold/30 group relative shadow-premium
             ${isWarningThreshold
-                ? 'border-red-500 ring-2 ring-red-500/10 dark:ring-red-900/20'
-                : 'border-gray-100 dark:border-gray-700'}
+                ? 'border-rose-500/50 ring-4 ring-rose-500/10'
+                : 'border-slate-800'}
         `}>
-            <div className="absolute top-4 right-4 flex space-x-2 opacity-0 group-hover:opacity-100 transition-opacity z-10">
+            <div className="absolute top-6 right-6 flex space-x-2 opacity-0 group-hover:opacity-100 transition-opacity z-10">
                 <button
                     onClick={() => onEdit(budget)}
-                    className="p-1.5 bg-gray-100 dark:bg-gray-700 rounded-lg text-gray-500 hover:text-primary-500 transition-colors"
+                    className="p-2 bg-slate-800 rounded-xl text-slate-400 hover:text-luxury-gold transition-colors border border-slate-700"
                     title="Sửa ngân sách"
                 >
                     <PencilIcon className="w-4 h-4" />
                 </button>
                 <button
                     onClick={() => onDelete(budget.id)}
-                    className="p-1.5 bg-gray-100 dark:bg-gray-700 rounded-lg text-gray-500 hover:text-red-500 transition-colors"
+                    className="p-2 bg-slate-800 rounded-xl text-slate-400 hover:text-rose-500 transition-colors border border-slate-700"
                     title="Xóa ngân sách"
                 >
                     <XIcon className="w-4 h-4" />
@@ -57,53 +57,59 @@ const BudgetCard: React.FC<{
             </div>
 
             {isWarningThreshold && (
-                <div className="absolute -top-3 left-6 bg-red-500 text-white text-[9px] font-black uppercase tracking-widest px-3 py-1 rounded-full shadow-lg flex items-center gap-1.5 animate-pulse">
+                <div className="absolute -top-3 left-8 bg-rose-500 text-white text-[9px] font-black uppercase tracking-widest px-4 py-1.5 rounded-full shadow-glow flex items-center gap-1.5 animate-pulse border border-rose-400/50">
                     <ExclamationIcon className="w-3 h-3" />
-                    {isOverBudget ? 'Đã vượt hạn mức!' : 'Sắp chạm hạn mức!'}
+                    {isOverBudget ? 'ĐÃ VƯỢT HẠN MỨC!' : 'SẮP CHẠM HẠN MỨC!'}
                 </div>
             )}
 
-            <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center justify-between mb-8">
                 <div className="flex items-center">
-                    <div className="p-3 rounded-2xl" style={{ backgroundColor: `${category?.color || '#14b8a6'}20` }}>
+                    <div className="p-4 rounded-2xl border border-white/5" style={{ backgroundColor: `${category?.color || '#14b8a6'}20` }}>
                         {IconComponent && <IconComponent className="h-6 w-6" style={{ color: category?.color }} />}
                     </div>
-                    <span className="ml-4 font-black text-lg text-gray-800 dark:text-white group-hover:text-primary-600 transition-colors">{category?.name}</span>
+                    <span className="ml-5 font-black text-lg text-white group-hover:text-luxury-gold transition-colors tracking-tight">{category?.name}</span>
                 </div>
                 <div className="text-right">
-                    <div className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Hạn mức</div>
-                    <div className="font-black text-gray-800 dark:text-white font-mono">{budget.amount.toLocaleString('vi-VN')} ₫</div>
+                    <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1.5">Hạn mức</div>
+                    <div className="font-black text-xl text-white font-mono tracking-tighter">
+                        {Math.round(budget.amount).toLocaleString('vi-VN')}
+                    </div>
                 </div>
             </div>
-            <div>
-                <div className="flex justify-between items-baseline mb-3">
-                    <span className="text-[10px] font-black text-gray-500 uppercase">
-                        Tiến độ chi tiêu (Tháng này)
-                    </span>
-                    <span className={`text-sm font-black font-mono ${isWarningThreshold ? 'text-red-500' : 'text-gray-800 dark:text-white'}`}>
-                        {progressRaw.toFixed(0)}%
-                    </span>
+
+            <div className="space-y-6">
+                <div>
+                    <div className="flex justify-between items-baseline mb-4">
+                        <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">
+                            Tiến độ thực hiện
+                        </span>
+                        <span className={`text-sm font-black font-mono tracking-tighter ${isWarningThreshold ? 'text-rose-400' : 'text-white'}`}>
+                            {progressRaw.toFixed(1)}%
+                        </span>
+                    </div>
+                    <div className="w-full bg-black/40 rounded-full h-2.5 border border-slate-800 shadow-inner overflow-hidden">
+                        <div className={`${progressBarColor} h-full rounded-full transition-all duration-1000 ease-out`} style={{ width: `${progress}%` }}></div>
+                    </div>
                 </div>
-                <div className="w-full bg-gray-100 dark:bg-gray-700 rounded-full h-2">
-                    <div className={`${progressBarColor} h-2 rounded-full transition-all duration-1000 ease-out`} style={{ width: `${progress}%` }}></div>
-                </div>
-                <div className="flex justify-between mt-4 pt-4 border-t border-gray-50 dark:border-gray-700">
+
+                <div className="flex justify-between pt-6 border-t border-slate-800/50">
                     <div className="text-left">
-                        <div className="text-[10px] font-black text-gray-400 uppercase mb-1">Đã dùng</div>
-                        <div className={`text-sm font-bold ${isWarningThreshold ? 'text-red-500' : 'text-gray-800 dark:text-white'}`}>
-                            {spent.toLocaleString('vi-VN')} ₫
+                        <div className="text-[10px] font-black text-slate-500 uppercase mb-2 tracking-widest">Đã dùng</div>
+                        <div className={`text-base font-black font-mono tracking-tighter ${isWarningThreshold ? 'text-rose-400' : 'text-emerald-400'}`}>
+                            {spent.toLocaleString('vi-VN')}
                         </div>
                     </div>
                     <div className="text-right">
                         {isOverBudget ? (
                             <>
-                                <div className="text-[10px] font-black text-red-400 uppercase mb-1">Vượt quá</div>
-                                <div className="text-sm font-black text-red-500">-{Math.abs(remaining).toLocaleString('vi-VN')} ₫</div>
+                                <div className="text-[10px] font-black text-rose-500/70 uppercase mb-2 tracking-widest">Vượt quá</div>
+                                <div className="text-base font-black text-rose-500 font-mono tracking-tighter">-{Math.abs(remaining).toLocaleString('vi-VN')}</div>
                             </>
                         ) : (
                             <>
-                                <div className="text-[10px] font-black text-emerald-400 uppercase mb-1">Còn lại</div>
-                                <div className="text-sm font-black text-emerald-500">+{remaining.toLocaleString('vi-VN')} ₫</div>
+                                <div className="text-[10px] font-black text-emerald-500/70 uppercase mb-2 tracking-widest">Còn lại</div>
+                                <div className="text-base font-black text-emerald-500 font-mono tracking-tighter">+{remaining.toLocaleString('vi-VN')}</div>
                             </>
                         )}
                     </div>
@@ -189,15 +195,16 @@ export const Budgets: React.FC<BudgetsProps> = (props) => {
                 />
             </Modal>
 
-            <div className="flex justify-between items-center bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700">
-                <div className="text-sm font-black text-gray-400 uppercase tracking-widest ml-2">
+            <div className="flex flex-col md:flex-row justify-between items-center bg-slate-900/50 backdrop-blur-md p-6 rounded-[2rem] border border-slate-800 shadow-premium gap-6">
+                <div className="text-sm font-black text-slate-400 uppercase tracking-[0.2em] ml-2 text-center md:text-left flex items-center gap-3">
+                    <div className="w-1.5 h-1.5 rounded-full bg-luxury-gold animate-pulse"></div>
                     Kế hoạch chi tiêu tháng {new Date().getMonth() + 1}/{new Date().getFullYear()}
                 </div>
                 <button
                     onClick={() => setIsModalOpen(true)}
-                    className="flex items-center bg-primary-600 text-white font-bold py-2 px-6 rounded-xl hover:bg-primary-700 transition-all shadow-lg shadow-primary-900/10 active:scale-95"
+                    className="w-full md:w-auto flex items-center justify-center bg-white text-black font-black py-4 px-8 rounded-2xl hover:bg-luxury-gold transition-all duration-500 shadow-luxury uppercase tracking-[0.2em] text-xs shrink-0"
                 >
-                    <PlusIcon className="h-5 w-5 mr-2" />
+                    <PlusIcon className="h-5 w-5 mr-3" />
                     Thiết lập Ngân sách
                 </button>
             </div>

@@ -190,16 +190,23 @@ const NavItem: React.FC<NavItemProps> = ({
       type="button"
       onClick={onClick}
       className={
-        "w-full flex items-center gap-3 rounded-2xl px-4 py-3 text-left transition " +
+        "w-full flex items-center gap-4 rounded-2xl px-6 py-4 text-left transition-all duration-500 group relative " +
         (isActive
-          ? "bg-slate-800 text-white"
-          : "text-slate-300 hover:bg-slate-800/60") +
+          ? "bg-gradient-to-r from-luxury-gold to-amber-600 text-black shadow-luxury"
+          : "text-slate-400 hover:text-white hover:bg-slate-800/40") +
         " " +
         className
       }
     >
-      {icon ? <span className="shrink-0">{icon}</span> : null}
-      <span className="truncate">{label}</span>
+      {icon ? (
+        <span className={`shrink-0 transition-transform duration-500 group-hover:scale-110 ${isActive ? 'text-black' : 'text-slate-600 group-hover:text-luxury-gold'}`}>
+          {icon}
+        </span>
+      ) : null}
+      <span className="truncate text-[11px] font-black uppercase tracking-[0.2em]">{label}</span>
+      {isActive && (
+        <div className="absolute right-4 w-1.5 h-1.5 rounded-full bg-black/30" />
+      )}
     </button>
   );
 };
@@ -229,45 +236,45 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
   const navItems = useMemo<{ view: View; label: string; icon: React.ReactNode }[]>(
     () => [
-      { view: "dashboard", label: "Bảng điều khiển", icon: <ChartPieIcon className="h-5 w-5" /> },
+      { view: "dashboard", label: "Dashboard", icon: <ChartPieIcon className="h-5 w-5" /> },
       { view: "ai-coach", label: "AI Coach", icon: <SparklesIcon className="h-5 w-5" /> },
       { view: "playbook", label: "Chiến lược", icon: <BookOpenIcon className="h-5 w-5" /> },
-      { view: "30-day-journey", label: "Hành trình 30 ngày", icon: <CalendarIcon className="h-5 w-5" /> },
+      { view: "30-day-journey", label: "Hành trình", icon: <CalendarIcon className="h-5 w-5" /> },
       { view: "journey", label: "Tháp tài chính", icon: <TrendingUpIcon className="h-5 w-5" /> },
       { view: "transactions", label: "Giao dịch", icon: <CollectionIcon className="h-5 w-5" /> },
       { view: "budgets", label: "Ngân sách", icon: <ClipboardListIcon className="h-5 w-5" /> },
-      { view: "rules", label: "Nguyên tắc vàng", icon: <ShieldCheckIcon className="h-5 w-5" /> },
+      { view: "rules", label: "Nguyên tắc", icon: <ShieldCheckIcon className="h-5 w-5" /> },
       { view: "net-worth", label: "Tài sản ròng", icon: <ScaleIcon className="h-5 w-5" /> },
-      { view: "income-ladder", label: "Cấp độ kiếm tiền", icon: <CurrencyDollarIcon className="h-5 w-5" /> },
+      { view: "income-ladder", label: "Cấp độ $", icon: <CurrencyDollarIcon className="h-5 w-5" /> },
       { view: "reports", label: "Báo cáo", icon: <DocumentReportIcon className="h-5 w-5" /> },
-      { view: "category-settings", label: "Quản lý danh mục", icon: <PencilIcon className="h-5 w-5" /> },
-      { view: "upgrade-plan", label: "Nâng cấp gói", icon: <SparklesIcon className="h-5 w-5" /> },
+      { view: "category-settings", label: "Danh mục", icon: <PencilIcon className="h-5 w-5" /> },
+      { view: "upgrade-plan", label: "Khám phá VIP", icon: <SparklesIcon className="h-5 w-5 text-luxury-gold" /> },
     ],
     []
   );
 
-  const membershipLabel = isPremium ? "Elite Member" : "Member";
+  const membershipLabel = isPremium ? "Elite Member" : "Standard Member";
 
   return (
     <div
       className={
-        "flex flex-col w-full h-screen px-6 py-12 bg-luxury-obsidian overflow-y-auto " +
+        "flex flex-col w-full h-full px-6 py-10 bg-luxury-obsidian overflow-y-auto custom-scrollbar " +
         className
       }
     >
       {/* LOGO */}
       <div
-        className="flex items-center mb-16 px-4 cursor-pointer select-none"
+        className="flex items-center mb-12 px-2 cursor-pointer select-none group"
         onClick={() => setCurrentView("dashboard")}
         role="button"
         tabIndex={0}
         onKeyDown={(e) => e.key === "Enter" && setCurrentView("dashboard")}
       >
-        <div className="bg-luxury-gold p-3 rounded-[1.4rem] shadow-luxury border border-white/10">
-          <CurrencyDollarIcon className="h-8 w-8 text-black" />
+        <div className="bg-luxury-gold p-3 rounded-[1.4rem] shadow-luxury transition-all duration-700 group-hover:rotate-[360deg] border border-white/20 shrink-0">
+          <CurrencyDollarIcon className="h-7 w-7 text-black" />
         </div>
         <div className="ml-5 min-w-0">
-          <h2 className="text-xl font-black text-white tracking-[0.2em] italic truncate">
+          <h2 className="text-xl font-black text-white tracking-[0.2em] italic truncate group-hover:text-luxury-gold transition-colors">
             TÀI CHÍNH
           </h2>
           <span className="block text-[10px] font-black text-luxury-gold tracking-[0.55em] opacity-80">
@@ -277,9 +284,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
       </div>
 
       {/* MENU */}
-      <nav className="flex-1 space-y-1 mb-12">
-        <p className="text-[10px] font-black text-slate-700 uppercase tracking-[0.4em] mb-6 ml-4">
-          Architecture
+      <nav className="flex-1 space-y-1 mb-10">
+        <p className="text-[10px] font-black text-slate-700 uppercase tracking-[0.4em] mb-6 ml-6">
+          System Core
         </p>
 
         {navItems.map((item) => (
@@ -294,7 +301,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       </nav>
 
       {/* FOOTER */}
-      <div className="mt-auto shrink-0 pt-8 border-t border-slate-800">
+      <div className="mt-auto shrink-0 pt-8 border-t border-slate-800/50">
         {import.meta.env.DEV && (
           <button
             onClick={() => setIsPremium(!isPremium)}
@@ -302,21 +309,21 @@ export const Sidebar: React.FC<SidebarProps> = ({
             className="w-full flex items-center px-8 py-3 text-[10px] font-black uppercase tracking-[0.2em] rounded-2xl transition-all duration-500 text-slate-500 hover:text-white hover:bg-slate-800/50 mb-4"
           >
             <RefreshIcon className="h-5 w-5 mr-4 text-slate-600" />
-            Dev: Toggle VIP ({isPremium ? "ON" : "OFF"})
+            Dev: VIP ({isPremium ? "ON" : "OFF"})
           </button>
         )}
 
-        <div className="p-4 rounded-[1.8rem] bg-slate-900 border border-slate-800 shadow-inner">
+        <div className="p-5 rounded-[2rem] bg-slate-900/60 border border-slate-800 shadow-inner group transition-all hover:border-luxury-gold/50">
           <div className="flex items-center">
             <div className="relative shrink-0">
               <img
-                className="w-14 h-14 rounded-2xl bg-luxury-gold object-cover shadow-luxury border-2 border-black"
+                className="w-14 h-14 rounded-2xl bg-luxury-gold object-cover shadow-luxury border-2 border-black group-hover:scale-105 transition-transform duration-700"
                 src={`https://ui-avatars.com/api/?name=${encodeURIComponent(
                   userName
                 )}&background=C5A059&color=000&bold=true&font-size=0.4`}
                 alt="User"
               />
-              <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-emerald-500 border-4 border-slate-900 rounded-full" />
+              <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-emerald-500 border-4 border-slate-900 rounded-full shadow-glow" />
             </div>
 
             <div className="ml-5 flex-1 min-w-0">
@@ -336,9 +343,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   className="w-full text-left"
                   aria-label="Chỉnh sửa tên hiển thị"
                 >
-                  <p className="text-[16px] font-black text-white truncate flex items-center mb-2">
+                  <p className="text-[17px] font-black text-white truncate flex items-center mb-1 tracking-tight">
                     {userName}
-                    <PencilIcon className="h-3 w-3 ml-3 text-slate-500" />
+                    <PencilIcon className="h-3 w-3 ml-3 text-slate-500 opacity-0 group-hover:opacity-100 transition-opacity" />
                   </p>
                   <p className="text-[9px] font-black text-luxury-gold uppercase tracking-[0.3em] opacity-60">
                     {membershipLabel}
@@ -348,13 +355,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
             </div>
           </div>
 
-          <div className="mt-4 px-1">
+          <div className="mt-6">
             <button
               onClick={logout}
               type="button"
-              className="w-full rounded-xl bg-red-500/10 text-red-300 px-4 py-2 text-sm hover:bg-red-500/20 transition"
+              className="w-full rounded-2xl bg-white/5 text-slate-400 px-4 py-3 text-xs font-black uppercase tracking-[0.2em] hover:bg-rose-500/10 hover:text-rose-400 transition-all border border-white/5 active:scale-95"
             >
-              Đăng xuất
+              Sign Out
             </button>
           </div>
         </div>
@@ -609,16 +616,19 @@ export default function App() {
   return (
     <div className="flex w-screen h-screen bg-luxury-obsidian text-white overflow-hidden relative">
       {/* MOBILE HEADER */}
-      <div className="lg:hidden fixed top-0 left-0 right-0 h-16 bg-luxury-obsidian/80 backdrop-blur-lg border-b border-white/10 z-40 flex items-center justify-between px-6">
-        <div className="flex items-center">
-          <div className="bg-luxury-gold p-2 rounded-lg mr-3">
+      <div className="lg:hidden fixed top-0 left-0 right-0 h-16 bg-luxury-obsidian/60 backdrop-blur-xl border-b border-white/5 z-40 flex items-center justify-between px-6">
+        <div className="flex items-center group" onClick={() => setCurrentView('dashboard')}>
+          <div className="bg-luxury-gold p-2 rounded-lg mr-3 shadow-luxury active:scale-90 transition-transform">
             <CurrencyDollarIcon className="h-5 w-5 text-black" />
           </div>
-          <span className="font-black tracking-widest text-sm italic">PREMIUM</span>
+          <div className="flex flex-col">
+            <span className="font-black tracking-[0.15em] text-xs text-white leading-none">TÀI CHÍNH</span>
+            <span className="text-[8px] font-black text-luxury-gold tracking-[0.3em] mt-1">PREMIUM</span>
+          </div>
         </div>
         <button
           onClick={() => setIsSidebarOpen(true)}
-          className="p-2 text-white hover:bg-white/10 rounded-lg transition-colors"
+          className="p-2.5 text-white/70 hover:text-white hover:bg-white/5 rounded-xl transition-all active:scale-95 border border-white/5"
         >
           <MenuIcon className="h-6 w-6" />
         </button>

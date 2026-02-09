@@ -22,73 +22,123 @@ const TransactionRow: React.FC<{
   const IconComponent = category && IconMap[category.icon] ? IconMap[category.icon] : CashIcon;
 
   return (
-    <tr className="hover:bg-slate-800/40 transition-all group border-b border-slate-800/50">
-      <td className="px-8 py-6 whitespace-nowrap">
-        <div className="flex items-center">
+    <>
+      {/* Desktop View (Table Row) */}
+      <tr className="hidden md:table-row hover:bg-slate-800/40 transition-all group border-b border-slate-800/50">
+        <td className="px-8 py-6 whitespace-nowrap">
+          <div className="flex items-center">
+            <div
+              className="p-4 rounded-2xl shadow-lg border border-white/5 group-hover:scale-110 transition-transform"
+              style={{ backgroundColor: `${category?.color || '#9ca3af'}20` }}
+            >
+              <IconComponent className="h-6 w-6" style={{ color: category?.color || '#9ca3af' }} />
+            </div>
+
+            <div className="ml-5 min-w-0">
+              <div className="text-[15px] font-black text-white tracking-tight leading-none mb-2 truncate">
+                {transaction.description || '(Không có mô tả)'}
+              </div>
+              <div className="text-[11px] font-black text-slate-500 uppercase tracking-widest truncate">
+                {category?.name || 'Khác'}
+              </div>
+            </div>
+          </div>
+        </td>
+
+        <td className="px-8 py-6 whitespace-nowrap text-center">
+          {transaction.type === 'expense' ? (
+            <span
+              className={`px-3 py-1 text-[9px] font-black uppercase rounded-lg border ${transaction.classification === 'need'
+                  ? 'text-emerald-400 border-emerald-500/20 bg-emerald-500/10'
+                  : 'text-rose-400 border-rose-500/20 bg-rose-500/10'
+                }`}
+            >
+              {transaction.classification === 'need' ? 'CẦN THIẾT' : 'MONG MUỐN'}
+            </span>
+          ) : (
+            <span className="px-3 py-1 text-[9px] font-black uppercase rounded-lg border text-primary-400 border-primary-500/20 bg-primary-500/10">
+              THU NHẬP
+            </span>
+          )}
+        </td>
+
+        <td className="px-8 py-6 whitespace-nowrap text-[12px] font-bold text-slate-500 uppercase tracking-widest">
+          {transaction.date ? new Date(transaction.date).toLocaleDateString('vi-VN') : '—'}
+        </td>
+
+        <td className={`px-8 py-6 whitespace-nowrap text-right ${isIncome ? 'text-emerald-400' : 'text-rose-400'}`}>
+          <div className="text-xl font-black font-mono tracking-tighter">
+            {isIncome ? '+' : '-'}
+            {Number(transaction.amount || 0).toLocaleString('vi-VN')} ₫
+          </div>
+          <div className="text-[10px] text-slate-500 font-black mt-1 uppercase tracking-widest">
+            {transaction.paymentMethod === 'cash'
+              ? 'TIỀN MẶT'
+              : transaction.paymentMethod === 'credit_card'
+                ? 'THẺ TÍN DỤNG'
+                : 'CHUYỂN KHOẢN'}
+          </div>
+        </td>
+
+        <td className="px-8 py-6 whitespace-nowrap text-right">
+          <button
+            onClick={() => onEdit(transaction)}
+            className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-2xl border border-slate-700 bg-black/30 text-slate-200 hover:text-black hover:bg-luxury-gold transition-all font-black uppercase tracking-[0.2em] text-[10px] active:scale-95"
+            title="Chỉnh sửa giao dịch"
+          >
+            <CogIcon className="w-4 h-4" />
+            Sửa
+          </button>
+        </td>
+      </tr>
+
+      {/* Mobile View (Card) */}
+      <div
+        onClick={() => onEdit(transaction)}
+        className="md:hidden flex items-center justify-between p-4 bg-black/30 border-b border-slate-800/50 active:bg-slate-800/40 transition-colors"
+      >
+        <div className="flex items-center min-w-0">
           <div
-            className="p-4 rounded-2xl shadow-lg border border-white/5 group-hover:scale-110 transition-transform"
+            className="p-3 rounded-xl shadow-lg border border-white/5 shrink-0"
             style={{ backgroundColor: `${category?.color || '#9ca3af'}20` }}
           >
-            <IconComponent className="h-6 w-6" style={{ color: category?.color || '#9ca3af' }} />
+            <IconComponent className="h-5 w-5" style={{ color: category?.color || '#9ca3af' }} />
           </div>
 
-          <div className="ml-5 min-w-0">
-            <div className="text-[15px] font-black text-white tracking-tight leading-none mb-2 truncate">
+          <div className="ml-4 min-w-0">
+            <div className="text-[14px] font-black text-white tracking-tight truncate">
               {transaction.description || '(Không có mô tả)'}
             </div>
-            <div className="text-[11px] font-black text-slate-500 uppercase tracking-widest truncate">
-              {category?.name || 'Khác'}
+            <div className="flex items-center gap-2 mt-1">
+              <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest truncate">
+                {category?.name || 'Khác'}
+              </span>
+              <span className="text-slate-700">•</span>
+              <span className="text-[9px] font-black text-slate-500 uppercase">
+                {transaction.date ? new Date(transaction.date).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' }) : '—'}
+              </span>
             </div>
           </div>
         </div>
-      </td>
 
-      <td className="px-8 py-6 whitespace-nowrap text-center">
-        {transaction.type === 'expense' ? (
-          <span
-            className={`px-3 py-1 text-[9px] font-black uppercase rounded-lg border ${transaction.classification === 'need'
-                ? 'text-emerald-400 border-emerald-500/20 bg-emerald-500/10'
-                : 'text-rose-400 border-rose-500/20 bg-rose-500/10'
-              }`}
-          >
-            {transaction.classification === 'need' ? 'CẦN THIẾT' : 'MONG MUỐN'}
-          </span>
-        ) : (
-          <span className="px-3 py-1 text-[9px] font-black uppercase rounded-lg border text-primary-400 border-primary-500/20 bg-primary-500/10">
-            THU NHẬP
-          </span>
-        )}
-      </td>
-
-      <td className="px-8 py-6 whitespace-nowrap text-[12px] font-bold text-slate-500 uppercase tracking-widest">
-        {transaction.date ? new Date(transaction.date).toLocaleDateString('vi-VN') : '—'}
-      </td>
-
-      <td className={`px-8 py-6 whitespace-nowrap text-right ${isIncome ? 'text-emerald-400' : 'text-rose-400'}`}>
-        <div className="text-xl font-black font-mono tracking-tighter">
-          {isIncome ? '+' : '-'}
-          {Number(transaction.amount || 0).toLocaleString('vi-VN')} ₫
+        <div className="text-right shrink-0">
+          <div className={`text-base font-black font-mono tracking-tighter ${isIncome ? 'text-emerald-300' : 'text-rose-300'}`}>
+            {isIncome ? '+' : '-'}
+            {Math.round(transaction.amount).toLocaleString('vi-VN')}
+          </div>
+          <div className="flex justify-end gap-1.5 mt-1">
+            <span className={`text-[8px] font-black uppercase px-1.5 py-0.5 rounded border ${transaction.type === 'income'
+                ? 'text-primary-400 border-primary-500/20 bg-primary-500/5'
+                : transaction.classification === 'need'
+                  ? 'text-emerald-400 border-emerald-500/20 bg-emerald-500/5'
+                  : 'text-rose-400 border-rose-500/20 bg-rose-500/5'
+              }`}>
+              {transaction.type === 'income' ? 'THU' : transaction.classification === 'need' ? 'CẦN' : 'MUỐN'}
+            </span>
+          </div>
         </div>
-        <div className="text-[10px] text-slate-500 font-black mt-1 uppercase tracking-widest">
-          {transaction.paymentMethod === 'cash'
-            ? 'TIỀN MẶT'
-            : transaction.paymentMethod === 'credit_card'
-              ? 'THẺ TÍN DỤNG'
-              : 'CHUYỂN KHOẢN'}
-        </div>
-      </td>
-
-      <td className="px-8 py-6 whitespace-nowrap text-right">
-        <button
-          onClick={() => onEdit(transaction)}
-          className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-2xl border border-slate-700 bg-black/30 text-slate-200 hover:text-black hover:bg-luxury-gold transition-all font-black uppercase tracking-[0.2em] text-[10px] active:scale-95"
-          title="Chỉnh sửa giao dịch"
-        >
-          <CogIcon className="w-4 h-4" />
-          Sửa
-        </button>
-      </td>
-    </tr>
+      </div>
+    </>
   );
 };
 

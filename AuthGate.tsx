@@ -328,18 +328,19 @@ export default function AuthGate({ children }: { children: React.ReactNode }) {
   if (session && mode !== "recovery") return <App />;
 
   return (
-    <div className="min-h-screen w-full font-sans text-slate-100">
-      {/* Background premium dễ nhìn */}
+    <div className="min-h-screen w-full font-sans text-slate-100 overflow-x-hidden">
+      {/* Background premium cao cấp */}
       <div className="fixed inset-0 -z-10 bg-slate-950" />
-      <div className="fixed inset-0 -z-10 bg-[radial-gradient(900px_circle_at_50%_35%,rgba(56,189,248,0.18),transparent_55%),radial-gradient(700px_circle_at_20%_80%,rgba(34,197,94,0.10),transparent_55%)]" />
-      <div className="fixed inset-0 -z-10 bg-gradient-to-b from-black/20 via-black/40 to-black/70" />
+      <div className="fixed inset-0 -z-10 opacity-30 bg-[radial-gradient(1000px_circle_at_50%_40%,rgba(197,160,89,0.15),transparent_60%),radial-gradient(800px_circle_at_10%_80%,rgba(56,189,248,0.1),transparent_50%)]" />
+      <div className="fixed inset-0 -z-10 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-[0.03]" />
+      <div className="fixed inset-0 -z-10 bg-gradient-to-b from-black/20 via-black/40 to-black/80" />
 
-      <div className="mx-auto flex min-h-screen max-w-6xl items-center justify-center px-4 py-10">
+      <div className="mx-auto flex min-h-screen max-w-6xl items-center justify-center px-4 py-12 md:py-20 lg:py-24">
         {mode === "login" ? (
-          <div className="w-full max-w-md">
+          <div className="w-full max-w-md animate-in fade-in zoom-in duration-700">
             <LoginCard
-              brandTitle="Tài Chính Thông Minh | Premium"
-              brandSubtitle="Đăng nhập để quản lý dòng tiền, kỷ luật chi tiêu và chiến lược tài sản"
+              brandTitle="Smart Finance Pro"
+              brandSubtitle="Hệ thống quản trị dòng tiền & Kỷ luật tài chính"
               email={email}
               password={password}
               remember={remember}
@@ -361,88 +362,96 @@ export default function AuthGate({ children }: { children: React.ReactNode }) {
               onForgotPassword={onForgotPassword}
             />
 
-            {/* NEW: CTA tạo tài khoản, không cần sửa LoginCard */}
-            <div className="mt-4 rounded-2xl border border-white/10 bg-white/[0.05] p-4 backdrop-blur-xl">
-              <div className="text-sm font-semibold text-white/90">Người mới?</div>
-              <div className="mt-1 text-xs text-white/70">
-                Tạo tài khoản miễn phí để dùng bản Free. Premium sẽ được duyệt khi đăng ký gói.
+            {/* CTA tạo tài khoản */}
+            <div className="mt-6 rounded-[2rem] border border-white/5 bg-white/[0.02] p-6 backdrop-blur-xl shadow-premium group hover:border-luxury-gold/30 transition-all">
+              <div className="flex items-center justify-between">
+                <div>
+                  <div className="text-[10px] font-black text-luxury-gold uppercase tracking-[0.3em] mb-1">New Member?</div>
+                  <div className="text-[13px] text-slate-400 font-bold">Bắt đầu miễn phí ngay hôm nay</div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMode("signup");
+                    setError("");
+                    setInfo("");
+                    setPassword2("");
+                  }}
+                  className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/5 border border-white/10 text-white hover:bg-luxury-gold hover:text-black transition-all group-hover:shadow-luxury"
+                >
+                  <span className="text-xl font-black">+</span>
+                </button>
               </div>
-              <button
-                type="button"
-                onClick={() => {
-                  setMode("signup");
-                  setError("");
-                  setInfo("");
-                  setPassword2("");
-                }}
-                className="mt-3 w-full rounded-xl border border-white/15 bg-white/5 py-3 text-sm font-semibold text-white/85 hover:bg-white/10"
-              >
-                Tạo tài khoản miễn phí
-              </button>
             </div>
           </div>
         ) : mode === "signup" ? (
-          <div className="w-full max-w-md rounded-3xl border border-white/10 bg-white/[0.06] p-8 shadow-[0_20px_60px_rgba(0,0,0,0.45)] backdrop-blur-xl">
-            <div className="mb-6 text-center">
-              <div className="mx-auto mb-3 h-12 w-12 rounded-2xl bg-white/10 grid place-items-center border border-white/10">
-                <span className="text-lg font-bold">$</span>
+          <div className="w-full max-w-md rounded-[2.5rem] border border-white/10 bg-slate-900/60 p-10 shadow-[0_40px_100px_rgba(0,0,0,0.6)] backdrop-blur-2xl animate-in fade-in slide-in-from-bottom-5 duration-700">
+            <div className="mb-10 text-center group">
+              <div className="mx-auto mb-6 h-16 w-16 rounded-[1.5rem] bg-luxury-gold grid place-items-center shadow-luxury border-2 border-black transition-transform duration-700 group-hover:rotate-[360deg]">
+                <span className="text-2xl font-black text-black">+</span>
               </div>
-              <h1 className="text-2xl font-bold">Tạo tài khoản miễn phí</h1>
-              <p className="mt-1 text-sm text-white/70">
-                Tạo tài khoản xong bạn dùng Free ngay. Premium sẽ mở khi nâng cấp gói.
-              </p>
+              <h1 className="text-2xl font-black text-white italic tracking-tighter">Gia nhập Hệ thống</h1>
+              <p className="mt-3 text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em]">Khởi tạo tài khoản quản trị</p>
             </div>
 
-            <label className="block text-sm font-semibold text-white/90">Email</label>
-            <input
-              type="email"
-              className={inputClass}
-              placeholder="you@email.com"
-              value={email}
-              onChange={(e) => {
-                setEmail(e.target.value);
-                if (error) setError("");
-                if (info) setInfo("");
-              }}
-              autoComplete="email"
-            />
+            <div className="space-y-6">
+              <div>
+                <label className="block text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] mb-2 ml-1">Email Address</label>
+                <input
+                  type="email"
+                  className={inputClass}
+                  placeholder="you@email.com"
+                  value={email}
+                  onChange={(e) => {
+                    setEmail(e.target.value);
+                    if (error) setError("");
+                    if (info) setInfo("");
+                  }}
+                  autoComplete="email"
+                />
+              </div>
 
-            <label className="mt-5 block text-sm font-semibold text-white/90">Mật khẩu</label>
-            <input
-              type="password"
-              className={inputClass}
-              placeholder="Tối thiểu 6 ký tự"
-              value={password}
-              onChange={(e) => {
-                setPassword(e.target.value);
-                if (error) setError("");
-                if (info) setInfo("");
-              }}
-              autoComplete="new-password"
-            />
+              <div>
+                <label className="block text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] mb-2 ml-1">Password</label>
+                <input
+                  type="password"
+                  className={inputClass}
+                  placeholder="Mật khẩu tối thiểu 6 ký tự"
+                  value={password}
+                  onChange={(e) => {
+                    setPassword(e.target.value);
+                    if (error) setError("");
+                    if (info) setInfo("");
+                  }}
+                  autoComplete="new-password"
+                />
+              </div>
 
-            <label className="mt-5 block text-sm font-semibold text-white/90">Nhập lại mật khẩu</label>
-            <input
-              type="password"
-              className={inputClass}
-              placeholder="Nhập lại để xác nhận"
-              value={password2}
-              onChange={(e) => {
-                setPassword2(e.target.value);
-                if (error) setError("");
-                if (info) setInfo("");
-              }}
-              autoComplete="new-password"
-            />
+              <div>
+                <label className="block text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] mb-2 ml-1">Confirm Password</label>
+                <input
+                  type="password"
+                  className={inputClass}
+                  placeholder="Xác nhận lại mật khẩu"
+                  value={password2}
+                  onChange={(e) => {
+                    setPassword2(e.target.value);
+                    if (error) setError("");
+                    if (info) setInfo("");
+                  }}
+                  autoComplete="new-password"
+                />
+              </div>
+            </div>
 
             {!!info && (
-              <div className="mt-4 rounded-xl border border-emerald-500/20 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-100">
+              <div className="mt-8 rounded-2xl border border-emerald-500/20 bg-emerald-500/10 px-5 py-4 text-xs font-bold text-emerald-400">
                 {info}
               </div>
             )}
 
             {!!error && (
-              <div className="mt-4 rounded-xl border border-red-500/25 bg-red-500/10 px-4 py-3 text-sm text-red-200">
+              <div className="mt-8 rounded-2xl border border-rose-500/20 bg-rose-500/10 px-5 py-4 text-xs font-bold text-rose-400">
                 {error}
               </div>
             )}
@@ -451,11 +460,7 @@ export default function AuthGate({ children }: { children: React.ReactNode }) {
               type="button"
               onClick={onSubmitSignup}
               disabled={!canSubmitSignup}
-              className="mt-6 w-full rounded-xl bg-sky-500 py-3 text-sm font-semibold text-white
-                         shadow-[0_10px_30px_rgba(56,189,248,0.25)]
-                         hover:bg-sky-400 active:bg-sky-600
-                         focus:outline-none focus:ring-4 focus:ring-sky-400/30
-                         disabled:opacity-60 disabled:cursor-not-allowed"
+              className="mt-10 w-full rounded-2xl bg-white text-black py-4 text-xs font-black uppercase tracking-[0.3em] shadow-luxury hover:bg-luxury-gold transition-all duration-500 active:scale-95 disabled:opacity-50"
             >
               {loading ? "Đang tạo..." : "Tạo tài khoản"}
             </button>
@@ -468,62 +473,67 @@ export default function AuthGate({ children }: { children: React.ReactNode }) {
                 setInfo("");
                 setPassword2("");
               }}
-              className="mt-3 w-full rounded-xl border border-white/15 bg-white/5 py-3 text-sm font-semibold text-white/85 hover:bg-white/10"
+              className="mt-4 w-full text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] hover:text-white transition-colors py-2"
             >
-              Quay lại đăng nhập
+              Quay lại Đăng nhập
             </button>
 
-            <p className="mt-4 text-center text-xs text-white/60">
-              Nếu hệ thống yêu cầu xác minh email, hãy mở hộp thư (kể cả Spam) và bấm xác nhận.
-              Sau đó quay lại đây để đăng nhập.
+            <p className="mt-6 text-center text-[9px] font-medium text-slate-600 leading-relaxed italic">
+              Lưu ý: Bạn có thể cần xác minh email để kích hoạt tài khoản hoàn toàn.
             </p>
           </div>
         ) : (
-          <div className="w-full max-w-md rounded-3xl border border-white/10 bg-white/[0.06] p-8 shadow-[0_20px_60px_rgba(0,0,0,0.45)] backdrop-blur-xl">
-            <div className="mb-6 text-center">
-              <div className="mx-auto mb-3 h-12 w-12 rounded-2xl bg-white/10 grid place-items-center border border-white/10">
-                <span className="text-lg font-bold">PW</span>
+          <div className="w-full max-w-md rounded-[2.5rem] border border-white/10 bg-slate-900/60 p-10 shadow-[0_40px_100px_rgba(0,0,0,0.6)] backdrop-blur-2xl animate-in fade-in slide-in-from-bottom-5 duration-700">
+            <div className="mb-10 text-center">
+              <div className="mx-auto mb-6 h-16 w-16 rounded-[1.5rem] bg-luxury-gold grid place-items-center shadow-luxury border-2 border-black">
+                <span className="text-2xl font-black text-black">PW</span>
               </div>
-              <h1 className="text-2xl font-bold">Đặt mật khẩu mới</h1>
-              <p className="mt-1 text-sm text-white/70">Vui lòng đặt mật khẩu mới để hoàn tất khôi phục.</p>
+              <h1 className="text-2xl font-black text-white italic tracking-tighter">Đặt mật khẩu mới</h1>
+              <p className="mt-3 text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em]">Hardware-level security update</p>
             </div>
 
-            <label className="block text-sm font-semibold text-white/90">Mật khẩu mới</label>
-            <input
-              type="password"
-              className={inputClass}
-              placeholder="Tối thiểu 8 ký tự"
-              value={newPw}
-              onChange={(e) => {
-                setNewPw(e.target.value);
-                if (error) setError("");
-                if (info) setInfo("");
-              }}
-              autoComplete="new-password"
-            />
+            <div className="space-y-6">
+              <div>
+                <label className="block text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] mb-2 ml-1">New Password</label>
+                <input
+                  type="password"
+                  className={inputClass}
+                  placeholder="Mật khẩu mới (min 8 ký tự)"
+                  value={newPw}
+                  onChange={(e) => {
+                    setNewPw(e.target.value);
+                    if (error) setError("");
+                    if (info) setInfo("");
+                  }}
+                  autoComplete="new-password"
+                />
+              </div>
 
-            <label className="mt-5 block text-sm font-semibold text-white/90">Nhập lại mật khẩu</label>
-            <input
-              type="password"
-              className={inputClass}
-              placeholder="Nhập lại để xác nhận"
-              value={newPw2}
-              onChange={(e) => {
-                setNewPw2(e.target.value);
-                if (error) setError("");
-                if (info) setInfo("");
-              }}
-              autoComplete="new-password"
-            />
+              <div>
+                <label className="block text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] mb-2 ml-1">Confirm New Password</label>
+                <input
+                  type="password"
+                  className={inputClass}
+                  placeholder="Nhập lại mật khẩu mới"
+                  value={newPw2}
+                  onChange={(e) => {
+                    setNewPw2(e.target.value);
+                    if (error) setError("");
+                    if (info) setInfo("");
+                  }}
+                  autoComplete="new-password"
+                />
+              </div>
+            </div>
 
             {!!info && (
-              <div className="mt-4 rounded-xl border border-emerald-500/20 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-100">
+              <div className="mt-8 rounded-2xl border border-emerald-500/20 bg-emerald-500/10 px-5 py-4 text-xs font-bold text-emerald-400">
                 {info}
               </div>
             )}
 
             {!!error && (
-              <div className="mt-4 rounded-xl border border-red-500/25 bg-red-500/10 px-4 py-3 text-sm text-red-200">
+              <div className="mt-8 rounded-2xl border border-rose-500/20 bg-rose-500/10 px-5 py-4 text-xs font-bold text-rose-400">
                 {error}
               </div>
             )}
@@ -532,13 +542,9 @@ export default function AuthGate({ children }: { children: React.ReactNode }) {
               type="button"
               onClick={onSubmitRecovery}
               disabled={!canSubmitRecovery}
-              className="mt-6 w-full rounded-xl bg-sky-500 py-3 text-sm font-semibold text-white
-                         shadow-[0_10px_30px_rgba(56,189,248,0.25)]
-                         hover:bg-sky-400 active:bg-sky-600
-                         focus:outline-none focus:ring-4 focus:ring-sky-400/30
-                         disabled:opacity-60 disabled:cursor-not-allowed"
+              className="mt-10 w-full rounded-2xl bg-white text-black py-4 text-xs font-black uppercase tracking-[0.3em] shadow-luxury hover:bg-luxury-gold transition-all duration-500 active:scale-95 disabled:opacity-50"
             >
-              {loading ? "Đang cập nhật..." : "Cập nhật mật khẩu"}
+              {loading ? "Đang cập nhật..." : "Xác nhận mật khẩu"}
             </button>
 
             <button
@@ -548,14 +554,10 @@ export default function AuthGate({ children }: { children: React.ReactNode }) {
                 setMode("login");
                 setError("");
               }}
-              className="mt-3 w-full rounded-xl border border-white/15 bg-white/5 py-3 text-sm font-semibold text-white/85 hover:bg-white/10"
+              className="mt-4 w-full text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] hover:text-white transition-colors py-2"
             >
-              Quay lại đăng nhập
+              Hủy và Quay lại
             </button>
-
-            <p className="mt-4 text-center text-xs text-white/60">
-              Lưu ý: Sau khi đổi mật khẩu, hệ thống sẽ yêu cầu đăng nhập lại.
-            </p>
           </div>
         )}
       </div>
