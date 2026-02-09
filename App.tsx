@@ -36,6 +36,7 @@ import { IncomeLadder } from "./components/IncomeLadder";
 import { NetWorth } from "./components/NetWorth";
 import { ThirtyDayJourney } from "./components/ThirtyDayJourney";
 import { AICoach } from "./components/AICoach";
+import { CategorySettings } from "./components/CategorySettings";
 import { WealthPlaybookPanel } from "./components/WealthPlaybookPanel";
 import { UpgradePlan } from "./components/UpgradePlan";
 
@@ -558,13 +559,10 @@ export default function App() {
 
       case "category-settings":
         return (
-          <div className="p-6 rounded-2xl bg-slate-900/40 border border-slate-800">
-            <h2 className="text-xl font-black mb-2 text-white">Quản lý danh mục</h2>
-            <p className="text-slate-400">
-              Màn hình này hiện chưa gắn component riêng. Em có thể làm luôn 1 màn hình
-              Category Settings (CRUD + defaultClassification need/want) dựa trên state hiện tại.
-            </p>
-          </div>
+          <CategorySettings
+            categories={categories}
+            setCategories={setCategories}
+          />
         );
 
       default:

@@ -109,29 +109,7 @@ export const ChartPieIcon: React.FC<IconProps> = (props) => (
   </SvgBase>
 );
 
-// --- UI actions icons ---
-export const CheckIcon: React.FC<IconProps> = (props) => (
-  <SvgBase {...props}>
-    <path d="M20 6L9 17l-5-5" />
-  </SvgBase>
-);
-
-export const PlusIcon: React.FC<IconProps> = (props) => (
-  <SvgBase {...props}>
-    <path d="M12 5v14" />
-    <path d="M5 12h14" />
-  </SvgBase>
-);
-
-export const TrashIcon: React.FC<IconProps> = (props) => (
-  <SvgBase {...props}>
-    <path d="M3 6h18" />
-    <path d="M8 6V4h8v2" />
-    <path d="M6 6l1 16h10l1-16" />
-    <path d="M10 11v6" />
-    <path d="M14 11v6" />
-  </SvgBase>
-);
+// --- UI actions icons moved to bottom or replaced with more detailed versions ---
 
 /**
  * ICON MAP cho Category.icon (string)
@@ -310,6 +288,28 @@ export const CogIcon: React.FC<IconProps> = (props) => (
   </SvgBase>
 );
 
+export const TrashIcon: React.FC<IconProps> = (props) => (
+  <SvgBase {...props}>
+    <polyline points="3 6 5 6 21 6" />
+    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+    <line x1="10" y1="11" x2="10" y2="17" />
+    <line x1="14" y1="11" x2="14" y2="17" />
+  </SvgBase>
+);
+
+export const CheckIcon: React.FC<IconProps> = (props) => (
+  <SvgBase {...props}>
+    <polyline points="20 6 9 17 4 12" />
+  </SvgBase>
+);
+
+export const PlusIcon: React.FC<IconProps> = (props) => (
+  <SvgBase {...props}>
+    <line x1="12" y1="5" x2="12" y2="19" />
+    <line x1="5" y1="12" x2="19" y2="12" />
+  </SvgBase>
+);
+
 export const IconMap: Record<string, React.FC<IconProps>> = {
   Briefcase: BriefcaseIcon,
   ShoppingCart: ShoppingCartIcon,
@@ -319,12 +319,11 @@ export const IconMap: Record<string, React.FC<IconProps>> = {
   Pencil: PencilIcon,
   LightningBolt: LightningBoltIcon,
   Heart: HeartIcon,
+  TrendingUp: TrendingUpIcon,
   ChartPie: ChartPieIcon,
-
-  // fallback UI icons (nếu chỗ khác dùng)
-  PlusIcon,
-  CheckIcon,
-  TrashIcon,
-  SparklesIcon,
-  ArrowUpIcon,
+  Cash: CashIcon,
+  CreditCard: CreditCardIcon,
+  Plus: PlusIcon,
+  Trash: TrashIcon,
+  Check: CheckIcon,
 };
