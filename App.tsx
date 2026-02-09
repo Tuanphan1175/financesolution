@@ -17,6 +17,8 @@ import {
   BookOpenIcon,
   PencilIcon,
   RefreshIcon,
+  MenuIcon,
+  XIcon,
 } from "./components/Icons";
 
 // ================= LOGOUT =================
@@ -490,6 +492,8 @@ export default function App() {
     [premiumMap]
   );
 
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
   // ================= NAVIGATE WRAPPER (NEW) =================
   const handleNavigate = (view: View) => {
     if (!planLoading && !isPremium && premiumMap.has(view)) {
@@ -498,6 +502,7 @@ export default function App() {
       return;
     }
     setCurrentView(view);
+    setIsSidebarOpen(false); // Đóng sidebar khi chọn view trên mobile
   };
 
   // Fallback guard: nếu user vào trực tiếp premium view bằng cách khác
@@ -602,8 +607,62 @@ export default function App() {
   };
 
   return (
-    <div className="flex w-screen h-screen bg-luxury-obsidian text-white overflow-hidden">
-      {/* PREMIUM POPUP (NEW) */}
+    <div className="flex w-screen h-screen bg-luxury-obsidian text-white overflow-hidden relative">
+      {/* MOBILE HEADER */}
+      <div className="lg:hidden fixed top-0 left-0 right-0 h-16 bg-luxury-obsidian/80 backdrop-blur-lg border-b border-white/10 z-40 flex items-center justify-between px-6">
+        <div className="flex items-center">
+          <div className="bg-luxury-gold p-2 rounded-lg mr-3">
+            <CurrencyDollarIcon className="h-5 w-5 text-black" />
+          </div>
+          <span className="font-black tracking-widest text-sm italic">PREMIUM</span>
+        </div>
+        <button
+          onClick={() => setIsSidebarOpen(true)}
+          className="p-2 text-white hover:bg-white/10 rounded-lg transition-colors"
+        >
+          <MenuIcon className="h-6 w-6" />
+        </button>
+      </div>
+
+      {/* SIDEBAR OVERLAY (Mobile) */}
+      {isSidebarOpen && (
+        <div
+          className="lg:hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-50 transition-opacity"
+          onClick={() => setIsSidebarOpen(false)}
+        />
+      )}
+
+      {/* SIDEBAR */}
+      <aside className={`
+        fixed lg:relative top-0 left-0 h-full w-[310px] bg-luxury-obsidian z-50 shrink-0
+        transition-transform duration-500 ease-in-out
+        ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+        border-r border-white/5 lg:border-none shadow-2xl lg:shadow-none
+      `}>
+        <div className="lg:hidden absolute top-6 right-6 z-50">
+          <button
+            onClick={() => setIsSidebarOpen(false)}
+            className="p-2 text-white/50 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
+          >
+            <XIcon className="h-6 w-6" />
+          </button>
+        </div>
+        <Sidebar
+          currentView={currentView}
+          setCurrentView={handleNavigate}
+          isPremium={isPremium}
+          setIsPremium={setIsPremium}
+        />
+      </aside>
+
+      {/* MAIN */}
+      <main className="flex-1 overflow-y-auto p-4 md:p-8 pt-20 lg:pt-8 w-full">
+        <div className="max-w-7xl mx-auto">
+          {renderView()}
+        </div>
+      </main>
+
+      {/* PREMIUM POPUP */}
       <PremiumLockModal
         open={lockOpen}
         lockKey={lockKey}
@@ -613,19 +672,6 @@ export default function App() {
           setCurrentView("upgrade-plan");
         }}
       />
-
-      {/* SIDEBAR */}
-      <aside className="w-[340px] shrink-0">
-        <Sidebar
-          currentView={currentView}
-          setCurrentView={handleNavigate} // ✅ intercept click để hiện popup
-          isPremium={isPremium}
-          setIsPremium={setIsPremium}
-        />
-      </aside>
-
-      {/* MAIN */}
-      <main className="flex-1 overflow-y-auto p-8">{renderView()}</main>
     </div>
   );
 }

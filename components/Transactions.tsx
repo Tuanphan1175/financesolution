@@ -46,11 +46,10 @@ const TransactionRow: React.FC<{
       <td className="px-8 py-6 whitespace-nowrap text-center">
         {transaction.type === 'expense' ? (
           <span
-            className={`px-3 py-1 text-[9px] font-black uppercase rounded-lg border ${
-              transaction.classification === 'need'
+            className={`px-3 py-1 text-[9px] font-black uppercase rounded-lg border ${transaction.classification === 'need'
                 ? 'text-emerald-400 border-emerald-500/20 bg-emerald-500/10'
                 : 'text-rose-400 border-rose-500/20 bg-rose-500/10'
-            }`}
+              }`}
           >
             {transaction.classification === 'need' ? 'CẦN THIẾT' : 'MONG MUỐN'}
           </span>
@@ -74,8 +73,8 @@ const TransactionRow: React.FC<{
           {transaction.paymentMethod === 'cash'
             ? 'TIỀN MẶT'
             : transaction.paymentMethod === 'credit_card'
-            ? 'THẺ TÍN DỤNG'
-            : 'CHUYỂN KHOẢN'}
+              ? 'THẺ TÍN DỤNG'
+              : 'CHUYỂN KHOẢN'}
         </div>
       </td>
 
@@ -237,11 +236,11 @@ export const Transactions: React.FC<TransactionsProps> = ({
 
       <div className="flex flex-col lg:flex-row gap-8 items-start">
         <div className="flex-1 w-full space-y-6">
-          <div className="bg-slate-900/80 backdrop-blur-md p-6 rounded-[2rem] border border-slate-800 shadow-premium flex flex-col md:flex-row justify-between items-center gap-6">
+          <div className="bg-slate-900/80 backdrop-blur-md p-4 md:p-6 rounded-[2rem] border border-slate-800 shadow-premium flex flex-col md:flex-row justify-between items-center gap-6">
             <div className="flex flex-wrap items-center gap-4 w-full">
               <div className="flex items-center text-slate-500 mr-2">
                 <FilterIcon className="h-5 w-5 mr-3 text-luxury-gold" />
-                <span className="text-[10px] font-black uppercase tracking-[0.2em]">BỘ LỌC CHIẾN LƯỢC</span>
+                <span className="text-[10px] font-black uppercase tracking-[0.2em] hidden sm:inline">BỘ LỌC CHIẾN LƯỢC</span>
               </div>
 
               <div className="grid grid-cols-2 md:flex gap-3 w-full md:w-auto">
@@ -252,7 +251,7 @@ export const Transactions: React.FC<TransactionsProps> = ({
                     setFilterCategory('all');
                     setFilterClassification('all');
                   }}
-                  className="bg-black/40 border border-slate-800 text-white rounded-xl p-3 text-[11px] font-black uppercase tracking-widest outline-none focus:border-luxury-gold appearance-none px-6"
+                  className="bg-black/40 border border-slate-800 text-white rounded-xl p-3 text-[10px] md:text-[11px] font-black uppercase tracking-widest outline-none focus:border-luxury-gold appearance-none px-4 md:px-6"
                 >
                   <option value="all">TẤT CẢ LOẠI</option>
                   <option value="income">THU NHẬP</option>
@@ -262,7 +261,7 @@ export const Transactions: React.FC<TransactionsProps> = ({
                 <select
                   value={filterCategory}
                   onChange={(e) => setFilterCategory(e.target.value)}
-                  className="bg-black/40 border border-slate-800 text-white rounded-xl p-3 text-[11px] font-black uppercase tracking-widest outline-none focus:border-luxury-gold appearance-none px-6"
+                  className="bg-black/40 border border-slate-800 text-white rounded-xl p-3 text-[10px] md:text-[11px] font-black uppercase tracking-widest outline-none focus:border-luxury-gold appearance-none px-4 md:px-6"
                 >
                   <option value="all">DANH MỤC</option>
                   {availableFilterCategories.map((c) => (
@@ -272,11 +271,10 @@ export const Transactions: React.FC<TransactionsProps> = ({
                   ))}
                 </select>
 
-                {/* ✅ Filter Need/Want (trước đó Bác Sĩ có state nhưng chưa có UI) */}
                 <select
                   value={filterClassification}
                   onChange={(e) => setFilterClassification(e.target.value as any)}
-                  className="bg-black/40 border border-slate-800 text-white rounded-xl p-3 text-[11px] font-black uppercase tracking-widest outline-none focus:border-luxury-gold appearance-none px-6"
+                  className="bg-black/40 border border-slate-800 text-white rounded-xl p-3 text-[10px] md:text-[11px] font-black uppercase tracking-widest outline-none focus:border-luxury-gold appearance-none px-4 md:px-6 col-span-2 md:col-span-1"
                   title="Lọc Need/Want (chỉ áp dụng cho chi tiêu)"
                 >
                   <option value="all">NEED/WANT</option>
@@ -289,19 +287,19 @@ export const Transactions: React.FC<TransactionsProps> = ({
             <div className="flex gap-3 w-full md:w-auto">
               <button
                 onClick={handleExportCSV}
-                className="flex-1 lg:flex-none flex items-center justify-center bg-slate-800 text-luxury-gold font-black py-4 px-6 rounded-2xl hover:bg-slate-700 transition-all duration-500 border border-slate-700 shadow-luxury uppercase tracking-[0.2em] text-[10px] active:scale-95"
+                className="flex-1 md:flex-none flex items-center justify-center bg-slate-800 text-luxury-gold font-black py-4 px-4 md:px-6 rounded-2xl hover:bg-slate-700 transition-all duration-500 border border-slate-700 shadow-luxury uppercase tracking-[0.2em] text-[10px] active:scale-95"
                 title="Xuất toàn bộ lịch sử ra CSV"
               >
-                <SaveDiskIcon className="h-5 w-5 mr-3" />
-                Lưu & Xuất
+                <SaveDiskIcon className="h-5 w-5 md:mr-3" />
+                <span className="hidden md:inline">Lưu & Xuất</span>
               </button>
 
               <button
                 onClick={openCreate}
-                className="flex-[2] lg:flex-none flex items-center justify-center bg-white text-black font-black py-4 px-8 rounded-2xl hover:bg-luxury-gold transition-all duration-500 shadow-luxury uppercase tracking-[0.2em] text-xs active:scale-95 shrink-0"
+                className="flex-[2] md:flex-none flex items-center justify-center bg-white text-black font-black py-4 px-6 md:px-8 rounded-2xl hover:bg-luxury-gold transition-all duration-500 shadow-luxury uppercase tracking-[0.2em] text-xs active:scale-95 shrink-0"
               >
                 <PlusIcon className="h-5 w-5 mr-3" />
-                Ghi chép mới
+                Ghi chép
               </button>
             </div>
           </div>
