@@ -1,7 +1,7 @@
 // types.ts
 
 // =========================
-// CORE ENUMS / TYPES
+// ENUM TYPES
 // =========================
 export type TransactionType = "income" | "expense";
 export type PaymentMethod = "cash" | "credit_card" | "bank_transfer";
@@ -9,9 +9,7 @@ export type AccountType = "personal" | "business";
 export type SpendingClassification = "need" | "want";
 
 /**
- * ✅ Sidebar + App đang dùng thêm:
- * - 'category-settings'
- * - 'upgrade-plan'
+ * Sidebar + App keys
  */
 export type View =
   | "dashboard"
@@ -26,7 +24,9 @@ export type View =
   | "ai-coach"
   | "playbook"
   | "category-settings"
-  | "upgrade-plan";
+  | "upgrade-plan"
+  | "pyramid"
+  | "portfolio";
 
 // =========================
 // CATEGORIES / TRANSACTIONS
@@ -44,19 +44,24 @@ export interface Transaction {
   id: string;
   categoryId: string;
   amount: number;
-  description: string;
+
+  // nhiều nơi có thể để trống, nên optional để seed dễ
+  description?: string;
+
   type: TransactionType;
-  date: string; // ISO: YYYY-MM-DD
-  paymentMethod: PaymentMethod;
-  accountType: AccountType;
+
+  /** ISO: YYYY-MM-DD */
+  date: string;
+
+  paymentMethod?: PaymentMethod;
+  accountType?: AccountType;
 
   /**
-   * ✅ app đang dùng transaction.classification trong Transactions.tsx
-   * Lưu ý: income vẫn có thể giữ field này, nhưng UI thường chỉ dùng cho expense.
+   * App đang dùng transaction.classification trong UI.
+   * expense: nên có, income: có thể bỏ trống.
    */
-  classification: SpendingClassification;
+  classification?: SpendingClassification;
 
-  // optional flags
   isAsset?: boolean;
   isLiability?: boolean;
 }
@@ -66,35 +71,26 @@ export interface Transaction {
 // =========================
 export type BudgetPeriod = "monthly" | "yearly";
 
-/**
- * Hợp nhất 2 phiên bản:
- * - Upstream: amount/spent/startDate/endDate
- * - Stash: amount/spent/period/limit
- */
 export interface Budget {
   id: string;
   categoryId: string;
 
+  /** current app usage */
   amount: number;
   spent: number;
 
-  // Upstream style (date range)
-  startDate?: string; // ISO: YYYY-MM-DD
-  endDate?: string; // ISO: YYYY-MM-DD
-
-  // Stash style (period)
+  /** backward compatibility */
   period?: BudgetPeriod;
-  limit?: number; // tương thích ngược / tùy UI dùng
+  limit?: number;
+
+  /** date range compatibility */
+  startDate?: string; // ISO
+  endDate?: string; // ISO
 }
 
 // =========================
 // NET WORTH
 // =========================
-/**
- * Hợp nhất AssetType:
- * - Upstream: cash, real_estate, investment, vehicle, other
- * - Stash: thêm savings/checking/stock/bond/crypto/business...
- */
 export type AssetType =
   | "cash"
   | "savings"
@@ -104,25 +100,29 @@ export type AssetType =
   | "bond"
   | "crypto"
   | "real_estate"
-  | "vehicle"
   | "business"
+  | "vehicle"
   | "other";
 
 export interface Asset {
   id: string;
   name: string;
-  value: number; // code đang dùng a.value
+
+  /** canonical numeric value */
+  value: number;
+
+  /**
+   * compatibility: some old code used a.amount
+   * keep optional to avoid breaking imports
+   */
+  amount?: number;
+
   type: AssetType;
-  accountType: AccountType;
+  accountType?: AccountType;
   note?: string;
   createdAt?: string;
 }
 
-/**
- * Hợp nhất LiabilityType:
- * - Upstream: credit_card, loan, mortgage, other
- * - Stash: thêm personal_loan, business_loan
- */
 export type LiabilityType =
   | "credit_card"
   | "loan"
@@ -134,36 +134,43 @@ export type LiabilityType =
 export interface Liability {
   id: string;
   name: string;
-  amount: number; // code đang dùng l.amount
+
+  /** canonical numeric amount */
+  amount: number;
+
+  /**
+   * compatibility: some old code used l.value
+   * keep optional
+   */
+  value?: number;
+
   type: LiabilityType;
-  accountType: AccountType;
+  accountType?: AccountType;
   interestRate?: number;
-  dueDate?: string;
+  dueDate?: string; // ISO
   note?: string;
 }
 
 // =========================
 // GOLDEN RULES
 // =========================
-/**
- * Hợp nhất GoldenRule:
- * - Upstream dùng name/description/isCompliant (bản Bác Sĩ)
- * - Stash có active boolean
- *
- * Quy ước:
- * - isCompliant: trạng thái tuân thủ hiện tại (AI Coach dùng)
- * - active: rule có đang bật theo UI hay không (nếu UI có toggle)
- */
 export interface GoldenRule {
   id: string;
+
+  /** use 1 field (name) but allow title for legacy seed/UI */
   name: string;
+  title?: string;
+
   description: string;
 
-  // UI toggle (nếu có)
-  active?: boolean;
-
-  // compliance state
+  /**
+   * allow multiple flags (legacy toggles)
+   * canonical: isCompliant
+   */
   isCompliant?: boolean;
+  active?: boolean;
+  enabled?: boolean;
+  isEnabled?: boolean;
 
   scoreWeight: number;
 }
@@ -171,72 +178,57 @@ export interface GoldenRule {
 // =========================
 // JOURNEY / 30-DAY JOURNEY
 // =========================
-export type TaskPillar = "income" | "expense" | "protection" | "investment" | "mindset";
+export type TaskPillar =
+  | "expense"
+  | "protection"
+  | "investment"
+  | "income"
+  | "mindset";
 
 /**
- * Hợp nhất 2 phiên bản JourneyTask:
- * - Upstream: day/week/title/description/action/coachMessage/pillar
- * - Stash: id + optional fields + completed flags
+ * Task item for 30-day journey
+ * IMPORTANT: id is required (your error was missing id in constants.ts)
  */
 export interface JourneyTask {
-  // Stash id
-  id?: string;
+  id: string;
 
-  // Upstream structure
-  day?: number;
-  week: number; // 1-4
+  day: number; // 1..30
+  week: number; // 1..4
 
-  title?: string;
-  description?: string;
+  title: string;
+  description: string;
 
-  action?: string;
-  coachMessage?: string;
+  action: string;
+  coachMessage: string;
 
   pillar: TaskPillar;
 
-  // optional status (stash)
   completed?: boolean;
 }
 
-/**
- * Ngày trong hành trình (stash)
- */
 export interface JourneyDay {
+  id: string; // usually "day-1"...
   day: number;
-  title?: string;
   tasks: JourneyTask[];
 }
 
-/**
- * Hợp nhất JourneyProgress:
- * - Upstream: Record<number, {completed, note, completedAt}>
- * - Stash: { completedTaskIds, completedDays, currentDay }
- *
- * Để không gãy code nào, giữ cả 2 dạng:
- * - progressByDay: map theo ngày
- * - completedTaskIds/currentDay/...: object theo task/day
- */
-export type JourneyProgressByDay = Record<
-  number,
-  {
-    completed: boolean;
-    note?: string;
-    completedAt?: string;
-  }
->;
-
-export interface JourneyProgress {
-  // Upstream style (map by day)
-  progressByDay?: JourneyProgressByDay;
-
-  // Stash style (by task ids / days)
-  completedTaskIds?: string[];
-  completedDays?: number[];
-  currentDay?: number;
-}
+export type JourneyProgress =
+  | Record<
+      number,
+      {
+        completed: boolean;
+        note?: string;
+        completedAt?: string;
+      }
+    >
+  | {
+      completedTaskIds: string[];
+      completedDays?: number[];
+      currentDay?: number;
+    };
 
 // =========================
-// OPTIONAL / COMPAT HELPERS
+// OPTIONAL / UI HELPERS
 // =========================
 export interface NetWorthItem {
   id: string;

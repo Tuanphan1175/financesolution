@@ -23,10 +23,12 @@ const SummaryCard: React.FC<{ label: string; value: number; color: string; icon:
     </div>
 );
 
-export const Reports: React.FC<ReportsProps> = ({ transactions, categories }) => {
+export const Reports: React.FC<ReportsProps> = (props) => {
+    const transactions = props.transactions ?? [];
+    const categories = props.categories ?? [];
     const [month, setMonth] = useState<string>(new Date().toISOString().substring(0, 7));
     const [accountType, setAccountType] = useState<'all' | AccountType>('all');
-    
+
     const filteredTransactions = useMemo(() => {
         return transactions
             .filter(t => t.date.startsWith(month))
@@ -38,7 +40,7 @@ export const Reports: React.FC<ReportsProps> = ({ transactions, categories }) =>
         const expense = filteredTransactions.filter(t => t.type === 'expense').reduce((s, t) => s + t.amount, 0);
         const savings = income - expense;
         const savingsRate = income > 0 ? Math.round((savings / income) * 100) : 0;
-        
+
         return { income, expense, savings, savingsRate };
     }, [filteredTransactions]);
 
@@ -65,8 +67,8 @@ export const Reports: React.FC<ReportsProps> = ({ transactions, categories }) =>
                 <div className="flex flex-col md:flex-row items-center gap-8 w-full lg:w-auto">
                     <div className="flex flex-col w-full md:w-auto">
                         <span className="text-[10px] font-black uppercase text-slate-500 tracking-[0.3em] mb-3 ml-2 italic">Kỳ báo cáo</span>
-                        <input 
-                            type="month" 
+                        <input
+                            type="month"
                             value={month}
                             onChange={(e) => setMonth(e.target.value)}
                             className="bg-black/40 border border-slate-800 text-white rounded-2xl p-4 text-sm font-black focus:border-luxury-gold outline-none transition-all appearance-none cursor-pointer px-8"
@@ -75,8 +77,8 @@ export const Reports: React.FC<ReportsProps> = ({ transactions, categories }) =>
                     <div className="flex flex-col w-full md:w-auto">
                         <span className="text-[10px] font-black uppercase text-slate-500 tracking-[0.3em] mb-3 ml-2 italic">Chọn ví dữ liệu</span>
                         <div className="flex bg-black/40 p-2 rounded-2xl border border-slate-800">
-                             {(['all', 'personal', 'business'] as const).map((type) => (
-                                <button 
+                            {(['all', 'personal', 'business'] as const).map((type) => (
+                                <button
                                     key={type}
                                     onClick={() => setAccountType(type)}
                                     className={`px-6 py-2.5 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all duration-500 ${accountType === type ? 'bg-luxury-gold text-black shadow-glow' : 'text-slate-500 hover:text-white'}`}
@@ -88,7 +90,7 @@ export const Reports: React.FC<ReportsProps> = ({ transactions, categories }) =>
                     </div>
                 </div>
                 <div className="flex gap-4 w-full lg:w-auto">
-                    <button 
+                    <button
                         onClick={handleExportCSV}
                         className="flex-1 lg:flex-none flex items-center justify-center bg-white text-black font-black py-4 px-10 rounded-2xl hover:bg-luxury-gold transition-all shadow-luxury uppercase tracking-widest text-xs"
                     >
@@ -119,8 +121,8 @@ export const Reports: React.FC<ReportsProps> = ({ transactions, categories }) =>
                         <div className="flex items-center justify-between mb-12">
                             <h3 className="text-[14px] font-black uppercase tracking-[0.4em] text-white">XU HƯỚNG DÒNG TIỀN {accountType.toUpperCase()}</h3>
                             <div className="flex items-center gap-6">
-                               <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-full bg-emerald-500"></div><span className="text-[10px] font-black text-slate-500">THU</span></div>
-                               <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-full bg-rose-500"></div><span className="text-[10px] font-black text-slate-500">CHI</span></div>
+                                <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-full bg-emerald-500"></div><span className="text-[10px] font-black text-slate-500">THU</span></div>
+                                <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-full bg-rose-500"></div><span className="text-[10px] font-black text-slate-500">CHI</span></div>
                             </div>
                         </div>
                         <div className="h-[450px]">
@@ -162,7 +164,7 @@ export const Reports: React.FC<ReportsProps> = ({ transactions, categories }) =>
                                     <CategoryPieChart data={filteredTransactions} categories={categories} type="income" />
                                 </div>
                             </div>
-                            
+
                             <div className="bg-gradient-to-br from-slate-900 to-black p-12 rounded-[3rem] shadow-luxury border border-luxury-gold/20 text-white relative overflow-hidden group">
                                 <div className="absolute top-0 right-0 p-8 opacity-[0.03] group-hover:scale-110 transition-transform">
                                     <FilterIcon className="w-48 h-48" />
@@ -170,7 +172,7 @@ export const Reports: React.FC<ReportsProps> = ({ transactions, categories }) =>
                                 <h4 className="text-luxury-gold font-black uppercase text-xs tracking-[0.4em] mb-6">AI Strategy Insight</h4>
                                 <div className="space-y-6 relative z-10">
                                     <p className="text-lg leading-relaxed text-slate-300 font-medium">
-                                        Dữ liệu ví <span className="text-white font-black italic">{accountType === 'all' ? 'Tổng hợp' : accountType === 'personal' ? 'Cá nhân' : 'Kinh doanh'}</span> cho thấy thặng dư của bạn đang ở mức {stats.savings.toLocaleString('vi-VN')} ₫. 
+                                        Dữ liệu ví <span className="text-white font-black italic">{accountType === 'all' ? 'Tổng hợp' : accountType === 'personal' ? 'Cá nhân' : 'Kinh doanh'}</span> cho thấy thặng dư của bạn đang ở mức {stats.savings.toLocaleString('vi-VN')} ₫.
                                         {stats.savingsRate < 25 ? " Bạn cần rà soát lại các khoản chi Mong muốn để tối ưu hóa dòng tiền." : " Đây là con số lý tưởng để bắt đầu lộ trình tái đầu tư thặng dư."}
                                     </p>
                                     <div className="h-px bg-slate-800 w-full"></div>

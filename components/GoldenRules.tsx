@@ -4,11 +4,13 @@ import { GoldenRule } from '../types';
 import { CheckCircleIcon, XIcon } from './Icons';
 
 interface GoldenRulesProps {
-    rules: GoldenRule[];
-    onToggleRule: (id: string) => void;
+    rules?: GoldenRule[];
+    onToggleRule?: (id: string) => void;
 }
 
-export const GoldenRules: React.FC<GoldenRulesProps> = ({ rules, onToggleRule }) => {
+export const GoldenRules: React.FC<GoldenRulesProps> = (props) => {
+    const rules = props.rules ?? [];
+    const onToggleRule = props.onToggleRule ?? (() => { });
     const compliantCount = rules.filter(r => r.isCompliant).length;
     const score = Math.round((compliantCount / rules.length) * 100);
 
@@ -27,8 +29,8 @@ export const GoldenRules: React.FC<GoldenRulesProps> = ({ rules, onToggleRule })
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {rules.map((rule) => (
-                    <div 
-                        key={rule.id} 
+                    <div
+                        key={rule.id}
                         className={`p-4 rounded-xl border-l-4 shadow-sm transition-all hover:shadow-md cursor-pointer bg-white dark:bg-gray-800 ${rule.isCompliant ? 'border-green-500' : 'border-gray-300 dark:border-gray-600 opacity-80'}`}
                         onClick={() => onToggleRule(rule.id)}
                     >
@@ -42,7 +44,7 @@ export const GoldenRules: React.FC<GoldenRulesProps> = ({ rules, onToggleRule })
                         </div>
                         <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">{rule.description}</p>
                         <div className="mt-3 flex items-center">
-                             <span className="text-xs font-semibold bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded text-gray-500">Trọng số: {rule.scoreWeight}đ</span>
+                            <span className="text-xs font-semibold bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded text-gray-500">Trọng số: {rule.scoreWeight}đ</span>
                         </div>
                     </div>
                 ))}

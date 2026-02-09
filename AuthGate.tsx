@@ -64,7 +64,7 @@ function clearUrlHashAndQuery() {
   }
 }
 
-export default function AuthGate() {
+export default function AuthGate({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<any>(null);
   const [mode, setMode] = useState<Mode>("login");
 
@@ -91,7 +91,7 @@ export default function AuthGate() {
     try {
       const v = localStorage.getItem("remember_login");
       if (v !== null) setRemember(v === "1");
-    } catch {}
+    } catch { }
 
     // If URL already indicates recovery, switch mode immediately
     if (hasRecoveryInUrl()) setMode("recovery");
@@ -162,7 +162,7 @@ export default function AuthGate() {
       try {
         const v = localStorage.getItem("remember_login");
         if (v === "0") await supabase.auth.signOut();
-      } catch {}
+      } catch { }
     };
     window.addEventListener("beforeunload", handler);
     return () => window.removeEventListener("beforeunload", handler);
@@ -186,7 +186,7 @@ export default function AuthGate() {
 
     try {
       localStorage.setItem("remember_login", remember ? "1" : "0");
-    } catch {}
+    } catch { }
 
     const { error } = await supabase.auth.signInWithPassword({
       email: email.trim().toLowerCase(),

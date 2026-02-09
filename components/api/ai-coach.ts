@@ -1,5 +1,7 @@
 // api/ai-coach.ts
-import type { VercelRequest, VercelResponse } from "@vercel/node";
+// import type { VercelRequest, VercelResponse } from "@vercel/node";
+type VercelRequest = any;
+type VercelResponse = any;
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
 type Role = "user" | "model";

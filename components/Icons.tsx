@@ -1,569 +1,330 @@
 // components/Icons.tsx
 import React from "react";
 
-export type IconProps = React.SVGProps<SVGSVGElement>;
+export type IconProps = React.SVGProps<SVGSVGElement> & { title?: string };
 
-const Svg: React.FC<IconProps & { children: React.ReactNode }> = ({
+function SvgBase({
   children,
+  title,
   ...props
-}) => (
-  <svg
-    {...props}
-    xmlns="http://www.w3.org/2000/svg"
-    fill="none"
-    viewBox="0 0 24 24"
-    stroke="currentColor"
-    aria-hidden="true"
-  >
-    {children}
-  </svg>
-);
-
-// =========================
-// NAV / DASHBOARD ICONS
-// =========================
-
-export const ChartPieIcon: React.FC<IconProps> = (props) => (
-  <Svg {...props}>
-    <path
+}: React.SVGProps<SVGSVGElement> & { title?: string }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
       strokeLinecap="round"
       strokeLinejoin="round"
-      strokeWidth={2}
-      d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z"
-    />
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth={2}
-      d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z"
-    />
-  </Svg>
-);
+      aria-hidden={title ? undefined : true}
+      {...props}
+    >
+      {title ? <title>{title}</title> : null}
+      {children}
+    </svg>
+  );
+}
 
-export const BriefcaseIcon: React.FC<IconProps> = (props) => (
-  <Svg {...props}>
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth={2}
-      d="M9 6V5a2 2 0 012-2h2a2 2 0 012 2v1"
-    />
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18" />
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth={2}
-      d="M5 10v9a2 2 0 002 2h10a2 2 0 002-2v-9"
-    />
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth={2}
-      d="M9 10v2a1 1 0 001 1h4a1 1 0 001-1v-2"
-    />
-  </Svg>
-);
-
-// Alias để tương thích import cũ (nếu chỗ nào đang import BusIcon)
-export const BusIcon = BriefcaseIcon;
-
-export const CollectionIcon: React.FC<IconProps> = (props) => (
-  <Svg {...props}>
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth={2}
-      d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
-    />
-  </Svg>
-);
-
-export const ClipboardListIcon: React.FC<IconProps> = (props) => (
-  <Svg {...props}>
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth={2}
-      d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"
-    />
-  </Svg>
-);
-
-export const DocumentReportIcon: React.FC<IconProps> = (props) => (
-  <Svg {...props}>
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth={2}
-      d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-    />
-  </Svg>
-);
-
-export const CurrencyDollarIcon: React.FC<IconProps> = (props) => (
-  <Svg {...props}>
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth={2}
-      d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182.95-.75 2.162-1.085 3.32-.934 1.146.152 2.107.643 2.898 1.401"
-    />
-  </Svg>
-);
-
-export const ShieldCheckIcon: React.FC<IconProps> = (props) => (
-  <Svg {...props}>
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth={2}
-      d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-    />
-  </Svg>
-);
-
-export const TrendingUpIcon: React.FC<IconProps> = (props) => (
-  <Svg {...props}>
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth={2}
-      d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"
-    />
-  </Svg>
-);
-
-export const ScaleIcon: React.FC<IconProps> = (props) => (
-  <Svg {...props}>
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth={2}
-      d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3"
-    />
-  </Svg>
-);
-
-export const CalendarIcon: React.FC<IconProps> = (props) => (
-  <Svg {...props}>
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth={2}
-      d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-    />
-  </Svg>
-);
-
+// --- Common icons used across app ---
 export const SparklesIcon: React.FC<IconProps> = (props) => (
-  <Svg {...props}>
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth={2}
-      d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"
-    />
-  </Svg>
-);
-
-export const BookOpenIcon: React.FC<IconProps> = (props) => (
-  <Svg {...props}>
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth={2}
-      d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
-    />
-  </Svg>
-);
-
-export const PencilIcon: React.FC<IconProps> = (props) => (
-  <Svg {...props}>
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth={2}
-      d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
-    />
-  </Svg>
-);
-
-export const RefreshIcon: React.FC<IconProps> = (props) => (
-  <Svg {...props}>
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth={2}
-      d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-    />
-  </Svg>
-);
-
-// =========================
-// COMMON UI ICONS
-// =========================
-
-export const MenuIcon: React.FC<IconProps> = (props) => (
-  <Svg {...props}>
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth={2}
-      d="M4 6h16M4 12h16M4 18h16"
-    />
-  </Svg>
-);
-
-export const XIcon: React.FC<IconProps> = (props) => (
-  <Svg {...props}>
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth={2}
-      d="M6 18L18 6M6 6l12 12"
-    />
-  </Svg>
+  <SvgBase {...props}>
+    <path d="M12 2l1.5 5L19 8.5l-5.5 1.5L12 15l-1.5-5L5 8.5 10.5 7 12 2z" />
+    <path d="M5 13l.8 2.7L8.5 16.5l-2.7.8L5 20l-.8-2.7L1.5 16.5l2.7-.8L5 13z" />
+    <path d="M19 13l.8 2.7 2.7.8-2.7.8L19 20l-.8-2.7-2.7-.8 2.7-.8L19 13z" />
+  </SvgBase>
 );
 
 export const ArrowUpIcon: React.FC<IconProps> = (props) => (
-  <Svg {...props}>
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth={2}
-      d="M5 10l7-7m0 0l7 7m-7-7v18"
-    />
-  </Svg>
+  <SvgBase {...props}>
+    <path d="M12 19V5" />
+    <path d="M5 12l7-7 7 7" />
+  </SvgBase>
 );
 
-export const ArrowDownIcon: React.FC<IconProps> = (props) => (
-  <Svg {...props}>
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth={2}
-      d="M19 14l-7 7m0 0l-7-7m7 7V3"
-    />
-  </Svg>
+// --- Category icons (the ones in constants.ts) ---
+export const BriefcaseIcon: React.FC<IconProps> = (props) => (
+  <SvgBase {...props}>
+    <path d="M9 6V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v1" />
+    <rect x="3" y="6" width="18" height="14" rx="2" />
+    <path d="M3 12h18" />
+  </SvgBase>
 );
 
-export const ArrowRightIcon: React.FC<IconProps> = (props) => (
-  <Svg {...props}>
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth={2}
-      d="M9 5l7 7-7 7"
-    />
-  </Svg>
-);
-
-export const CheckIcon: React.FC<IconProps> = (props) => (
-  <Svg {...props}>
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth={2}
-      d="M5 13l4 4L19 7"
-    />
-  </Svg>
-);
-
-export const CheckCircleIcon: React.FC<IconProps> = (props) => (
-  <Svg {...props}>
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth={2}
-      d="M9 12l2 2 4-4"
-    />
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth={2}
-      d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"
-    />
-  </Svg>
-);
-
-export const DownloadIcon: React.FC<IconProps> = (props) => (
-  <Svg {...props}>
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth={2}
-      d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2"
-    />
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth={2}
-      d="M7 10l5 5m0 0l5-5m-5 5V4"
-    />
-  </Svg>
-);
-
-// =========================
-// FORM / TOOL ICONS
-// =========================
-
-export const PlusIcon: React.FC<IconProps> = (props) => (
-  <Svg {...props}>
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth={2}
-      d="M12 4v16m8-8H4"
-    />
-  </Svg>
-);
-
-export const FilterIcon: React.FC<IconProps> = (props) => (
-  <Svg {...props}>
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth={2}
-      d="M3 5h18l-7 8v6l-4 2v-8L3 5z"
-    />
-  </Svg>
-);
-
-export const CogIcon: React.FC<IconProps> = (props) => (
-  <Svg {...props}>
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth={2}
-      d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35.51-.124.93-.47 1.066-1.066.136-.595-.003-1.158-.32-1.506-.94-1.543.826-3.31 2.37-2.37.348.317.91.456 1.506.32.596-.136.942-.556 1.066-1.066z"
-    />
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth={2}
-      d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-    />
-  </Svg>
-);
-
-export const CashIcon: React.FC<IconProps> = (props) => (
-  <Svg {...props}>
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth={2}
-      d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-2"
-    />
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth={2}
-      d="M21 12h-8m0 0l3-3m-3 3l3 3"
-    />
-  </Svg>
-);
-
-export const SaveDiskIcon: React.FC<IconProps> = (props) => (
-  <Svg {...props}>
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth={2}
-      d="M5 3h11l3 3v15a1 1 0 01-1 1H5a1 1 0 01-1-1V4a1 1 0 011-1z"
-    />
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth={2}
-      d="M7 3v6h8V3M8 21v-7h8v7"
-    />
-  </Svg>
-);
-
-export const ExclamationIcon: React.FC<IconProps> = (props) => (
-  <Svg {...props}>
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v4m0 4h.01" />
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth={2}
-      d="M10.29 3.86l-7.1 12.3A1.5 1.5 0 004.5 18h15a1.5 1.5 0 001.31-2.24l-7.1-12.3a1.5 1.5 0 00-2.62 0z"
-    />
-  </Svg>
-);
-
-// Alias để nếu chỗ nào đang import ExclamationIcon theo tên khác
-export const ExclamationIconIcon = ExclamationIcon;
-
-// =========================
-// EXTRA ICONS (để đúng import ThirtyDayJourney.tsx)
-// =========================
-
-export const LockClosedIcon: React.FC<IconProps> = (props) => (
-  <Svg {...props}>
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth={2}
-      d="M12 11c1.105 0 2 .895 2 2v2a2 2 0 11-4 0v-2c0-1.105.895-2 2-2z"
-    />
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth={2}
-      d="M7 11V8a5 5 0 0110 0v3"
-    />
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth={2}
-      d="M6 11h12a2 2 0 012 2v6a2 2 0 01-2 2H6a2 2 0 01-2-2v-6a2 2 0 012-2z"
-    />
-  </Svg>
-);
-
-export const FlagIcon: React.FC<IconProps> = (props) => (
-  <Svg {...props}>
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth={2}
-      d="M5 3v18"
-    />
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth={2}
-      d="M5 4h10l-1.5 3L15 10H5V4z"
-    />
-  </Svg>
-);
-
-export const CreditCardIcon: React.FC<IconProps> = (props) => (
-  <Svg {...props}>
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7h18v10H3V7z" />
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18" />
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 14h4" />
-  </Svg>
-);
-
-// =========================
-// CATEGORY ICONS + ICON MAP
-// =========================
-
-export const DefaultCategoryIcon: React.FC<IconProps> = (props) => (
-  <Svg {...props}>
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6l4 2" />
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth={2}
-      d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-    />
-  </Svg>
-);
-
-export const FoodIcon: React.FC<IconProps> = (props) => (
-  <Svg {...props}>
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth={2}
-      d="M4 3v7a4 4 0 004 4v7M8 3v7M12 3v18M16 3v7a4 4 0 01-4 4"
-    />
-  </Svg>
+export const ShoppingCartIcon: React.FC<IconProps> = (props) => (
+  <SvgBase {...props}>
+    <circle cx="9" cy="20" r="1" />
+    <circle cx="17" cy="20" r="1" />
+    <path d="M3 4h2l2.2 10.4A2 2 0 0 0 9.2 16H17a2 2 0 0 0 2-1.6L21 8H6" />
+  </SvgBase>
 );
 
 export const HomeIcon: React.FC<IconProps> = (props) => (
-  <Svg {...props}>
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth={2}
-      d="M3 10l9-7 9 7v10a1 1 0 01-1 1h-5v-7H9v7H4a1 1 0 01-1-1V10z"
-    />
-  </Svg>
+  <SvgBase {...props}>
+    <path d="M3 10.5L12 3l9 7.5" />
+    <path d="M5 10v10h14V10" />
+  </SvgBase>
 );
 
-export const ShoppingBagIcon: React.FC<IconProps> = (props) => (
-  <Svg {...props}>
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 7l1-3h10l1 3" />
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 7h14l-1 14H6L5 7z" />
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 10a3 3 0 006 0" />
-  </Svg>
+export const BusIcon: React.FC<IconProps> = (props) => (
+  <SvgBase {...props}>
+    <rect x="6" y="3" width="12" height="14" rx="2" />
+    <path d="M6 7h12" />
+    <path d="M8 17v2" />
+    <path d="M16 17v2" />
+    <circle cx="9" cy="14" r="1" />
+    <circle cx="15" cy="14" r="1" />
+  </SvgBase>
 );
 
-export const CarIcon: React.FC<IconProps> = (props) => (
-  <Svg {...props}>
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth={2}
-      d="M3 13l2-6a2 2 0 012-1h10a2 2 0 012 1l2 6"
-    />
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13h14v6H5v-6z" />
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth={2}
-      d="M7.5 19a1.5 1.5 0 100-3 1.5 1.5 0 000 3zM16.5 19a1.5 1.5 0 100-3 1.5 1.5 0 000 3z"
-    />
-  </Svg>
+export const TicketIcon: React.FC<IconProps> = (props) => (
+  <SvgBase {...props}>
+    <path d="M4 7a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v2a2 2 0 0 0 0 4v2a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-2a2 2 0 0 0 0-4V7z" />
+    <path d="M12 6v12" />
+  </SvgBase>
+);
+
+export const PencilIcon: React.FC<IconProps> = (props) => (
+  <SvgBase {...props}>
+    <path d="M12 20h9" />
+    <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z" />
+  </SvgBase>
+);
+
+export const LightningBoltIcon: React.FC<IconProps> = (props) => (
+  <SvgBase {...props}>
+    <path d="M13 2L3 14h7l-1 8 10-12h-7l1-8z" />
+  </SvgBase>
 );
 
 export const HeartIcon: React.FC<IconProps> = (props) => (
-  <Svg {...props}>
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth={2}
-      d="M12 21s-7-4.35-9.5-8.5C.5 8.5 3 6 6 6c1.8 0 3.2 1 4 2 0 0 1.6-2 4-2 3 0 5.5 2.5 3.5 6.5C19 16.65 12 21 12 21z"
-    />
-  </Svg>
+  <SvgBase {...props}>
+    <path d="M12 21s-7-4.6-9.5-9A5.5 5.5 0 0 1 12 6a5.5 5.5 0 0 1 9.5 6c-2.5 4.4-9.5 9-9.5 9z" />
+  </SvgBase>
 );
 
-export const GraduationCapIcon: React.FC<IconProps> = (props) => (
-  <Svg {...props}>
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3L2 8l10 5 10-5-10-5z" />
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 10v6c0 1.5 3 3 6 3s6-1.5 6-3v-6" />
-  </Svg>
+export const ChartPieIcon: React.FC<IconProps> = (props) => (
+  <SvgBase {...props}>
+    <path d="M12 12V2a10 10 0 1 1-9.9 12H12z" />
+    <path d="M12 2a10 10 0 0 1 10 10H12V2z" />
+  </SvgBase>
 );
 
-export const GiftIcon: React.FC<IconProps> = (props) => (
-  <Svg {...props}>
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12v9a1 1 0 01-1 1H5a1 1 0 01-1-1v-9" />
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M22 7H2v5h20V7z" />
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 22V7" />
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth={2}
-      d="M12 7c-1.5 0-3-1.5-3-3 0-1.5 1-2 2-2 2 0 4 5 4 5s-2 0-3 0z"
-    />
-  </Svg>
+// --- UI actions icons ---
+export const CheckIcon: React.FC<IconProps> = (props) => (
+  <SvgBase {...props}>
+    <path d="M20 6L9 17l-5-5" />
+  </SvgBase>
+);
+
+export const PlusIcon: React.FC<IconProps> = (props) => (
+  <SvgBase {...props}>
+    <path d="M12 5v14" />
+    <path d="M5 12h14" />
+  </SvgBase>
+);
+
+export const TrashIcon: React.FC<IconProps> = (props) => (
+  <SvgBase {...props}>
+    <path d="M3 6h18" />
+    <path d="M8 6V4h8v2" />
+    <path d="M6 6l1 16h10l1-16" />
+    <path d="M10 11v6" />
+    <path d="M14 11v6" />
+  </SvgBase>
+);
+
+/**
+ * ICON MAP cho Category.icon (string)
+ * Lưu ý: key phải khớp đúng string trong constants.ts (Briefcase, ShoppingCart, ...)
+ */
+// --- Navigation / Action icons ---
+export const CollectionIcon: React.FC<IconProps> = (props) => (
+  <SvgBase {...props}>
+    <rect x="3" y="3" width="7" height="7" rx="1" />
+    <rect x="14" y="3" width="7" height="7" rx="1" />
+    <rect x="3" y="14" width="7" height="7" rx="1" />
+    <rect x="14" y="14" width="7" height="7" rx="1" />
+  </SvgBase>
+);
+
+export const ClipboardListIcon: React.FC<IconProps> = (props) => (
+  <SvgBase {...props}>
+    <path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2" />
+    <rect x="9" y="3" width="6" height="4" rx="1" />
+    <path d="M9 12h6" />
+    <path d="M9 16h6" />
+  </SvgBase>
+);
+
+export const DocumentReportIcon: React.FC<IconProps> = (props) => (
+  <SvgBase {...props}>
+    <path d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5.586a1 1 0 0 1 .707.293l5.414 5.414a1 1 0 0 1 .293.707V19a2 2 0 0 1-2 2z" />
+  </SvgBase>
+);
+
+export const CurrencyDollarIcon: React.FC<IconProps> = (props) => (
+  <SvgBase {...props}>
+    <path d="M12 2v20" />
+    <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+  </SvgBase>
+);
+
+export const ShieldCheckIcon: React.FC<IconProps> = (props) => (
+  <SvgBase {...props}>
+    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+    <path d="M9 12l2 2 4-4" />
+  </SvgBase>
+);
+
+export const TrendingUpIcon: React.FC<IconProps> = (props) => (
+  <SvgBase {...props}>
+    <polyline points="23 6 13.5 15.5 8.5 10.5 1 18" />
+    <polyline points="17 6 23 6 23 12" />
+  </SvgBase>
+);
+
+export const ScaleIcon: React.FC<IconProps> = (props) => (
+  <SvgBase {...props}>
+    <path d="M12 3v18" />
+    <path d="M16 7l-8 0" />
+    <path d="M4 10h4l2 7H4l2-7z" />
+    <path d="M16 10h4l-2 7h-4l2-7z" />
+  </SvgBase>
+);
+
+export const CalendarIcon: React.FC<IconProps> = (props) => (
+  <SvgBase {...props}>
+    <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+    <line x1="16" y1="2" x2="16" y2="6" />
+    <line x1="8" y1="2" x2="8" y2="6" />
+    <line x1="3" y1="10" x2="21" y2="10" />
+  </SvgBase>
+);
+
+export const BookOpenIcon: React.FC<IconProps> = (props) => (
+  <SvgBase {...props}>
+    <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
+    <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
+  </SvgBase>
+);
+
+export const RefreshIcon: React.FC<IconProps> = (props) => (
+  <SvgBase {...props}>
+    <path d="M23 4v6h-6" />
+    <path d="M1 20v-6h6" />
+    <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
+  </SvgBase>
+);
+
+export const ArrowRightIcon: React.FC<IconProps> = (props) => (
+  <SvgBase {...props}>
+    <path d="M5 12h14" />
+    <path d="M12 5l7 7-7 7" />
+  </SvgBase>
+);
+
+export const XIcon: React.FC<IconProps> = (props) => (
+  <SvgBase {...props}>
+    <path d="M18 6L6 18" />
+    <path d="M6 6l12 12" />
+  </SvgBase>
+);
+
+export const CheckCircleIcon: React.FC<IconProps> = (props) => (
+  <SvgBase {...props}>
+    <circle cx="12" cy="12" r="10" />
+    <path d="M9 12l2 2 4-4" />
+  </SvgBase>
+);
+
+export const SaveDiskIcon: React.FC<IconProps> = (props) => (
+  <SvgBase {...props}>
+    <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
+    <polyline points="17 21 17 13 7 13 7 21" />
+    <polyline points="7 3 7 8 15 8" />
+  </SvgBase>
+);
+
+export const ExclamationIcon: React.FC<IconProps> = (props) => (
+  <SvgBase {...props}>
+    <circle cx="12" cy="12" r="10" />
+    <line x1="12" y1="8" x2="12" y2="12" />
+    <line x1="12" y1="16" x2="12.01" y2="16" />
+  </SvgBase>
+);
+
+export const CashIcon: React.FC<IconProps> = (props) => (
+  <SvgBase {...props}>
+    <rect x="2" y="6" width="20" height="12" rx="2" />
+    <circle cx="12" cy="12" r="3" />
+    <path d="M6 12h.01M18 12h.01" />
+  </SvgBase>
+);
+
+export const CreditCardIcon: React.FC<IconProps> = (props) => (
+  <SvgBase {...props}>
+    <rect x="2" y="5" width="20" height="14" rx="2" />
+    <line x1="2" y1="10" x2="22" y2="10" />
+  </SvgBase>
+);
+
+export const FilterIcon: React.FC<IconProps> = (props) => (
+  <SvgBase {...props}>
+    <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
+  </SvgBase>
+);
+
+export const DownloadIcon: React.FC<IconProps> = (props) => (
+  <SvgBase {...props}>
+    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+    <polyline points="7 10 12 15 17 10" />
+    <line x1="12" y1="15" x2="12" y2="3" />
+  </SvgBase>
+);
+
+export const ArrowDownIcon: React.FC<IconProps> = (props) => (
+  <SvgBase {...props}>
+    <path d="M12 5v14" />
+    <path d="M19 12l-7 7-7-7" />
+  </SvgBase>
+);
+
+export const LockClosedIcon: React.FC<IconProps> = (props) => (
+  <SvgBase {...props}>
+    <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+    <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+  </SvgBase>
+);
+
+export const FlagIcon: React.FC<IconProps> = (props) => (
+  <SvgBase {...props}>
+    <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z" />
+    <line x1="4" y1="22" x2="4" y2="15" />
+  </SvgBase>
+);
+
+export const CogIcon: React.FC<IconProps> = (props) => (
+  <SvgBase {...props}>
+    <path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z" />
+    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
+  </SvgBase>
 );
 
 export const IconMap: Record<string, React.FC<IconProps>> = {
-  // expenses
-  food: FoodIcon,
-  groceries: FoodIcon,
-  dining: FoodIcon,
-  home: HomeIcon,
-  rent: HomeIcon,
-  utilities: HomeIcon,
-  shopping: ShoppingBagIcon,
-  transport: CarIcon,
-  travel: CarIcon,
-  health: HeartIcon,
-  education: GraduationCapIcon,
-  gift: GiftIcon,
+  Briefcase: BriefcaseIcon,
+  ShoppingCart: ShoppingCartIcon,
+  Home: HomeIcon,
+  Bus: BusIcon,
+  Ticket: TicketIcon,
+  Pencil: PencilIcon,
+  LightningBolt: LightningBoltIcon,
+  Heart: HeartIcon,
+  ChartPie: ChartPieIcon,
 
-  // income
-  salary: CurrencyDollarIcon,
-  income: CurrencyDollarIcon,
-  bonus: SparklesIcon,
-  investment: TrendingUpIcon,
-
-  // fallback
-  other: DefaultCategoryIcon,
+  // fallback UI icons (nếu chỗ khác dùng)
+  PlusIcon,
+  CheckIcon,
+  TrashIcon,
+  SparklesIcon,
+  ArrowUpIcon,
 };

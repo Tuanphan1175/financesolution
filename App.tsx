@@ -513,10 +513,16 @@ export default function App() {
         );
 
       case "budgets":
-        return <Budgets />;
+        return <Budgets
+          categories={categories}
+          transactions={transactions}
+        />;
 
       case "reports":
-        return <Reports />;
+        return <Reports
+          transactions={transactions}
+          categories={categories}
+        />;
 
       case "journey":
         return <Journey />;
@@ -532,10 +538,17 @@ export default function App() {
 
       // ===== Premium gated =====
       case "30-day-journey":
-        return isPremium ? <ThirtyDayJourney /> : renderPremiumBlocked();
+        return isPremium ? (
+          <ThirtyDayJourney />
+        ) : renderPremiumBlocked();
 
       case "ai-coach":
-        return isPremium ? <AICoach /> : renderPremiumBlocked();
+        return isPremium ? (
+          <AICoach
+            transactions={transactions}
+            isPremium={isPremium}
+          />
+        ) : renderPremiumBlocked();
 
       case "playbook":
         return isPremium ? <WealthPlaybookPanel /> : renderPremiumBlocked();

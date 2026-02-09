@@ -6,16 +6,16 @@ import { Modal } from './Modal';
 import { AddBudgetForm } from './AddBudgetForm';
 
 interface BudgetsProps {
-    categories: Category[];
-    transactions: Transaction[];
-    budgets: Budget[];
-    setBudgets: React.Dispatch<React.SetStateAction<Budget[]>>;
+    categories?: Category[];
+    transactions?: Transaction[];
+    budgets?: Budget[];
+    setBudgets?: React.Dispatch<React.SetStateAction<Budget[]>>;
 }
 
-const BudgetCard: React.FC<{ 
-    budget: Budget; 
-    categories: Category[]; 
-    spent: number; 
+const BudgetCard: React.FC<{
+    budget: Budget;
+    categories: Category[];
+    spent: number;
     onDelete: (id: string) => void;
     onEdit: (budget: Budget) => void;
 }> = ({ budget, categories, spent, onDelete, onEdit }) => {
@@ -25,7 +25,7 @@ const BudgetCard: React.FC<{
     const remaining = budget.amount - spent;
     const isOverBudget = spent > budget.amount;
     const isWarningThreshold = progressRaw >= 80;
-    
+
     let progressBarColor = 'bg-primary-500';
     if (progressRaw > 75) progressBarColor = 'bg-yellow-500';
     if (isWarningThreshold) progressBarColor = 'bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.3)]';
@@ -35,19 +35,19 @@ const BudgetCard: React.FC<{
     return (
         <div className={`
             bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-md border transition-all hover:shadow-xl group relative
-            ${isWarningThreshold 
-                ? 'border-red-500 ring-2 ring-red-500/10 dark:ring-red-900/20' 
+            ${isWarningThreshold
+                ? 'border-red-500 ring-2 ring-red-500/10 dark:ring-red-900/20'
                 : 'border-gray-100 dark:border-gray-700'}
         `}>
             <div className="absolute top-4 right-4 flex space-x-2 opacity-0 group-hover:opacity-100 transition-opacity z-10">
-                <button 
+                <button
                     onClick={() => onEdit(budget)}
                     className="p-1.5 bg-gray-100 dark:bg-gray-700 rounded-lg text-gray-500 hover:text-primary-500 transition-colors"
                     title="Sửa ngân sách"
                 >
                     <PencilIcon className="w-4 h-4" />
                 </button>
-                <button 
+                <button
                     onClick={() => onDelete(budget.id)}
                     className="p-1.5 bg-gray-100 dark:bg-gray-700 rounded-lg text-gray-500 hover:text-red-500 transition-colors"
                     title="Xóa ngân sách"
@@ -78,11 +78,11 @@ const BudgetCard: React.FC<{
             <div>
                 <div className="flex justify-between items-baseline mb-3">
                     <span className="text-[10px] font-black text-gray-500 uppercase">
-                      Tiến độ chi tiêu (Tháng này)
+                        Tiến độ chi tiêu (Tháng này)
                     </span>
-                     <span className={`text-sm font-black font-mono ${isWarningThreshold ? 'text-red-500' : 'text-gray-800 dark:text-white'}`}>
+                    <span className={`text-sm font-black font-mono ${isWarningThreshold ? 'text-red-500' : 'text-gray-800 dark:text-white'}`}>
                         {progressRaw.toFixed(0)}%
-                     </span>
+                    </span>
                 </div>
                 <div className="w-full bg-gray-100 dark:bg-gray-700 rounded-full h-2">
                     <div className={`${progressBarColor} h-2 rounded-full transition-all duration-1000 ease-out`} style={{ width: `${progress}%` }}></div>
@@ -157,12 +157,12 @@ export const Budgets: React.FC<BudgetsProps> = ({ categories, transactions, budg
 
     return (
         <div className="space-y-6">
-            <Modal 
-                isOpen={isModalOpen} 
-                onClose={() => { setIsModalOpen(false); setEditingBudget(null); }} 
+            <Modal
+                isOpen={isModalOpen}
+                onClose={() => { setIsModalOpen(false); setEditingBudget(null); }}
                 title={editingBudget ? "Sửa Ngân sách" : "Thiết lập Ngân sách"}
             >
-                <AddBudgetForm 
+                <AddBudgetForm
                     categories={categories}
                     existingBudgets={budgets}
                     editingBudget={editingBudget}
@@ -171,11 +171,11 @@ export const Budgets: React.FC<BudgetsProps> = ({ categories, transactions, budg
                 />
             </Modal>
 
-             <div className="flex justify-between items-center bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700">
+            <div className="flex justify-between items-center bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700">
                 <div className="text-sm font-black text-gray-400 uppercase tracking-widest ml-2">
                     Kế hoạch chi tiêu tháng {new Date().getMonth() + 1}/{new Date().getFullYear()}
                 </div>
-                <button 
+                <button
                     onClick={() => setIsModalOpen(true)}
                     className="flex items-center bg-primary-600 text-white font-bold py-2 px-6 rounded-xl hover:bg-primary-700 transition-all shadow-lg shadow-primary-900/10 active:scale-95"
                 >
@@ -187,24 +187,24 @@ export const Budgets: React.FC<BudgetsProps> = ({ categories, transactions, budg
             {budgetStats.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pt-2">
                     {budgetStats.map(({ budget, spent }) => (
-                        <BudgetCard 
-                            key={budget.id} 
-                            budget={budget} 
-                            categories={categories} 
-                            spent={spent} 
+                        <BudgetCard
+                            key={budget.id}
+                            budget={budget}
+                            categories={categories}
+                            spent={spent}
                             onDelete={handleDeleteBudget}
                             onEdit={handleEditBudget}
                         />
                     ))}
                 </div>
             ) : (
-                 <div className="text-center bg-white dark:bg-gray-800 p-20 rounded-2xl shadow-md border-2 border-dashed border-gray-200 dark:border-gray-700">
+                <div className="text-center bg-white dark:bg-gray-800 p-20 rounded-2xl shadow-md border-2 border-dashed border-gray-200 dark:border-gray-700">
                     <div className="w-16 h-16 bg-primary-100 dark:bg-primary-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
                         <PlusIcon className="w-8 h-8 text-primary-500" />
                     </div>
                     <h3 className="text-xl font-black mb-2">Chưa có mục tiêu ngân sách</h3>
                     <p className="text-gray-500 dark:text-gray-400 max-w-xs mx-auto text-sm leading-relaxed">
-                        Thiết lập ngân sách giúp bạn kiểm soát dòng tiền và đạt được các cột mốc tài chính nhanh hơn. 
+                        Thiết lập ngân sách giúp bạn kiểm soát dòng tiền và đạt được các cột mốc tài chính nhanh hơn.
                         Hệ thống sẽ tự động tính toán chi tiêu của bạn dựa trên giao dịch thực tế.
                     </p>
                 </div>

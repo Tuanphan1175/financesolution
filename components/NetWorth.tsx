@@ -5,19 +5,51 @@ import { PlusIcon, XIcon, ShieldCheckIcon, CashIcon, HomeIcon, TrendingUpIcon, B
 import { Modal } from './Modal';
 
 interface NetWorthProps {
-    assets: Asset[];
-    setAssets: React.Dispatch<React.SetStateAction<Asset[]>>;
-    liabilities: Liability[];
-    setLiabilities: React.Dispatch<React.SetStateAction<Liability[]>>;
-    monthlyExpenseAvg: number;
-    accountFilter: 'all' | AccountType;
-    setAccountFilter: (val: 'all' | AccountType) => void;
+    assets?: Asset[];
+    setAssets?: React.Dispatch<React.SetStateAction<Asset[]>>;
+    liabilities?: Liability[];
+    setLiabilities?: React.Dispatch<React.SetStateAction<Liability[]>>;
+    monthlyExpenseAvg?: number;
+    accountFilter?: 'all' | AccountType;
+    setAccountFilter?: (val: 'all' | AccountType) => void;
 }
 
-export const NetWorth: React.FC<NetWorthProps> = ({ assets, setAssets, liabilities, setLiabilities, monthlyExpenseAvg, accountFilter, setAccountFilter }) => {
+export const NetWorth: React.FC<NetWorthProps> = (props) => {
+    // Internal state management with localStorage persistence
+    const [internalAssets, setInternalAssets] = useState<Asset[]>(() => {
+        const saved = localStorage.getItem('smartfinance_assets');
+        return saved ? JSON.parse(saved) : [];
+    });
+    const [internalLiabilities, setInternalLiabilities] = useState<Liability[]>(() => {
+        const saved = localStorage.getItem('smartfinance_liabilities');
+        return saved ? JSON.parse(saved) : [];
+    });
+    const [internalAccountFilter, setInternalAccountFilter] = useState<'all' | AccountType>('all');
+
+    // Use props if provided, otherwise use internal state
+    const assets = props.assets ?? internalAssets;
+    const setAssets = props.setAssets ?? setInternalAssets;
+    const liabilities = props.liabilities ?? internalLiabilities;
+    const setLiabilities = props.setLiabilities ?? setInternalLiabilities;
+    const monthlyExpenseAvg = props.monthlyExpenseAvg ?? 10000000; // Default 10M VND
+    const accountFilter = props.accountFilter ?? internalAccountFilter;
+    const setAccountFilter = props.setAccountFilter ?? setInternalAccountFilter;
+
+    // Persist internal state to localStorage
+    React.useEffect(() => {
+        if (!props.assets) {
+            localStorage.setItem('smartfinance_assets', JSON.stringify(internalAssets));
+        }
+    }, [internalAssets, props.assets]);
+
+    React.useEffect(() => {
+        if (!props.liabilities) {
+            localStorage.setItem('smartfinance_liabilities', JSON.stringify(internalLiabilities));
+        }
+    }, [internalLiabilities, props.liabilities]);
     const [isAssetModalOpen, setIsAssetModalOpen] = useState(false);
     const [isLiabilityModalOpen, setIsLiabilityModalOpen] = useState(false);
-    
+
     // Form States for Asset
     const [assetName, setAssetName] = useState('');
     const [assetValue, setAssetValue] = useState('');
@@ -36,7 +68,7 @@ export const NetWorth: React.FC<NetWorthProps> = ({ assets, setAssets, liabiliti
     const totalAssets = filteredAssets.reduce((sum, a) => sum + a.value, 0);
     const totalLiabilities = filteredLiabilities.reduce((sum, l) => sum + l.amount, 0);
     const netWorth = totalAssets - totalLiabilities;
-    
+
     // Emergency Fund Calc (Only for Personal if filtered, or Total)
     const liquidAssets = filteredAssets.filter(a => a.type === 'cash' || a.type === 'investment').reduce((sum, a) => sum + a.value, 0);
     const monthsCovered = monthlyExpenseAvg > 0 ? (liquidAssets / monthlyExpenseAvg).toFixed(1) : '0';
@@ -149,7 +181,7 @@ export const NetWorth: React.FC<NetWorthProps> = ({ assets, setAssets, liabiliti
                 <span className="text-[11px] font-black uppercase text-luxury-gold tracking-[0.4em] ml-8 hidden md:block italic">Portfolio Wallet</span>
                 <div className="flex bg-black/40 p-2 rounded-[1.5rem] w-full md:w-auto border border-slate-800 shadow-inner">
                     {(['all', 'personal', 'business'] as const).map((type) => (
-                        <button 
+                        <button
                             key={type}
                             onClick={() => setAccountFilter(type)}
                             className={`flex-1 md:flex-none px-10 py-3 text-[10px] font-black uppercase tracking-[0.3em] rounded-2xl transition-all duration-500 ${accountFilter === type ? 'bg-luxury-gold text-black shadow-glow' : 'text-slate-500 hover:text-white'}`}
@@ -161,7 +193,7 @@ export const NetWorth: React.FC<NetWorthProps> = ({ assets, setAssets, liabiliti
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-                 {/* Net Worth Summary Card */}
+                {/* Net Worth Summary Card */}
                 <div className="bg-gradient-to-br from-slate-900 to-black p-10 rounded-[3rem] shadow-premium border border-luxury-gold/20 relative overflow-hidden group">
                     <div className="absolute -right-20 -bottom-20 opacity-[0.03] group-hover:opacity-[0.07] transition-opacity">
                         <TrendingUpIcon className="w-80 h-80" />
@@ -186,22 +218,22 @@ export const NetWorth: React.FC<NetWorthProps> = ({ assets, setAssets, liabiliti
 
                 {/* Emergency Fund Intelligence */}
                 <div className="bg-slate-900/90 p-10 rounded-[3rem] shadow-premium border border-slate-800 flex flex-col justify-between group">
-                     <div>
-                         <div className="flex items-center justify-between mb-8">
-                             <h3 className="text-[12px] font-black text-slate-500 uppercase tracking-[0.3em]">Sức mạnh thanh khoản {accountFilter === 'all' ? 'TỔNG' : accountFilter.toUpperCase()}</h3>
-                             <ShieldCheckIcon className="h-10 w-10 text-primary-500 opacity-50 group-hover:opacity-100 transition-opacity" />
-                         </div>
-                         <div className="flex items-baseline mb-6">
+                    <div>
+                        <div className="flex items-center justify-between mb-8">
+                            <h3 className="text-[12px] font-black text-slate-500 uppercase tracking-[0.3em]">Sức mạnh thanh khoản {accountFilter === 'all' ? 'TỔNG' : accountFilter.toUpperCase()}</h3>
+                            <ShieldCheckIcon className="h-10 w-10 text-primary-500 opacity-50 group-hover:opacity-100 transition-opacity" />
+                        </div>
+                        <div className="flex items-baseline mb-6">
                             <p className="text-6xl font-black text-white tracking-tighter font-mono">{monthsCovered}</p>
                             <span className="text-xl font-black text-slate-600 ml-4 uppercase tracking-widest">Tháng</span>
-                         </div>
-                         <p className="text-xs text-slate-500 font-bold leading-relaxed italic">
+                        </div>
+                        <p className="text-xs text-slate-500 font-bold leading-relaxed italic">
                             Dựa trên chi phí TB {monthlyExpenseAvg.toLocaleString('vi-VN')} ₫/tháng.
-                         </p>
-                     </div>
-                     <div className="mt-10">
+                        </p>
+                    </div>
+                    <div className="mt-10">
                         <div className="w-full bg-black/40 rounded-full h-3 border border-slate-800 p-0.5">
-                            <div className={`h-full rounded-full transition-all duration-1000 shadow-glow ${Number(monthsCovered) >= 6 ? 'bg-emerald-500' : Number(monthsCovered) >= 3 ? 'bg-luxury-gold' : 'bg-rose-500'}`} style={{ width: `${Math.min((Number(monthsCovered)/6)*100, 100)}%` }}></div>
+                            <div className={`h-full rounded-full transition-all duration-1000 shadow-glow ${Number(monthsCovered) >= 6 ? 'bg-emerald-500' : Number(monthsCovered) >= 3 ? 'bg-luxury-gold' : 'bg-rose-500'}`} style={{ width: `${Math.min((Number(monthsCovered) / 6) * 100, 100)}%` }}></div>
                         </div>
                     </div>
                 </div>
@@ -215,7 +247,7 @@ export const NetWorth: React.FC<NetWorthProps> = ({ assets, setAssets, liabiliti
                             <div className="w-2 h-2 rounded-full bg-emerald-500 mr-4 shadow-glow"></div>
                             Tài sản ({filteredAssets.length})
                         </h3>
-                        <button 
+                        <button
                             onClick={() => setIsAssetModalOpen(true)}
                             className="bg-emerald-500/10 text-emerald-400 text-[10px] font-black uppercase tracking-widest px-6 py-2.5 rounded-xl border border-emerald-500/20 hover:bg-emerald-500 hover:text-black transition-all"
                         >
@@ -257,7 +289,7 @@ export const NetWorth: React.FC<NetWorthProps> = ({ assets, setAssets, liabiliti
                             <div className="w-2 h-2 rounded-full bg-rose-500 mr-4 shadow-glow"></div>
                             Nợ ({filteredLiabilities.length})
                         </h3>
-                        <button 
+                        <button
                             onClick={() => setIsLiabilityModalOpen(true)}
                             className="bg-rose-500/10 text-rose-400 text-[10px] font-black uppercase tracking-widest px-6 py-2.5 rounded-xl border border-rose-500/20 hover:bg-rose-500 hover:text-white transition-all"
                         >

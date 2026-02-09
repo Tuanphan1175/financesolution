@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
-import { CheckIcon, SparklesIcon, ArrowRightIcon } from './Icons'; // Giả định các icon này đã có
-import { XIcon } from './Icons'; // Thêm dòng này
+import { CheckIcon, SparklesIcon, ArrowRightIcon, XIcon } from './Icons';
 
 export const UpgradePlan: React.FC = () => {
   const [isAnnual, setIsAnnual] = useState(false);
@@ -34,17 +33,15 @@ export const UpgradePlan: React.FC = () => {
         <div className="relative flex p-1 bg-gray-100 dark:bg-gray-700 rounded-full">
           <button
             onClick={() => { setIsAnnual(false); setShowPaymentInfo(false); }} // Reset payment info khi đổi gói
-            className={`px-6 py-2 rounded-full text-sm font-semibold transition-all duration-300 ${
-              !isAnnual ? 'bg-primary-600 text-white shadow-md' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
-            }`}
+            className={`px-6 py-2 rounded-full text-sm font-semibold transition-all duration-300 ${!isAnnual ? 'bg-primary-600 text-white shadow-md' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+              }`}
           >
             Hàng tháng
           </button>
           <button
             onClick={() => { setIsAnnual(true); setShowPaymentInfo(false); }} // Reset payment info khi đổi gói
-            className={`px-6 py-2 rounded-full text-sm font-semibold transition-all duration-300 ${
-              isAnnual ? 'bg-primary-600 text-white shadow-md' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
-            }`}
+            className={`px-6 py-2 rounded-full text-sm font-semibold transition-all duration-300 ${isAnnual ? 'bg-primary-600 text-white shadow-md' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+              }`}
           >
             Hàng năm
           </button>
@@ -60,8 +57,8 @@ export const UpgradePlan: React.FC = () => {
           <p className="text-gray-700 dark:text-gray-300 mb-4 text-lg">Chủ tài khoản: <span className="font-bold">{accountName}</span></p>
           <p className="text-gray-700 dark:text-gray-300 mb-4 text-lg">Số tiền: <span className="font-bold">{amount.toLocaleString('vi-VN')} VNĐ</span></p>
           <p className="text-gray-700 dark:text-gray-300 mb-6 text-lg">Nội dung: <span className="font-bold">{addInfo}</span></p>
-          
-          <button 
+
+          <button
             onClick={() => setShowPaymentInfo(false)} // Đóng thông tin thanh toán
             className="mt-6 px-8 py-3 bg-primary-600 text-white font-bold rounded-xl hover:bg-primary-700 transition-colors shadow-lg"
           >
@@ -74,7 +71,7 @@ export const UpgradePlan: React.FC = () => {
           <div className="flex flex-col p-8 rounded-3xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 shadow-md">
             <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Nhận thức</h3>
             <p className="text-gray-500 dark:text-gray-400 mb-6">Hiểu rõ tình hình tài chính của bạn.</p>
-            
+
             <div className="text-4xl font-extrabold text-gray-900 dark:text-white mb-6">
               0 <span className="text-xl font-semibold">VNĐ</span>
             </div>
@@ -109,7 +106,7 @@ export const UpgradePlan: React.FC = () => {
             </div>
             <h3 className="text-2xl font-bold text-primary-600 dark:text-luxury-gold mb-4">Kỷ luật</h3>
             <p className="text-gray-600 dark:text-gray-300 mb-6">Đạt được tự do tài chính với sự kỷ luật.</p>
-            
+
             <div className="text-4xl font-extrabold text-gray-900 dark:text-white mb-2">
               {isAnnual ? premiumAnnualPricePerMonthDisplay.toLocaleString('vi-VN') : premiumMonthlyPrice.toLocaleString('vi-VN')} <span className="text-xl font-semibold">VNĐ</span>
             </div>
@@ -135,7 +132,7 @@ export const UpgradePlan: React.FC = () => {
               </li>
             </ul>
 
-            <button 
+            <button
               onClick={handleUpgradeClick}
               className="w-full py-3 bg-primary-600 dark:bg-luxury-gold text-white dark:text-black font-bold rounded-xl hover:bg-primary-700 dark:hover:bg-luxury-gold/90 transition-colors shadow-lg shadow-primary-900/20 dark:shadow-luxury-gold/30 flex items-center justify-center"
             >

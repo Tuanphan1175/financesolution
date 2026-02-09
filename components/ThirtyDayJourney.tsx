@@ -6,11 +6,11 @@ import { CheckCircleIcon, LockClosedIcon, CalendarIcon, FlagIcon, XIcon, Trendin
 import { PyramidLevelConfig, PYRAMID_LEVELS } from '../lib/pyramidLogic';
 
 interface ThirtyDayJourneyProps {
-    progress: JourneyProgress;
-    onCompleteDay: (day: number, note?: string) => void;
-    currentLevel: PyramidLevelConfig;
-    targetLevelId: number;
-    onSetTarget: (id: number) => void;
+    progress?: JourneyProgress;
+    onCompleteDay?: (day: number, note?: string) => void;
+    currentLevel?: PyramidLevelConfig;
+    targetLevelId?: number;
+    onSetTarget?: (id: number) => void;
 }
 
 const PILLAR_ICONS: Record<TaskPillar, React.FC<any>> = {
@@ -79,17 +79,17 @@ const customizeTask = (task: JourneyTask, currentLevelId: number, targetLevelId:
     return { ...task, action: customAction, coachMessage: customMsg, title: customTitle };
 };
 
-const WeekSection: React.FC<{ 
-    week: number; 
-    title: string; 
-    days: JourneyTask[]; 
-    progress: JourneyProgress; 
-    onSelectDay: (day: JourneyTask) => void; 
+const WeekSection: React.FC<{
+    week: number;
+    title: string;
+    days: JourneyTask[];
+    progress: JourneyProgress;
+    onSelectDay: (day: JourneyTask) => void;
     firstIncompleteDay: number;
     currentLevelId: number;
     targetLevelId: number;
 }> = ({ week, title, days, progress, onSelectDay, firstIncompleteDay, currentLevelId, targetLevelId }) => {
-    
+
     const weekColor = [
         'border-teal-500 text-teal-600',
         'border-blue-500 text-blue-600',
@@ -121,10 +121,10 @@ const WeekSection: React.FC<{
                             disabled={isLocked}
                             className={`
                                 relative p-5 rounded-2xl flex flex-col items-center justify-center text-center transition-all duration-300 min-h-[140px] group
-                                ${isCompleted 
-                                    ? 'bg-emerald-50 dark:bg-emerald-900/20 border-2 border-emerald-500' 
-                                    : isLocked 
-                                        ? 'bg-gray-100 dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 opacity-60 cursor-not-allowed' 
+                                ${isCompleted
+                                    ? 'bg-emerald-50 dark:bg-emerald-900/20 border-2 border-emerald-500'
+                                    : isLocked
+                                        ? 'bg-gray-100 dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 opacity-60 cursor-not-allowed'
                                         : isCurrent
                                             ? `bg-white dark:bg-gray-700 border-2 ${weekColor.split(' ')[0]} shadow-xl ring-4 ring-offset-2 ring-opacity-20 ring-current transform scale-105 z-10`
                                             : 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:border-primary-400 hover:shadow-lg hover:-translate-y-1'
@@ -140,7 +140,7 @@ const WeekSection: React.FC<{
                                     <CheckCircleIcon className="h-5 w-5 text-emerald-600" />
                                 </div>
                             )}
-                            
+
                             {isLocked ? (
                                 <LockClosedIcon className="h-8 w-8 text-gray-400" />
                             ) : (
@@ -151,7 +151,7 @@ const WeekSection: React.FC<{
                                     </span>
                                 </>
                             )}
-                            
+
                             {isCurrent && (
                                 <span className="absolute -top-3 bg-rose-500 text-white text-[9px] uppercase font-black px-3 py-1 rounded-full shadow-lg animate-bounce">
                                     Hôm nay
@@ -165,13 +165,19 @@ const WeekSection: React.FC<{
     );
 };
 
-export const ThirtyDayJourney: React.FC<ThirtyDayJourneyProps> = ({ progress, onCompleteDay, currentLevel, targetLevelId, onSetTarget }) => {
+export const ThirtyDayJourney: React.FC<ThirtyDayJourneyProps> = (props) => {
+    const progress = props.progress ?? {};
+    const onCompleteDay = props.onCompleteDay ?? (() => { });
+    const currentLevel = props.currentLevel ?? PYRAMID_LEVELS[0]; // Default to first level if not provided
+    const targetLevelId = props.targetLevelId ?? currentLevel.id; // Default to current level if not provided
+    const onSetTarget = props.onSetTarget ?? (() => { });
+
     const [selectedTask, setSelectedTask] = useState<JourneyTask | null>(null);
     const [note, setNote] = useState('');
 
     const completedCount = Object.values(progress).filter((p: any) => p.completed).length;
     const progressPercentage = (completedCount / 30) * 100;
-    
+
     const firstIncompleteDay = useMemo(() => {
         for (let i = 1; i <= 30; i++) {
             if (!progress[i]?.completed) return i;
@@ -191,9 +197,9 @@ export const ThirtyDayJourney: React.FC<ThirtyDayJourneyProps> = ({ progress, on
         }
     };
 
-    const targetLevel = useMemo(() => 
+    const targetLevel = useMemo(() =>
         PYRAMID_LEVELS.find(l => l.id === targetLevelId) || currentLevel,
-    [targetLevelId, currentLevel]);
+        [targetLevelId, currentLevel]);
 
     const weekTitles = ["Nhận diện & Tỉnh thức", "Kỷ luật & Kiểm soát", "Củng cố nền tảng", "Định hình thói quen mới"];
 
@@ -211,12 +217,12 @@ export const ThirtyDayJourney: React.FC<ThirtyDayJourneyProps> = ({ progress, on
                         <p className="text-xs text-gray-500 mt-1 font-medium">{currentLevel.description.split('.')[0]}.</p>
                     </div>
                 </div>
-                
+
                 <div className="flex-1 flex items-center gap-6 max-w-xl w-full">
                     <div className="text-primary-500 text-3xl font-black opacity-30 animate-pulse">≫</div>
                     <div className="flex-1">
                         <label className="text-[10px] font-black uppercase text-gray-400 tracking-[0.2em] block mb-3">Mục tiêu thăng hạng 30 ngày</label>
-                        <select 
+                        <select
                             value={targetLevelId}
                             onChange={(e) => onSetTarget(parseInt(e.target.value))}
                             className="w-full p-3.5 bg-gray-50 dark:bg-gray-700 border-2 border-gray-100 dark:border-gray-600 rounded-2xl text-sm font-black focus:ring-4 focus:ring-primary-500/20 focus:border-primary-500 outline-none transition-all appearance-none cursor-pointer"
@@ -229,7 +235,7 @@ export const ThirtyDayJourney: React.FC<ThirtyDayJourneyProps> = ({ progress, on
                         </select>
                     </div>
                     <div className="p-5 bg-primary-50 dark:bg-primary-900/30 rounded-2xl text-primary-600 shadow-inner">
-                         <SparklesIcon className="w-10 h-10" />
+                        <SparklesIcon className="w-10 h-10" />
                     </div>
                 </div>
             </div>
@@ -246,8 +252,8 @@ export const ThirtyDayJourney: React.FC<ThirtyDayJourneyProps> = ({ progress, on
                         </div>
                         <h2 className="text-4xl font-black mb-4 uppercase tracking-tighter italic">Hành Trình Tỉnh Thức</h2>
                         <p className="text-slate-400 max-w-2xl leading-relaxed font-medium">
-                            Nhiệm vụ của bạn đã được Coach Tuấn Dr tái cấu trúc dựa trên mục tiêu thăng hạng lên 
-                            <span className="text-white font-black mx-1">Tầng {targetLevel.id} - {targetLevel.name}</span>. 
+                            Nhiệm vụ của bạn đã được Coach Tuấn Dr tái cấu trúc dựa trên mục tiêu thăng hạng lên
+                            <span className="text-white font-black mx-1">Tầng {targetLevel.id} - {targetLevel.name}</span>.
                             Mỗi ngày hoàn thành là một viên gạch xây nên sự tự do.
                         </p>
                     </div>
@@ -259,8 +265,8 @@ export const ThirtyDayJourney: React.FC<ThirtyDayJourneyProps> = ({ progress, on
 
                 <div className="mt-12 relative">
                     <div className="w-full bg-slate-800 rounded-full h-4 shadow-inner overflow-hidden">
-                        <div 
-                            className="bg-gradient-to-r from-primary-600 to-teal-400 h-full rounded-full transition-all duration-1000 ease-out shadow-[0_0_20px_rgba(20,184,166,0.5)]" 
+                        <div
+                            className="bg-gradient-to-r from-primary-600 to-teal-400 h-full rounded-full transition-all duration-1000 ease-out shadow-[0_0_20px_rgba(20,184,166,0.5)]"
                             style={{ width: `${progressPercentage}%` }}
                         ></div>
                     </div>
@@ -274,10 +280,10 @@ export const ThirtyDayJourney: React.FC<ThirtyDayJourneyProps> = ({ progress, on
 
             <div className="space-y-4">
                 {[1, 2, 3, 4].map(week => (
-                    <WeekSection 
+                    <WeekSection
                         key={week}
                         week={week}
-                        title={weekTitles[week-1]}
+                        title={weekTitles[week - 1]}
                         days={JOURNEY_30_DAYS.filter(t => t.week === week)}
                         progress={progress}
                         onSelectDay={handleOpenTask}
@@ -292,7 +298,7 @@ export const ThirtyDayJourney: React.FC<ThirtyDayJourneyProps> = ({ progress, on
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/80 backdrop-blur-md" onClick={() => setSelectedTask(null)}>
                     <div className="bg-white dark:bg-gray-800 w-full max-w-xl rounded-[2.5rem] shadow-2xl overflow-hidden transform transition-all border border-gray-100 dark:border-gray-700" onClick={e => e.stopPropagation()}>
                         <div className="h-3 bg-gradient-to-r from-primary-500 to-teal-500 w-full"></div>
-                        
+
                         <div className="p-8 md:p-12">
                             <div className="flex justify-between items-start mb-10">
                                 <div className="flex items-center gap-5">
@@ -338,7 +344,7 @@ export const ThirtyDayJourney: React.FC<ThirtyDayJourneyProps> = ({ progress, on
 
                                 <div>
                                     <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3 ml-2">Ghi chú hành trình</label>
-                                    <textarea 
+                                    <textarea
                                         value={note}
                                         onChange={(e) => setNote(e.target.value)}
                                         placeholder="Cảm xúc hoặc kết quả cụ thể của bạn..."
@@ -349,13 +355,12 @@ export const ThirtyDayJourney: React.FC<ThirtyDayJourneyProps> = ({ progress, on
                             </div>
 
                             <div className="mt-12">
-                                <button 
+                                <button
                                     onClick={handleComplete}
-                                    className={`w-full py-5 rounded-3xl font-black text-white text-lg transition-all active:scale-95 flex justify-center items-center shadow-2xl uppercase tracking-[0.2em] ${
-                                        progress[selectedTask.day]?.completed 
-                                        ? 'bg-emerald-500 hover:bg-emerald-600 shadow-emerald-500/20' 
+                                    className={`w-full py-5 rounded-3xl font-black text-white text-lg transition-all active:scale-95 flex justify-center items-center shadow-2xl uppercase tracking-[0.2em] ${progress[selectedTask.day]?.completed
+                                        ? 'bg-emerald-500 hover:bg-emerald-600 shadow-emerald-500/20'
                                         : 'bg-slate-900 hover:bg-black shadow-slate-900/40'
-                                    }`}
+                                        }`}
                                 >
                                     {progress[selectedTask.day]?.completed ? (
                                         <>

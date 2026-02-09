@@ -4,11 +4,29 @@ import { ShieldCheckIcon, TrendingUpIcon, ExclamationIcon, CheckCircleIcon, Spar
 import { PYRAMID_LEVELS, PyramidStatus } from '../lib/pyramidLogic';
 
 interface Props {
-    pyramidStatus: PyramidStatus;
+    pyramidStatus?: PyramidStatus;
 }
 
-export const Journey: React.FC<Props> = ({ pyramidStatus }) => {
+export const Journey: React.FC<Props> = (props) => {
     const [selectedLevelId, setSelectedLevelId] = useState<number | null>(null);
+
+    // Default fallback if pyramidStatus not provided
+    const defaultStatus: PyramidStatus = {
+        currentLevel: PYRAMID_LEVELS[0],
+        metrics: {
+            avgIncome: 0,
+            avgExpense: 0,
+            emergencyFundMonths: 0,
+            passiveIncome: 0,
+            netWorth: 0,
+            complianceScore: 0
+        },
+        reasons: ["Bắt đầu hành trình tài chính của bạn"],
+        nextLevelConditions: ["Ghi chép giao dịch đầu tiên"],
+        actions7d: ["Bắt đầu quan sát dòng tiền"]
+    };
+
+    const pyramidStatus = props.pyramidStatus ?? defaultStatus;
     const { currentLevel, metrics, reasons, nextLevelConditions, actions7d } = pyramidStatus;
 
     const [checkedConditions, setCheckedConditions] = useState<Record<string, boolean>>(() => {
@@ -49,7 +67,7 @@ export const Journey: React.FC<Props> = ({ pyramidStatus }) => {
                         const isCurrent = level.id === currentLevel.id;
                         const isSelected = level.id === selectedLevelId;
                         const isPassed = level.id < currentLevel.id;
-                        
+
                         const widthPct = 100 - (level.id * 8);
 
                         return (
@@ -59,10 +77,10 @@ export const Journey: React.FC<Props> = ({ pyramidStatus }) => {
                                 style={{ width: `${widthPct}%` }}
                                 className={`
                                     group relative h-14 md:h-16 flex items-center justify-center transition-all duration-500 rounded-xl overflow-hidden
-                                    ${isCurrent 
-                                        ? `bg-gradient-to-r ${level.color} text-white shadow-xl scale-110 z-20 border-2 border-white dark:border-gray-800` 
-                                        : isPassed 
-                                            ? `bg-gradient-to-r ${level.color} text-white opacity-40 hover:opacity-100` 
+                                    ${isCurrent
+                                        ? `bg-gradient-to-r ${level.color} text-white shadow-xl scale-110 z-20 border-2 border-white dark:border-gray-800`
+                                        : isPassed
+                                            ? `bg-gradient-to-r ${level.color} text-white opacity-40 hover:opacity-100`
                                             : 'bg-gray-100 dark:bg-gray-700/50 text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700'
                                     }
                                     ${isSelected ? 'ring-4 ring-primary-400 ring-offset-2 dark:ring-offset-gray-900' : ''}
@@ -71,7 +89,7 @@ export const Journey: React.FC<Props> = ({ pyramidStatus }) => {
                                 <span className={`text-xs md:text-sm font-black uppercase tracking-widest ${isCurrent ? 'opacity-100' : 'opacity-70 group-hover:opacity-100'}`}>
                                     {level.id}. {level.name}
                                 </span>
-                                
+
                                 {isCurrent && (
                                     <div className="absolute left-4 animate-pulse">
                                         <div className="w-2 h-2 bg-white rounded-full"></div>
@@ -81,7 +99,7 @@ export const Journey: React.FC<Props> = ({ pyramidStatus }) => {
                         );
                     })}
                 </div>
-                
+
                 <div className="mt-12 flex items-center gap-3 p-4 bg-gray-50 dark:bg-gray-900/40 rounded-2xl w-full border border-dashed border-gray-300 dark:border-gray-700">
                     <div className="p-2 bg-primary-100 dark:bg-primary-900/30 rounded-lg">
                         <SparklesIcon className="w-5 h-5 text-primary-600" />
@@ -94,7 +112,7 @@ export const Journey: React.FC<Props> = ({ pyramidStatus }) => {
 
             {/* Right Column: Detailed Intelligence */}
             <div className="lg:col-span-7 space-y-6">
-                
+
                 {/* 1. Header Level Card */}
                 <div className={`relative overflow-hidden p-8 rounded-3xl shadow-lg border transition-all duration-500 ${displayLevel.bg} ${displayLevel.id === currentLevel.id ? 'border-primary-200 dark:border-primary-900/50' : 'border-gray-200 dark:border-gray-700'}`}>
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10">
@@ -117,7 +135,7 @@ export const Journey: React.FC<Props> = ({ pyramidStatus }) => {
                             <div className={`text-sm font-bold ${displayLevel.textColor}`}>{displayLevel.criteria}</div>
                         </div>
                     </div>
-                    
+
                     <p className={`mt-6 text-sm leading-relaxed opacity-80 ${displayLevel.textColor}`}>
                         {displayLevel.description}. Ở tầng này, mục tiêu cốt lõi của bạn là {nextLevelConditions[0].toLowerCase()}.
                     </p>
@@ -126,21 +144,21 @@ export const Journey: React.FC<Props> = ({ pyramidStatus }) => {
                 {/* 2. Real-time Indicators */}
                 {(selectedLevelId === null || selectedLevelId === currentLevel.id) && (
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <IndicatorCard 
-                            label="Cashflow TB" 
-                            value={formatVND(metrics.avgIncome - metrics.avgExpense)} 
+                        <IndicatorCard
+                            label="Cashflow TB"
+                            value={formatVND(metrics.avgIncome - metrics.avgExpense)}
                             sub={metrics.avgIncome > metrics.avgExpense ? "Dương" : "Âm"}
                             status={metrics.avgIncome > metrics.avgExpense ? "success" : "danger"}
                         />
-                        <IndicatorCard 
-                            label="Quỹ Dự Phòng" 
-                            value={`${metrics.emergencyFundMonths.toFixed(1)} Tháng`} 
+                        <IndicatorCard
+                            label="Quỹ Dự Phòng"
+                            value={`${metrics.emergencyFundMonths.toFixed(1)} Tháng`}
                             sub={`Tiêu chuẩn: 6.0`}
                             status={metrics.emergencyFundMonths >= 6 ? "success" : metrics.emergencyFundMonths >= 3 ? "warning" : "danger"}
                         />
-                        <IndicatorCard 
-                            label="Điểm Kỷ Luật" 
-                            value={`${metrics.complianceScore}%`} 
+                        <IndicatorCard
+                            label="Điểm Kỷ Luật"
+                            value={`${metrics.complianceScore}%`}
                             sub="11 Nguyên tắc vàng"
                             status={metrics.complianceScore >= 80 ? "success" : metrics.complianceScore >= 50 ? "warning" : "danger"}
                         />
@@ -162,19 +180,19 @@ export const Journey: React.FC<Props> = ({ pyramidStatus }) => {
                                 </li>
                             ))}
                         </ul>
-                        
+
                         <div className="pt-6 border-t border-gray-100 dark:border-gray-700">
-                             <div className="flex items-center justify-between mb-4">
+                            <div className="flex items-center justify-between mb-4">
                                 <h4 className="text-sm font-black uppercase text-gray-800 dark:text-white">Lộ trình thăng hạng</h4>
                                 <span className={`text-[10px] font-black px-2 py-0.5 rounded-full ${nextLevelProgress === 100 ? 'bg-emerald-100 text-emerald-600' : 'bg-primary-100 text-primary-600'}`}>
                                     {nextLevelProgress}%
                                 </span>
-                             </div>
-                             
-                             <div className="space-y-3">
+                            </div>
+
+                            <div className="space-y-3">
                                 {nextLevelConditions.map((condition, i) => (
-                                    <button 
-                                        key={i} 
+                                    <button
+                                        key={i}
                                         onClick={() => toggleCondition(condition)}
                                         className="w-full flex items-center group text-left"
                                     >
@@ -186,14 +204,14 @@ export const Journey: React.FC<Props> = ({ pyramidStatus }) => {
                                         </span>
                                     </button>
                                 ))}
-                             </div>
+                            </div>
 
-                             <div className="mt-6 w-full bg-gray-100 dark:bg-gray-700 rounded-full h-1.5 overflow-hidden">
-                                <div 
-                                    className="bg-emerald-500 h-full transition-all duration-1000" 
+                            <div className="mt-6 w-full bg-gray-100 dark:bg-gray-700 rounded-full h-1.5 overflow-hidden">
+                                <div
+                                    className="bg-emerald-500 h-full transition-all duration-1000"
                                     style={{ width: `${nextLevelProgress}%` }}
                                 ></div>
-                             </div>
+                            </div>
                         </div>
                     </div>
 
