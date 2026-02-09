@@ -23,7 +23,7 @@ import {
 import { logout } from "./lib/logout";
 
 // ================= SUPABASE PLAN (NEW) =================
-import { loadMyPlan, subscribeAuth } from "./lib/supabaseClient";
+import { supabase, getUserSafe, loadMyPlan, subscribeAuth } from "./lib/supabaseClient";
 
 // ================= VIEWS (CONTENT PANELS) =================
 import Dashboard from "./components/Dashboard";
@@ -435,8 +435,39 @@ export default function App() {
 
   useEffect(() => {
     refreshPlan();
-    const unsub = subscribeAuth(() => refreshPlan());
-    return () => unsub();
+
+    // Subscribe to auth changes (login/logout)
+    const unsubAuth = subscribeAuth(() => refreshPlan());
+
+    // ✅ Real-time Profile Listener (NEW)
+    // Automatically re-fetch plan when the profile row is updated in Supabase dashboard
+    let profileSub: any = null;
+
+    getUserSafe().then(user => {
+      if (user) {
+        profileSub = supabase
+          .channel(`profile-sync-${user.id}`)
+          .on(
+            'postgres_changes',
+            {
+              event: 'UPDATE',
+              schema: 'public',
+              table: 'profiles',
+              filter: `id=eq.${user.id}`,
+            },
+            () => {
+              // Row updated -> refresh app-level isPremium
+              refreshPlan();
+            }
+          )
+          .subscribe();
+      }
+    });
+
+    return () => {
+      unsubAuth();
+      if (profileSub) supabase.removeChannel(profileSub);
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

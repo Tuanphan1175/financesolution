@@ -36,7 +36,7 @@ export const supabase = createClient(supabaseUrl ?? "", supabaseAnonKey ?? "", {
 /* =========================
    TYPES
 ========================= */
-export type Plan = "free" | "premium";
+export type Plan = "free" | "premium" | "vip_monthly" | "vip_yearly";
 
 export type Profile = {
   id: string;
@@ -106,7 +106,13 @@ export async function getMyProfile(): Promise<Profile | null> {
 
 export function isPremiumActive(profile: Pick<Profile, "plan" | "premium_expires_at"> | null): boolean {
   if (!profile) return false;
-  if (profile.plan !== "premium") return false;
+
+  // Chấp nhận tất cả các plan không phải là 'free' là có tính chất Premium
+  const isPremiumPlan = profile.plan === "premium" ||
+    profile.plan === "vip_monthly" ||
+    profile.plan === "vip_yearly";
+
+  if (!isPremiumPlan) return false;
 
   // Nếu không set expires -> coi như premium vô thời hạn
   if (!profile.premium_expires_at) return true;

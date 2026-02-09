@@ -113,7 +113,25 @@ const BudgetCard: React.FC<{
     );
 };
 
-export const Budgets: React.FC<BudgetsProps> = ({ categories, transactions, budgets, setBudgets }) => {
+export const Budgets: React.FC<BudgetsProps> = (props) => {
+    // Internal state management if props not provided
+    const [internalBudgets, setInternalBudgets] = useState<Budget[]>(() => {
+        const saved = localStorage.getItem('smartfinance_budgets');
+        return saved ? JSON.parse(saved) : [];
+    });
+
+    // Sync internal state to localStorage
+    React.useEffect(() => {
+        if (!props.budgets) {
+            localStorage.setItem('smartfinance_budgets', JSON.stringify(internalBudgets));
+        }
+    }, [internalBudgets, props.budgets]);
+
+    const categories = props.categories ?? [];
+    const transactions = props.transactions ?? [];
+    const budgets = props.budgets ?? internalBudgets;
+    const setBudgets = props.setBudgets ?? setInternalBudgets;
+
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingBudget, setEditingBudget] = useState<Budget | null>(null);
 

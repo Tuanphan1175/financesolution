@@ -12,7 +12,9 @@ export const GoldenRules: React.FC<GoldenRulesProps> = (props) => {
     const rules = props.rules ?? [];
     const onToggleRule = props.onToggleRule ?? (() => { });
     const compliantCount = rules.filter(r => r.isCompliant).length;
-    const score = Math.round((compliantCount / rules.length) * 100);
+    const score = rules.length > 0
+        ? Math.round((compliantCount / rules.length) * 100)
+        : 0;
 
     return (
         <div className="space-y-6">
