@@ -162,6 +162,7 @@ export interface GoldenRule {
   title?: string;
 
   description: string;
+  content?: string;
 
   /**
    * allow multiple flags (legacy toggles)
@@ -214,18 +215,18 @@ export interface JourneyDay {
 
 export type JourneyProgress =
   | Record<
-      number,
-      {
-        completed: boolean;
-        note?: string;
-        completedAt?: string;
-      }
-    >
+    number,
+    {
+      completed: boolean;
+      note?: string;
+      completedAt?: string;
+    }
+  >
   | {
-      completedTaskIds: string[];
-      completedDays?: number[];
-      currentDay?: number;
-    };
+    completedTaskIds: string[];
+    completedDays?: number[];
+    currentDay?: number;
+  };
 
 // =========================
 // OPTIONAL / UI HELPERS

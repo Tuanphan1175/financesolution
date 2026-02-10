@@ -32,6 +32,13 @@ export type InvestmentLadderStep = {
   redFlags: string[];
 };
 
+export type Principle = {
+  id: number;
+  title: string;
+  description: string;
+  actionableTip: string;
+};
+
 export const FIN_PLAYBOOK = {
   jars: {
     UNDER_500M_YEAR: [
@@ -118,4 +125,86 @@ export const FIN_PLAYBOOK = {
       redFlags: ["Tài chính mập mờ", "Thiếu sự minh bạch với cộng sự"],
     },
   ] as InvestmentLadderStep[],
+  // =================================================================
+  // 11 NGUYÊN TẮC VÀNG TRONG QUẢN LÝ TÀI CHÍNH (SUMMARY)
+  // 1. Chỉ mua thứ mình CẦN, không mua thứ mình MUỐN.
+  // 2. Tập trung vào TÀI SẢN, hạn chế TIÊU SẢN.
+  // 3. Trả cho bản thân trước (Pay yourself first).
+  // 4. Tiết kiệm trước, chi tiêu sau.
+  // 5. Thu nhập > Chi tiêu (Làm việc trên chuẩn, sống dưới chuẩn).
+  // 6. Luôn có quỹ dự phòng (6-12 tháng).
+  // 7. Dùng đòn bẩy thông minh (Nợ tốt vs Nợ xấu).
+  // 8. Để tiền sinh ra tiền (Lãi kép).
+  // 9. Đa dạng hóa nhưng không giàn trải.
+  // 10. Học trước khi đầu tư (Kiến thức đến đâu tiền đến đó).
+  // 11. Tách bạch tiền cá nhân và kinh doanh.
+  // =================================================================
+  principles: [
+    {
+      id: 1,
+      title: "Chỉ mua thứ mình cần, không mua thứ mình muốn",
+      description: "Phân biệt rõ nhu cầu thiết yếu và ham muốn nhất thời. Ham muốn chỉ mang lại cảm xúc ngắn hạn.",
+      actionableTip: "Trước khi mua món đồ > 1 triệu, hãy chờ 24h. Niệm thần chú: 'Mình có thực sự CẦN nó không?'",
+    },
+    {
+      id: 2,
+      title: "Tập trung vào tài sản, hạn chế tiêu sản",
+      description: "Tài sản càng để càng tăng giá hoặc đẻ ra tiền. Tiêu sản mua về là mất giá và tốn thêm chi phí nuôi.",
+      actionableTip: "Đầu tư vào Trí tuệ & Sức khỏe là tài sản vô giá. Xe cộ đi chơi là tiêu sản.",
+    },
+    {
+      id: 3,
+      title: "Trả cho bản thân trước",
+      description: "Khi có thu nhập, người đầu tiên được nhận tiền là 'Quỹ tự do tài chính' của bạn, không phải chủ nợ hay hóa đơn.",
+      actionableTip: "Trích ngay 10% thu nhập vào tài khoản đầu tư riêng biệt ngay khi nhận lương.",
+    },
+    {
+      id: 4,
+      title: "Tiết kiệm trước, chi tiêu sau",
+      description: "Không phải tiêu dư rồi mới tiết kiệm. Công thức chuẩn: Thu nhập - Tiết kiệm = Chi tiêu.",
+      actionableTip: "Tự động hóa việc chuyển tiền sang tài khoản tiết kiệm.",
+    },
+    {
+      id: 5,
+      title: "Thu nhập > Chi tiêu (Luật sống còn)",
+      description: "Tư duy: 'Làm việc trên chuẩn, sống dưới chuẩn'. Nỗ lực kiếm nhiều hơn nhu cầu.",
+      actionableTip: "Dành 90% thời gian sống dưới mức khả năng, nhưng 10% hãy tự thưởng sang trọng để nuôi dưỡng động lực.",
+    },
+    {
+      id: 6,
+      title: "Luôn có quỹ dự phòng",
+      description: "Chiếc phao cứu sinh khi biến cố xảy ra (thất nghiệp, ốm đau, dịch bệnh).",
+      actionableTip: "Tích lũy đủ 6-12 tháng chi phí sinh hoạt. Với doanh nghiệp là 1-2 năm.",
+    },
+    {
+      id: 7,
+      title: "Dùng đòn bẩy thông minh (Nợ tốt vs Nợ xấu)",
+      description: "Nợ tốt giúp mua tài sản sinh lời > lãi vay. Nợ xấu là vay tiêu xài.",
+      actionableTip: "Vay mua BĐS dòng tiền là tốt. Vay mua điện thoại là xấu. Tỷ lệ vay an toàn < 50%.",
+    },
+    {
+      id: 8,
+      title: "Để tiền sinh ra tiền (Lãi kép)",
+      description: "Đừng để tiền chết. Hãy biến tiền thành nô lệ làm việc cho mình qua đầu tư.",
+      actionableTip: "Tái đầu tư toàn bộ lãi. Đừng ăn vào vốn lẫn lãi.",
+    },
+    {
+      id: 9,
+      title: "Đa dạng hóa không giàn trải",
+      description: "Không bỏ trứng vào một giỏ, nhưng cũng không rải thóc nơi mình không hiểu.",
+      actionableTip: "Chỉ đầu tư vào lĩnh vực mình có kiến thức sâu. Không ủy thác mù quáng.",
+    },
+    {
+      id: 10,
+      title: "Học trước khi đầu tư",
+      description: "Kiến thức đến đâu tiền đến đó. Mất tiền cho học phí rẻ hơn mất tiền cho thị trường.",
+      actionableTip: "Công thức: Xem 20, Chọn 10, Quyết 3, Chốt 1.",
+    },
+    {
+      id: 11,
+      title: "Tách bạch tiền cá nhân và kinh doanh",
+      description: "Sự minh bạch là nền tảng quản trị. Lẫn lộn sẽ dẫn đến 'ăn vào vốn'.",
+      actionableTip: "Mở 2 tài khoản ngân hàng riêng biệt. Tự trả lương cho mình dù là chủ.",
+    },
+  ] as Principle[],
 } as const;
