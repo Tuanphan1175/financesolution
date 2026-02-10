@@ -3,6 +3,8 @@ import ReactDOM from "react-dom/client";
 
 import App from "./App";
 import AuthGate from "./AuthGate";
+import { SpeedInsights } from "@vercel/speed-insights/react";
+import { Analytics } from "@vercel/analytics/react";
 
 // ====== LẤY ROOT ELEMENT ======
 const container = document.getElementById("root");
@@ -20,5 +22,7 @@ root.render(
     <AuthGate>
       <App />
     </AuthGate>
+    <SpeedInsights />
+    <Analytics />
   </React.StrictMode>
 );
