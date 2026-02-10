@@ -41,6 +41,7 @@ import { AICoach } from "./components/AICoach";
 import { CategorySettings } from "./components/CategorySettings";
 import { WealthPlaybookPanel } from "./components/WealthPlaybookPanel";
 import { UpgradePlan } from "./components/UpgradePlan";
+import { SpeedInsights } from "@vercel/speed-insights/react";
 
 // ================= TYPES =================
 interface SidebarProps {
@@ -696,6 +697,7 @@ export default function App() {
           setCurrentView("upgrade-plan");
         }}
       />
+      <SpeedInsights />
     </div>
   );
 }
