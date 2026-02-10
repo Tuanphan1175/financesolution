@@ -112,11 +112,11 @@ export const GoldenRules: React.FC<GoldenRulesProps> = (props) => {
                         className={`p-6 rounded-[2rem] border transition-all duration-500 hover:border-luxury-gold/50 cursor-pointer shadow-premium relative group
                         ${rule.isCompliant
                                 ? 'bg-slate-900/60 border-emerald-500/20'
-                                : 'bg-slate-900 opacity-60 border-slate-800'}`}
+                                : 'bg-slate-950 border-slate-800/50'}`}
                         onClick={() => setSelectedRule(rule)}
                     >
                         <div className="flex justify-between items-start mb-4">
-                            <h4 className={`font-black text-lg tracking-tight ${rule.isCompliant ? 'text-white' : 'text-slate-500'}`}>
+                            <h4 className={`font-black text-lg tracking-tight ${rule.isCompliant ? 'text-white' : 'text-slate-200'}`}>
                                 {rule.name || rule.title}
                             </h4>
                             <div
@@ -132,11 +132,11 @@ export const GoldenRules: React.FC<GoldenRulesProps> = (props) => {
                                 )}
                             </div>
                         </div>
-                        <p className={`text-sm leading-relaxed font-medium line-clamp-3 ${rule.isCompliant ? 'text-slate-400' : 'text-slate-600'}`}>
+                        <p className={`text-sm leading-relaxed font-medium line-clamp-3 ${rule.isCompliant ? 'text-slate-300' : 'text-slate-400'}`}>
                             {rule.description}
                         </p>
                         <div className="mt-5 flex items-center justify-between">
-                            <span className="text-[9px] font-black uppercase tracking-[0.2em] bg-black/40 text-slate-500 px-3 py-1.5 rounded-full border border-white/5">
+                            <span className="text-[9px] font-black uppercase tracking-[0.2em] bg-black/60 text-slate-300 px-3 py-1.5 rounded-full border border-white/10">
                                 Trọng số: {rule.scoreWeight} điểm
                             </span>
                             {rule.content && (

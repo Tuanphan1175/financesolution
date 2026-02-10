@@ -21,8 +21,9 @@ export interface AiCoachContextInput {
 }
 
 export interface AiCoachSendOptions {
-  apiKey?: string; // default: import.meta.env.VITE_GEMINI_API_KEY
-  model?: string; // default: "models/gemini-1.5-pro"
+  apiKey?: string;
+  provider?: "google" | "openai";
+  model?: string;
   maxOutputTokens?: number; // default: 700
   temperature?: number; // default: 0.6
   topP?: number; // default: 0.9
@@ -124,17 +125,17 @@ export function buildFinancialContextText(
   const rulesOk = goldenRules.filter((r) => (r as any).isCompliant).length;
   const rulesRate = rulesTotal > 0 ? Math.round((rulesOk / rulesTotal) * 100) : null;
 
-  // 6 jars demo (có thể chỉnh sau)
+  // 6 jars demo
   const jars =
     incomeThisMonth > 0
       ? {
-          needs45: Math.round(incomeThisMonth * 0.45),
-          freedom20: Math.round(incomeThisMonth * 0.2),
-          edu10: Math.round(incomeThisMonth * 0.1),
-          play10: Math.round(incomeThisMonth * 0.1),
-          emergency10: Math.round(incomeThisMonth * 0.1),
-          give5: Math.round(incomeThisMonth * 0.05),
-        }
+        needs45: Math.round(incomeThisMonth * 0.45),
+        freedom20: Math.round(incomeThisMonth * 0.2),
+        edu10: Math.round(incomeThisMonth * 0.1),
+        play10: Math.round(incomeThisMonth * 0.1),
+        emergency10: Math.round(incomeThisMonth * 0.1),
+        give5: Math.round(incomeThisMonth * 0.05),
+      }
       : null;
 
   const lines: string[] = [];
@@ -151,8 +152,7 @@ export function buildFinancialContextText(
   lines.push(`- Nợ vay/ thế chấp: ${fmtMoney(loanDebt, locale)} đ`);
   lines.push("");
   lines.push(
-    `KỶ LUẬT (Golden Rules): ${
-      rulesTotal > 0 ? `${rulesOk}/${rulesTotal} (${rulesRate}%)` : "chưa có dữ liệu"
+    `KỶ LUẬT (Golden Rules): ${rulesTotal > 0 ? `${rulesOk}/${rulesTotal} (${rulesRate}%)` : "chưa có dữ liệu"
     }`
   );
 
@@ -171,7 +171,7 @@ export function buildFinancialContextText(
 }
 
 // =========================
-// PROMPT BUILDER (systemInstruction)
+// PROMPT BUILDER
 // =========================
 export function buildSystemPrompt(
   financialContextText: string,
@@ -216,7 +216,7 @@ export function buildSystemPrompt(
 }
 
 // =========================
-// DEMO FALLBACK (bạn – tôi)
+// DEMO FALLBACK
 // =========================
 export function buildDemoReply(financialContextText: string, userText: string) {
   const lines: string[] = [];
@@ -239,7 +239,7 @@ export function buildDemoReply(financialContextText: string, userText: string) {
 }
 
 // =========================
-// ERROR + RETRY HELPERS
+// HELPERS
 // =========================
 function sleep(ms: number) {
   return new Promise((r) => setTimeout(r, ms));
@@ -257,7 +257,7 @@ function isQuota429(err: unknown) {
 
 function isAuthError(err: unknown) {
   const msg = (err instanceof Error ? err.message : String(err ?? "")).toLowerCase();
-  return msg.includes("api key") || msg.includes("permission") || msg.includes("unauthorized");
+  return msg.includes("api key") || msg.includes("permission") || msg.includes("unauthorized") || msg.includes("invalid_api_key");
 }
 
 function withTimeout<T>(p: Promise<T>, timeoutMs: number) {
@@ -278,6 +278,40 @@ function withTimeout<T>(p: Promise<T>, timeoutMs: number) {
 }
 
 // =========================
+// OPENAI PROVIDER (FETCH)
+// =========================
+async function fetchOpenAI(
+  apiKey: string,
+  modelName: string,
+  messages: any[],
+  opts: { maxTokens: number; temperature: number; topP: number }
+) {
+  const resp = await fetch("https://api.openai.com/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${apiKey}`,
+    },
+    body: JSON.stringify({
+      model: modelName,
+      messages,
+      max_completion_tokens: opts.maxTokens,
+      temperature: opts.temperature,
+      top_p: opts.topP,
+    }),
+  });
+
+  if (!resp.ok) {
+    const data = await resp.json().catch(() => ({}));
+    const msg = data.error?.message || `HTTP ${resp.status}`;
+    throw new Error(`[OpenAI Error]: ${msg}`);
+  }
+
+  const data = await resp.json();
+  return data.choices?.[0]?.message?.content || "";
+}
+
+// =========================
 // MAIN API
 // =========================
 export async function aiCoachSend(
@@ -292,16 +326,28 @@ export async function aiCoachSend(
     userLocale = "vi-VN",
   } = input;
 
-  const apiKey = opts.apiKey ?? (import.meta as any).env?.VITE_GEMINI_API_KEY;
-  const modelName = opts.model ?? "models/gemini-1.5-pro";
+  const geminiKey = import.meta.env.VITE_GEMINI_API_KEY;
+  const openaiKey = import.meta.env.VITE_OPENAI_API_KEY;
+
+  // Decide provider
+  const provider = opts.provider || (openaiKey ? "openai" : "google");
+  const apiKey = opts.apiKey || (provider === "openai" ? openaiKey : geminiKey);
+
+  let modelName = opts.model || (provider === "openai"
+    ? (import.meta.env.VITE_OPENAI_MODEL || "gpt-4o")
+    : (import.meta.env.VITE_GEMINI_MODEL || "gemini-1.5-flash")
+  );
+
+  // Sanitize
+  modelName = String(modelName).toLowerCase().trim().replace(/\s+/g, "-");
 
   const maxOutputTokens = Number.isFinite(opts.maxOutputTokens) ? (opts.maxOutputTokens as number) : 700;
   const temperature = Number.isFinite(opts.temperature) ? (opts.temperature as number) : 0.6;
   const topP = Number.isFinite(opts.topP) ? (opts.topP as number) : 0.9;
 
-  const maxRetries = Number.isFinite(opts.maxRetries) ? (opts.maxRetries as number) : 4;
-  const initialBackoffMs = Number.isFinite(opts.initialBackoffMs) ? (opts.initialBackoffMs as number) : 900;
-  const timeoutMs = Number.isFinite(opts.timeoutMs) ? (opts.timeoutMs as number) : 20000;
+  const maxRetries = Number.isFinite(opts.maxRetries) ? (opts.maxRetries as number) : 3;
+  const initialBackoffMs = Number.isFinite(opts.initialBackoffMs) ? (opts.initialBackoffMs as number) : 1000;
+  const timeoutMs = Number.isFinite(opts.timeoutMs) ? (opts.timeoutMs as number) : 30000;
 
   const useDemoFallback = opts.useDemoFallback !== false;
 
@@ -319,20 +365,13 @@ export async function aiCoachSend(
     };
   }
 
-  // Normalize history for Gemini (user/model)
+  // Normalize history
   const safeHistory = Array.isArray(history) ? history : [];
-  const geminiHistory = safeHistory
-    .filter((m): m is AiCoachMessage => {
-      return (
-        !!m &&
-        (m.role === "user" || m.role === "model") &&
-        typeof m.text === "string" &&
-        m.text.trim().length > 0
-      );
-    })
+  let normalizedHistory = safeHistory
+    .filter((m): m is AiCoachMessage => !!m && typeof m.text === "string" && m.text.trim().length > 0)
     .map((m) => ({
-      role: m.role as "user" | "model",
-      parts: [{ text: m.text }],
+      role: (m.role === "model" ? (provider === "openai" ? "assistant" : "model") : "user"),
+      content: m.text,
     }));
 
   let attempt = 0;
@@ -340,28 +379,48 @@ export async function aiCoachSend(
 
   while (attempt <= maxRetries) {
     try {
-      const genAI = new GoogleGenerativeAI(String(apiKey));
+      let text = "";
 
-      const model = genAI.getGenerativeModel({
-        model: modelName,
-        generationConfig: { maxOutputTokens, temperature, topP },
-        // Quan trọng: systemInstruction đúng chuẩn, không nhét vào history
-        systemInstruction: systemPrompt,
-      });
+      if (provider === "openai") {
+        const messages = [
+          { role: "system", content: systemPrompt },
+          ...normalizedHistory.map(m => ({ role: m.role, content: m.content })),
+          { role: "user", content: userText }
+        ];
 
-      const chat = model.startChat({ history: geminiHistory });
+        text = await withTimeout(
+          fetchOpenAI(apiKey, modelName, messages, {
+            maxTokens: maxOutputTokens,
+            temperature,
+            topP
+          }),
+          timeoutMs
+        );
+      } else {
+        // Gemini
+        const geminiHistory = normalizedHistory.map(m => ({
+          role: m.role as "user" | "model",
+          parts: [{ text: m.content }]
+        }));
 
-      const result = await withTimeout(chat.sendMessage(userText), timeoutMs);
-      const text = result.response.text()?.trim();
+        // Gemini SDK: First message MUST be 'user'
+        while (geminiHistory.length > 0 && geminiHistory[0].role !== "user") {
+          geminiHistory.shift();
+        }
 
-      if (!text) {
-        return {
-          ok: true,
-          text: "Tôi chưa nhận được nội dung trả lời. Bạn thử hỏi lại ngắn gọn hơn giúp tôi.",
-          usedDemo: false,
-          meta: { model: modelName, retries: attempt, reason: "empty_response" },
-        };
+        const genAI = new GoogleGenerativeAI(String(apiKey));
+        const model = genAI.getGenerativeModel({
+          model: modelName,
+          generationConfig: { maxOutputTokens, temperature, topP },
+          systemInstruction: systemPrompt,
+        });
+
+        const chat = model.startChat({ history: geminiHistory });
+        const result = await withTimeout(chat.sendMessage(userText), timeoutMs);
+        text = result.response.text()?.trim();
       }
+
+      if (!text) throw new Error("Empty response from AI");
 
       return {
         ok: true,
@@ -371,44 +430,33 @@ export async function aiCoachSend(
       };
     } catch (err) {
       const quota = isQuota429(err);
+      const auth = isAuthError(err);
 
-      if (isAuthError(err)) {
+      if (auth) {
         if (useDemoFallback) {
           return {
             ok: true,
-            text:
-              "Tôi không gọi được AI do API key/quyền truy cập chưa đúng. Tạm thời tôi trả lời theo chế độ Demo.\n\n" +
-              buildDemoReply(financialContextText, userText),
+            text: `Tôi không gọi được AI (${provider.toUpperCase()}) do API key chưa đúng. Tạm thời dùng Demo.\n\n` + buildDemoReply(financialContextText, userText),
             usedDemo: true,
             meta: { model: modelName, retries: attempt, reason: "auth_error" },
           };
         }
-        return {
-          ok: false,
-          text: "API key/quyền truy cập chưa đúng. Kiểm tra VITE_GEMINI_API_KEY.",
-          usedDemo: false,
-          meta: { model: modelName, retries: attempt, reason: "auth_error" },
-        };
+        throw err;
       }
 
-      if (quota && attempt < maxRetries) {
+      if (attempt < maxRetries && (quota || !auth)) {
         await sleep(backoff);
-        backoff = Math.min(backoff * 2, 8000);
-        attempt += 1;
+        backoff *= 2;
+        attempt++;
         continue;
       }
 
       if (useDemoFallback) {
-        const reason = quota ? "quota_429" : "runtime_error";
         return {
           ok: true,
-          text:
-            (quota
-              ? "Hiện đang bị giới hạn quota (429). Tôi chuyển sang chế độ Demo để vẫn tư vấn được.\n\n"
-              : "Tôi gặp lỗi khi gọi AI. Tôi chuyển sang chế độ Demo để vẫn tư vấn được.\n\n") +
-            buildDemoReply(financialContextText, userText),
+          text: `Tôi gặp lỗi khi gọi AI (${err instanceof Error ? err.message : String(err)}). Tạm thời dùng Demo.\n\n` + buildDemoReply(financialContextText, userText),
           usedDemo: true,
-          meta: { model: modelName, retries: attempt, reason },
+          meta: { model: modelName, retries: attempt, reason: quota ? "quota_429" : "runtime_error" },
         };
       }
 

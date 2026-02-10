@@ -141,9 +141,9 @@ const SavingAnalysisChart = () => (
   <div className="bg-white rounded-[2.5rem] p-6 shadow-xl border border-slate-100 relative overflow-hidden">
     <div className="flex justify-between items-start mb-6">
       <div>
-        <h3 className="text-sm font-black text-slate-500 uppercase tracking-wider mb-1">Saving Goal</h3>
+        <h3 className="text-sm font-black text-slate-500 uppercase tracking-wider mb-1">Mục tiêu Tiết kiệm</h3>
         <div className="flex items-center gap-3">
-          <div className="bg-orange-100 text-orange-600 px-3 py-1 rounded-lg text-sm font-black">$1 Tr. 850k</div>
+          <div className="bg-orange-100 text-orange-600 px-3 py-1 rounded-lg text-sm font-black">1 Tr. 850k đ</div>
           <span className="text-xs font-bold text-emerald-500">+12%</span>
         </div>
       </div>
@@ -173,16 +173,16 @@ const SavingAnalysisChart = () => (
 
           {/* Floating tags */}
           <div className="absolute top-[20%] right-0 bg-white shadow-md border border-slate-100 px-2 py-1 rounded-lg text-[10px] font-bold text-slate-700">
-            $210.00
+            210.000 đ
           </div>
         </div>
       </div>
 
       {/* Y Axis Labels roughly positioned */}
-      <div className="absolute right-0 top-0 bottom-0 flex flex-col justify-between text-[9px] font-bold text-slate-300 py-6">
-        <span>000.00$</span>
-        <span>$50.00</span>
-        <span>$100.00</span>
+      <div className="absolute right-0 top-0 bottom-0 flex flex-col justify-between text-[9px] font-bold text-slate-300 py-6 text-right px-2">
+        <span>0 đ</span>
+        <span>500K đ</span>
+        <span>1M đ</span>
       </div>
     </div>
   </div>
@@ -245,7 +245,7 @@ const Dashboard: React.FC<DashboardProps> = ({ transactions, categories, onMenuC
           <button className="p-2 rounded-full bg-white/50 hover:bg-white transition">
             {/* Profile/Settings Icon */}
             <div className="w-6 h-6 rounded-full bg-slate-200 overflow-hidden">
-              <img src="https://ui-avatars.com/api/?name=User&background=0D8ABC&color=fff" alt="User" />
+              <img src="https://ui-avatars.com/api/?name=ND&background=0D8ABC&color=fff" alt="User" />
             </div>
           </button>
         </div>
@@ -259,21 +259,21 @@ const Dashboard: React.FC<DashboardProps> = ({ transactions, categories, onMenuC
             <div className="text-sm font-bold text-slate-400 mt-2 ml-1">VNĐ • Tổng chi tiêu tháng</div>
           </div>
 
-          <div className="flex flex-col gap-2">
-            <div className="w-12 h-12 rounded-2xl bg-slate-900 text-white flex items-center justify-center shadow-lg">
+          <button className="flex flex-col gap-2 items-center group">
+            <div className="w-12 h-12 rounded-2xl bg-slate-900 text-white flex items-center justify-center shadow-lg group-hover:bg-teal-600 transition-colors group-active:scale-90">
               <TrendingUpIcon className="w-6 h-6" />
             </div>
-            <span className="text-[10px] font-bold text-center text-slate-500">Báo cáo</span>
-          </div>
+            <span className="text-[10px] font-bold text-center text-slate-500 group-hover:text-teal-600 transition-colors">Báo cáo</span>
+          </button>
         </div>
 
         {/* Action Buttons */}
         <div className="flex gap-4">
-          <button className="flex-1 bg-white py-4 rounded-2xl font-black text-slate-700 shadow-sm border border-slate-100 flex items-center justify-center gap-2 active:scale-95 transition-transform">
-            <ScaleIcon className="w-4 h-4" />
+          <button className="flex-1 bg-white py-4 rounded-2xl font-black text-slate-700 shadow-sm border border-slate-200 flex items-center justify-center gap-2 hover:bg-slate-50 active:scale-95 transition-all">
+            <ScaleIcon className="w-4 h-4 text-teal-500" />
             <span>Tổng hợp</span>
           </button>
-          <button className="flex-1 bg-slate-900 py-4 rounded-2xl font-black text-white shadow-lg flex items-center justify-center gap-2 active:scale-95 transition-transform">
+          <button className="flex-1 bg-slate-900 py-4 rounded-2xl font-black text-white shadow-lg flex items-center justify-center gap-2 hover:bg-teal-700 active:scale-95 transition-all">
             <span>Mới nhất</span>
           </button>
         </div>
@@ -309,7 +309,7 @@ const Dashboard: React.FC<DashboardProps> = ({ transactions, categories, onMenuC
               <h3 className="font-black text-slate-800 text-lg">Giao dịch gần đây</h3>
               <p className="text-xs text-slate-400 font-bold">Trung bình ngày: --</p>
             </div>
-            <button className="bg-teal-50 text-teal-600 px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider">
+            <button className="bg-teal-50 text-teal-600 px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider hover:bg-teal-100 active:scale-95 transition-all">
               Tùy chọn
             </button>
           </div>

@@ -44,16 +44,14 @@ const NavItem: React.FC<NavItemProps> = ({ label, icon, isActive, onClick }) => 
     <button
       type="button"
       onClick={onClick}
-      className={`w-full flex items-center px-8 py-4 text-[11px] font-black uppercase tracking-[0.2em] rounded-2xl transition-all duration-500 group relative mb-1 ${
-        isActive
+      className={`w-full flex items-center px-8 py-4 text-[11px] font-black uppercase tracking-[0.2em] rounded-2xl transition-all duration-500 group relative mb-1 ${isActive
           ? "bg-gradient-to-r from-luxury-gold to-amber-600 text-black shadow-luxury"
           : "text-slate-500 hover:text-white hover:bg-slate-800/50"
-      }`}
+        }`}
     >
       <div
-        className={`transition-all duration-500 group-hover:scale-110 ${
-          isActive ? "text-black" : "text-slate-600 group-hover:text-luxury-gold"
-        }`}
+        className={`transition-all duration-500 group-hover:scale-110 ${isActive ? "text-black" : "text-slate-600 group-hover:text-luxury-gold"
+          }`}
       >
         {iconWithClass}
       </div>
@@ -151,14 +149,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
       {/* FOOTER */}
       <div className="mt-auto shrink-0 pt-10 border-t border-slate-800">
-        <button
-          type="button"
-          onClick={() => setIsPremium(!isPremium)}
-          className="w-full flex items-center px-8 py-3 text-[10px] font-black uppercase tracking-[0.2em] rounded-2xl transition-all duration-500 text-slate-500 hover:text-white hover:bg-slate-800/50 mb-4"
-        >
-          <RefreshIcon className="h-5 w-5 mr-4 text-slate-600" />
-          Dev: Toggle VIP ({isPremium ? "ON" : "OFF"})
-        </button>
 
         <div className="flex items-center p-4 rounded-[1.8rem] bg-slate-900 border border-slate-800 transition-all hover:border-luxury-gold/50 group shadow-inner">
           <div className="relative shrink-0">

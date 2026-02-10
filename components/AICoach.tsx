@@ -1,6 +1,5 @@
 // components/AICoach.tsx
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { GoogleGenerativeAI } from "@google/generative-ai";
 import type {
   Transaction,
   Asset,
@@ -9,6 +8,7 @@ import type {
   GoldenRule,
 } from "../types";
 import { SparklesIcon, ArrowUpIcon } from "./Icons";
+import { aiCoachSend, buildFinancialContextText } from "../lib/aiCoach";
 
 /* =========================
    TYPES
@@ -37,208 +37,6 @@ export interface AICoachProps {
 /* =========================
    HELPERS
 ========================= */
-const DEFAULT_USER_NAME = "bạn";
-
-const fmtMoney = (v: number) =>
-  (Number.isFinite(v) ? Math.round(v) : 0).toLocaleString("vi-VN");
-
-function safeSum(nums: number[]) {
-  return nums.reduce((a, b) => a + (Number.isFinite(b) ? b : 0), 0);
-}
-
-function toShortDateISO(d: Date) {
-  return d.toISOString().split("T")[0];
-}
-
-function monthRangeISO(now = new Date()) {
-  const start = new Date(now.getFullYear(), now.getMonth(), 1);
-  const end = new Date(now.getFullYear(), now.getMonth() + 1, 1);
-  return { start: toShortDateISO(start), end: toShortDateISO(end) };
-}
-
-function isWithinISO(dateISO: string, startISO: string, endISO: string) {
-  return dateISO >= startISO && dateISO < endISO;
-}
-
-function getGeminiApiKey(): string {
-  const envKey = (import.meta as any)?.env?.VITE_GEMINI_API_KEY as
-    | string
-    | undefined;
-  if (envKey && envKey.trim()) return envKey.trim();
-
-  const lsKey = localStorage.getItem("smartfinance_gemini_api_key");
-  if (lsKey && lsKey.trim()) return lsKey.trim();
-
-  return "";
-}
-
-function buildFinancialContext(
-  transactions: Transaction[],
-  assets: Asset[],
-  liabilities: Liability[],
-  goldenRules: GoldenRule[]
-) {
-  const now = new Date();
-  const { start, end } = monthRangeISO(now);
-
-  const txThisMonth = transactions.filter((t) => {
-    const d = String((t as any).date || "");
-    return d && isWithinISO(d, start, end);
-  });
-
-  const incomeThisMonth = safeSum(
-    txThisMonth.filter((t) => t.type === "income").map((t) => t.amount)
-  );
-  const expenseThisMonth = safeSum(
-    txThisMonth.filter((t) => t.type === "expense").map((t) => t.amount)
-  );
-  const cashflowThisMonth = incomeThisMonth - expenseThisMonth;
-
-  const totalAssets = safeSum(assets.map((a: any) => a.value ?? a.amount ?? 0));
-  const totalLiabilities = safeSum(
-    liabilities.map((l: any) => l.amount ?? 0)
-  );
-  const netWorth = totalAssets - totalLiabilities;
-
-  const ccDebt = safeSum(
-    liabilities
-      .filter((l: any) => l.type === "credit_card")
-      .map((l: any) => l.amount ?? 0)
-  );
-  const loanDebt = safeSum(
-    liabilities
-      .filter((l: any) => {
-        const t = l.type;
-        return t === "loan" || t === "mortgage";
-      })
-      .map((l: any) => l.amount ?? 0)
-  );
-
-  const rulesTotal = goldenRules.length;
-  const rulesOk = goldenRules.filter((r: any) => r.isCompliant).length;
-  const rulesRate =
-    rulesTotal > 0 ? Math.round((rulesOk / rulesTotal) * 100) : null;
-
-  const jars =
-    incomeThisMonth > 0
-      ? {
-        needs45: Math.round(incomeThisMonth * 0.45),
-        freedom20: Math.round(incomeThisMonth * 0.2),
-        edu10: Math.round(incomeThisMonth * 0.1),
-        play10: Math.round(incomeThisMonth * 0.1),
-        emergency10: Math.round(incomeThisMonth * 0.1),
-        give5: Math.round(incomeThisMonth * 0.05),
-      }
-      : null;
-
-  const lines: string[] = [];
-  lines.push(
-    `DỮ LIỆU TÀI CHÍNH (tháng ${now.getMonth() + 1}/${now.getFullYear()}):`
-  );
-  lines.push(`- Thu nhập tháng: ${fmtMoney(incomeThisMonth)} đ`);
-  lines.push(`- Chi tiêu tháng: ${fmtMoney(expenseThisMonth)} đ`);
-  lines.push(`- Dòng tiền ròng (cashflow): ${fmtMoney(cashflowThisMonth)} đ`);
-  lines.push("");
-  lines.push("TÀI SẢN & NỢ:");
-  lines.push(`- Tổng tài sản: ${fmtMoney(totalAssets)} đ`);
-  lines.push(`- Tổng nợ: ${fmtMoney(totalLiabilities)} đ`);
-  lines.push(`- Tài sản ròng: ${fmtMoney(netWorth)} đ`);
-  lines.push(`- Nợ thẻ tín dụng: ${fmtMoney(ccDebt)} đ`);
-  lines.push(`- Nợ vay/ thế chấp: ${fmtMoney(loanDebt)} đ`);
-  lines.push("");
-  lines.push(
-    `KỶ LUẬT (Golden Rules): ${rulesTotal > 0 ? `${rulesOk}/${rulesTotal} (${rulesRate}%)` : "chưa có dữ liệu"
-    }`
-  );
-
-  if (jars) {
-    lines.push("");
-    lines.push("GỢI Ý PHÂN BỔ 6 CHIẾC LỌ (theo thu nhập tháng hiện tại):");
-    lines.push(`- 45% Nhu cầu: ${fmtMoney(jars.needs45)} đ`);
-    lines.push(`- 20% Tự do tài chính: ${fmtMoney(jars.freedom20)} đ`);
-    lines.push(`- 10% Giáo dục: ${fmtMoney(jars.edu10)} đ`);
-    lines.push(`- 10% Hưởng thụ: ${fmtMoney(jars.play10)} đ`);
-    lines.push(`- 10% Khẩn cấp: ${fmtMoney(jars.emergency10)} đ`);
-    lines.push(`- 5% Cho đi: ${fmtMoney(jars.give5)} đ`);
-  }
-
-  return lines.join("\n");
-}
-
-function buildSystemPrompt(financialContext: string) {
-  return `
-Bạn là AI Financial Coach – trợ lý tài chính cá nhân trong ứng dụng Tài Chính Thông Minh.
-
-Cách xưng hô (bắt buộc):
-- Gọi người dùng là "${DEFAULT_USER_NAME}"
-- Xưng là "tôi"
-
-Nguyên tắc tư vấn (bắt buộc):
-1) Ưu tiên DÒNG TIỀN DƯƠNG. Nếu cashflow âm → giảm chi + tăng thu + chặn nợ xấu.
-2) Phân biệt TÀI SẢN vs TIÊU SẢN:
-   - Tài sản: tạo dòng tiền/ tăng giá trị dài hạn.
-   - Tiêu sản: tiêu tiền, hao mòn, rủi ro nợ tiêu dùng.
-   → Nếu người dùng muốn mua tiêu sản khi dòng tiền yếu: phản biện rõ và đưa phương án thay thế.
-3) “6 chiếc lọ” là khung kỷ luật: hướng dẫn áp dụng theo thu nhập thực tế.
-4) Không hứa hẹn làm giàu nhanh. Không khuyến nghị lĩnh vực không hiểu.
-5) Kết thúc câu trả lời luôn có:
-   - 1 câu chốt
-   - 3 việc làm ngay trong 7 ngày
-   - 1 câu hỏi ngược để chẩn đoán tiếp
-6) Phong cách:
-- Chuyên nghiệp, trung lập, đáng tin cậy
-- Không hù dọa, không phán xét.
-
-DỮ LIỆU NGƯỜI DÙNG:
-${financialContext}
-`.trim();
-}
-
-function buildDemoReply(financialContext: string, userText: string) {
-  return [
-    `Tôi đã nhận được câu hỏi của ${DEFAULT_USER_NAME}: "${userText}"`,
-    "",
-    "Chốt 1 câu:",
-    "- Ưu tiên đưa dòng tiền về dương và khóa các khoản “tiêu sản” trước khi nghĩ đến tối ưu đầu tư.",
-    "",
-    "3 việc làm ngay trong 7 ngày:",
-    "1) Ghi lại 10 khoản chi nhỏ lẻ gần nhất → cắt 2 khoản không tạo giá trị (Latte factor).",
-    "2) Trích trước 10% thu nhập để tích lũy (pay yourself first), dù số tiền nhỏ.",
-    "3) Nếu có nợ lãi cao: lập kế hoạch trả nợ theo lãi suất (cao → thấp) hoặc theo “tuyết lăn” (nhỏ → lớn).",
-    "",
-    "Câu hỏi ngược để chẩn đoán tiếp:",
-    "- Mục tiêu 90 ngày tới của bạn là: tăng thu nhập hay giảm chi + trả nợ?",
-    "",
-    "Dữ liệu tôi đang dựa vào:",
-    financialContext,
-  ].join("\n");
-}
-
-function friendlyErrorMessage(err: unknown) {
-  const msg = err instanceof Error ? err.message : String(err ?? "Unknown error");
-  const lower = msg.toLowerCase();
-
-  if (
-    lower.includes("429") ||
-    lower.includes("quota") ||
-    lower.includes("resource_exhausted") ||
-    lower.includes("too many requests")
-  ) {
-    return "Hiện hệ thống đang bị giới hạn quota (429). Tôi chuyển sang chế độ Demo để vẫn tư vấn được.";
-  }
-  if (
-    lower.includes("api key") ||
-    lower.includes("permission") ||
-    lower.includes("unauthorized")
-  ) {
-    return "Tôi không gọi được AI vì API key/quyền truy cập chưa đúng. Bạn kiểm tra VITE_GEMINI_API_KEY (hoặc localStorage smartfinance_gemini_api_key).";
-  }
-  if (lower.includes("404") || lower.includes("not found") || lower.includes("models/")) {
-    return "Model AI hiện không khả dụng (404). Bạn kiểm tra tên model đang dùng và phiên bản API.";
-  }
-  return `Lỗi kết nối AI: ${msg}`;
-}
-
 function makeId(prefix: string) {
   return `${prefix}_${Date.now()}_${Math.random().toString(16).slice(2)}`;
 }
@@ -263,19 +61,20 @@ export const AICoach: React.FC<AICoachProps> = ({
   const didInit = useRef<boolean>(false);
 
   const financialContext = useMemo(
-    () => buildFinancialContext(transactions, assets, liabilities, goldenRules),
-    [transactions, assets, liabilities, goldenRules]
+    () => buildFinancialContextText({
+      transactions,
+      assets,
+      liabilities,
+      journeyProgress,
+      goldenRules
+    }),
+    [transactions, assets, liabilities, journeyProgress, goldenRules]
   );
 
-  const systemPrompt = useMemo(
-    () => buildSystemPrompt(financialContext),
-    [financialContext]
-  );
-
-  const apiKey = useMemo(() => getGeminiApiKey(), []);
+  const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
   const hasKey = Boolean(apiKey && apiKey.trim().length > 10);
 
-  const locked = isPremium === false; // chỉ khóa khi prop được truyền và = false
+  const locked = isPremium === false;
 
   useEffect(() => {
     if (didInit.current) return;
@@ -300,41 +99,11 @@ export const AICoach: React.FC<AICoachProps> = ({
     });
   }, [messages, isLoading]);
 
-  async function callGemini(userText: string, history: Message[]) {
-    if (!hasKey) return buildDemoReply(financialContext, userText);
-
-    const genAI = new GoogleGenerativeAI(apiKey);
-
-    // Model ổn định để tránh 404
-    const model = genAI.getGenerativeModel({
-      model: "models/gemini-1.5-flash",
-      systemInstruction: systemPrompt,
-      generationConfig: {
-        maxOutputTokens: 700,
-        temperature: 0.6,
-        topP: 0.9,
-      },
-    });
-
-    const geminiHistory = history
-      .filter((m) => m.role === "user" || m.role === "model")
-      .map((m) => ({
-        role: m.role as "user" | "model",
-        parts: [{ text: m.text }],
-      }));
-
-    const chat = model.startChat({ history: geminiHistory });
-    const result = await chat.sendMessage(userText);
-    const text = result.response.text()?.trim();
-
-    return text || "Tôi chưa nhận được nội dung trả lời. Bạn thử hỏi lại ngắn gọn hơn giúp tôi.";
-  }
-
   async function handleSend() {
     const userText = input.trim();
     if (!userText || isLoading) return;
 
-    // Premium gating (nếu app dùng)
+    // Premium gating
     if (locked) {
       const userMsg: Message = {
         id: makeId("u"),
@@ -369,26 +138,34 @@ export const AICoach: React.FC<AICoachProps> = ({
     setIsLoading(true);
 
     try {
-      const nextHistory = [...messages, userMsg];
-      const reply = await callGemini(userText, nextHistory);
+      const history = messages.map(m => ({ role: m.role, text: m.text }));
+
+      const result = await aiCoachSend({
+        userText,
+        history,
+        context: {
+          transactions,
+          assets,
+          liabilities,
+          journeyProgress,
+          goldenRules
+        }
+      });
 
       const modelMsg: Message = {
         id: makeId("a"),
         role: "model",
-        text: reply,
+        text: result.text,
         ts: Date.now(),
       };
 
       setMessages((prev) => [...prev, modelMsg]);
     } catch (err) {
-      const note = friendlyErrorMessage(err);
-      const fallback = buildDemoReply(financialContext, userText);
-
       const modelMsg: Message = {
         id: makeId("e"),
         role: "model",
         ts: Date.now(),
-        text: `${note}\n\n-----\nDEMO COACH (fallback):\n${fallback}`,
+        text: `Lỗi kết nối AI: ${err instanceof Error ? err.message : String(err)}`,
       };
 
       setMessages((prev) => [...prev, modelMsg]);
@@ -493,9 +270,13 @@ export const AICoach: React.FC<AICoachProps> = ({
         </div>
 
         {!locked && !hasKey ? (
-          <div className="mt-3 text-xs text-slate-500">
-            Gợi ý: đặt <b>VITE_GEMINI_API_KEY</b> (hoặc localStorage{" "}
-            <b>smartfinance_gemini_api_key</b>) để bật AI thật.
+          <div className="mt-3 text-xs text-slate-400 bg-slate-900/50 p-3 rounded-xl border border-luxury-gold/20">
+            <p className="font-bold text-luxury-gold mb-1">AI Coach đang ở chế độ Demo</p>
+            <p className="mb-2">Để dùng AI thật, hãy đảm bảo bạn đã:</p>
+            <ol className="list-decimal list-inside space-y-1">
+              <li>Đặt <b>VITE_GEMINI_API_KEY</b> trong file <b>.env.local</b></li>
+              <li><b>KHỞI ĐỘNG LẠI</b> server (chạy lại lệnh npm run dev)</li>
+            </ol>
           </div>
         ) : null}
       </div>
