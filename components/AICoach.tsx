@@ -48,7 +48,7 @@ export const AICoach: React.FC<AICoachProps> = ({
   transactions = [],
   assets = [],
   liabilities = [],
-  journeyProgress = { completedDays: [], lastUpdate: new Date().toISOString() },
+  journeyProgress = { completedTaskIds: [] },
   goldenRules = [],
   isPremium = false,
   setIsPricingModalOpen = () => { },
@@ -71,8 +71,9 @@ export const AICoach: React.FC<AICoachProps> = ({
     [transactions, assets, liabilities, journeyProgress, goldenRules]
   );
 
-  const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
-  const hasKey = Boolean(apiKey && apiKey.trim().length > 10);
+  const gKey = import.meta.env.VITE_GEMINI_API_KEY;
+  const oKey = import.meta.env.VITE_OPENAI_API_KEY;
+  const hasKey = Boolean((gKey && gKey.trim().length > 10) || (oKey && oKey.trim().length > 10));
 
   const locked = isPremium === false;
 
@@ -177,7 +178,7 @@ export const AICoach: React.FC<AICoachProps> = ({
   const headerSub = locked
     ? "Premium đang khóa"
     : hasKey
-      ? "Gemini đang hoạt động"
+      ? "AI đang hoạt động"
       : "Demo mode (chưa có API key)";
 
   return (
@@ -272,9 +273,9 @@ export const AICoach: React.FC<AICoachProps> = ({
         {!locked && !hasKey ? (
           <div className="mt-3 text-xs text-slate-400 bg-slate-900/50 p-3 rounded-xl border border-luxury-gold/20">
             <p className="font-bold text-luxury-gold mb-1">AI Coach đang ở chế độ Demo</p>
-            <p className="mb-2">Để dùng AI thật, hãy đảm bảo bạn đã:</p>
+            <p className="mb-2">Để dùng AI thật (GPT-4o hoặc Gemini), hãy đảm bảo bạn đã:</p>
             <ol className="list-decimal list-inside space-y-1">
-              <li>Đặt <b>VITE_GEMINI_API_KEY</b> trong file <b>.env.local</b></li>
+              <li>Đặt <b>API KEY</b> trong file <b>.env.local</b></li>
               <li><b>KHỞI ĐỘNG LẠI</b> server (chạy lại lệnh npm run dev)</li>
             </ol>
           </div>
